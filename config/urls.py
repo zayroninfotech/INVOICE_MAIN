@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/payments/', include('apps.payments.urls')),
     path('api/reports/', include('apps.reports.urls')),
     path('api/dashboard/', include('apps.dashboard.urls')),
+    path('api/subscriptions/', include('apps.subscriptions.urls')),
 
     # Frontend views
     path('home/', landing_page, name='landing'),
@@ -25,4 +26,5 @@ urlpatterns = [
     path('payments/', include('apps.payments.web_urls')),
     path('reports/', include('apps.reports.web_urls')),
     path('auth/', include('apps.authentication.web_urls')),
+    path('pricing/', include('apps.subscriptions.web_urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

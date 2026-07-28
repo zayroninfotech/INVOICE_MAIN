@@ -333,11 +333,8 @@
         <div id="fi-notes-ct" style="text-align:right;font-size:.75rem;color:#94A3B8;margin-top:4px">0/5000</div>
       </div>
 
-      <!-- Terms -->
-      <div class="fi-card">
-        <label class="fi-label">Terms &amp; Conditions</label>
-        <textarea id="f-terms" class="fi-textarea" rows="2">Payment due within 30 days.</textarea>
-      </div>
+      <!-- Terms (hidden, default value sent silently) -->
+      <textarea id="f-terms" style="display:none">Payment due within 30 days.</textarea>
 
       <!-- Signature -->
       <div class="fi-card">
@@ -446,6 +443,7 @@ let editingId = null, itemCount = 0;
 let products = [], customers = [];
 let bizProfile = {};
 let selectedColor = '#F97316';
+let alreadyPaid = 0; // payments already recorded for current invoice
 
 /* ══════════════════ TEMPLATE COLORS ══════════════════ */
 const FI_COLORS = [
@@ -689,10 +687,12 @@ function recalc() {
     const el = document.getElementById(`il-${idx}`);
     if (el) el.textContent = fmtAmt(after + lt);
   });
+  const grandTotal = sub + tax;
+  const balanceDue = Math.max(0, grandTotal - alreadyPaid);
   document.getElementById('f-subtotal').textContent = fmtAmt(sub);
   document.getElementById('f-tax').textContent      = fmtAmt(tax);
-  document.getElementById('f-total').textContent    = fmtAmt(sub + tax);
-  document.getElementById('f-balance').textContent  = fmtAmt(sub + tax);
+  document.getElementById('f-total').textContent    = fmtAmt(grandTotal);
+  document.getElementById('f-balance').textContent  = fmtAmt(balanceDue);
 }
 
 /* ── Open / Close ── */
@@ -743,6 +743,7 @@ function showSetupWarnings() {
 
 function openForm() {
   editingId = null;
+  alreadyPaid = 0;
   resetForm();
   renderBizProfile(bizProfile);
   showSetupWarnings();
@@ -855,6 +856,9 @@ async function submitInvoice(andDownload) {
       } else {
         closeForm(); loadInvoices();
       }
+    } else if (res.errors && res.errors.upgrade_required) {
+      if (typeof showLimitModal !== 'undefined') showLimitModal(res.message);
+      else { errEl.textContent = res.message; errEl.classList.remove('d-none'); }
     } else {
       const msg = res.errors ? Object.values(res.errors).flat().join(', ') : (res.message || 'Save failed.');
       errEl.textContent = msg; errEl.classList.remove('d-none');

@@ -40,7 +40,36 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.reports',
     'apps.dashboard',
+    'apps.subscriptions',
 ]
+
+# ── Subscription Plan Limits ──────────────────────────────────────────────────
+PLAN_LIMITS = {
+    'free': {
+        'invoices_per_day': 3,
+        'invoices_per_month': None,
+        'label': 'Free',
+        'price': 0,
+        'price_display': '₹0',
+        'period': 'forever',
+    },
+    'plus': {
+        'invoices_per_day': None,
+        'invoices_per_month': 10,
+        'label': 'Plus',
+        'price': 1499,
+        'price_display': '₹1,499',
+        'period': 'month',
+    },
+    'premium': {
+        'invoices_per_day': None,
+        'invoices_per_month': None,
+        'label': 'Premium',
+        'price': 2299,
+        'price_display': '₹2,299',
+        'period': 'month',
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

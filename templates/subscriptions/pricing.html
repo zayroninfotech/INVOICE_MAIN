@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pricing – Zayro ₹ Invoice</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root { --orange:#F97316; --dark:#0F172A; --card:#fff; }
+    * { box-sizing: border-box; }
+    body { background: #F8FAFC; font-family: 'Inter', system-ui, sans-serif; color: #0F172A; }
+
+    /* Nav */
+    .pricing-nav { background: #0F172A; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .pricing-nav .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .pricing-nav .brand img { height: 36px; }
+    .pricing-nav .brand span { color: #fff; font-weight: 800; font-size: 1.1rem; }
+    .pricing-nav .nav-links a { color: #CBD5E1; text-decoration: none; margin-left: 20px; font-size: .9rem; }
+    .pricing-nav .nav-links a:hover { color: #fff; }
+
+    /* Hero */
+    .hero { text-align: center; padding: 60px 20px 40px; }
+    .hero h1 { font-size: 2.4rem; font-weight: 800; color: #0F172A; margin-bottom: 12px; }
+    .hero p { color: #64748B; font-size: 1.05rem; max-width: 540px; margin: 0 auto 32px; }
+    .toggle-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+    .toggle-wrap span { font-size: .9rem; font-weight: 600; color: #64748B; }
+    .toggle-wrap .save-badge { background: #DCFCE7; color: #15803D; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+
+    /* Plan cards */
+    .plans-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; padding: 0 20px 60px; }
+    .plan-card { background: #fff; border-radius: 16px; border: 2px solid #E2E8F0; padding: 32px 28px; width: 300px; position: relative; transition: box-shadow .2s, border-color .2s; }
+    .plan-card:hover { box-shadow: 0 8px 32px rgba(249,115,22,.12); border-color: #F97316; }
+    .plan-card.popular { border-color: #F97316; box-shadow: 0 8px 32px rgba(249,115,22,.18); }
+    .popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #F97316; color: #fff; font-size: .75rem; font-weight: 700; padding: 4px 16px; border-radius: 20px; white-space: nowrap; }
+    .plan-name { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #F97316; margin-bottom: 8px; }
+    .plan-tagline { font-size: .8rem; color: #94A3B8; margin-bottom: 20px; }
+    .plan-price { font-size: 2.4rem; font-weight: 800; color: #0F172A; line-height: 1; }
+    .plan-price sub { font-size: 1rem; font-weight: 500; color: #64748B; vertical-align: baseline; }
+    .plan-period { font-size: .82rem; color: #94A3B8; margin-bottom: 24px; margin-top: 4px; }
+    .plan-btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: .95rem; border: none; cursor: pointer; margin-bottom: 24px; transition: all .2s; }
+    .plan-btn.free-btn { background: #F1F5F9; color: #0F172A; }
+    .plan-btn.free-btn:hover { background: #E2E8F0; }
+    .plan-btn.paid-btn { background: linear-gradient(135deg,#F97316,#EA580C); color: #fff; }
+    .plan-btn.paid-btn:hover { box-shadow: 0 4px 16px rgba(249,115,22,.4); }
+    .feature-list { list-style: none; padding: 0; margin: 0; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 8px; font-size: .88rem; color: #475569; padding: 6px 0; border-bottom: 1px solid #F8FAFC; }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list li .fi { font-size: .85rem; margin-top: 2px; flex-shrink: 0; }
+    .fi-yes { color: #16A34A; }
+    .fi-no { color: #CBD5E1; }
+
+    /* Comparison table */
+    .compare-section { max-width: 900px; margin: 0 auto 80px; padding: 0 20px; }
+    .compare-section h2 { text-align: center; font-size: 1.6rem; font-weight: 800; color: #0F172A; margin-bottom: 32px; }
+    .compare-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .compare-table th { padding: 16px 20px; font-size: .85rem; font-weight: 700; text-align: center; }
+    .compare-table th:first-child { text-align: left; }
+    .compare-table th.col-popular { background: #FFF7ED; color: #F97316; }
+    .compare-table td { padding: 12px 20px; font-size: .85rem; color: #475569; border-top: 1px solid #F1F5F9; }
+    .compare-table td:first-child { color: #0F172A; font-weight: 500; }
+    .compare-table td:not(:first-child) { text-align: center; }
+    .compare-table tr.section-row td { background: #F8FAFC; font-weight: 700; color: #0F172A; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; padding: 8px 20px; }
+    .check { color: #16A34A; font-size: 1rem; }
+    .cross { color: #CBD5E1; font-size: 1rem; }
+    .val { font-weight: 700; color: #0F172A; }
+
+    /* Free demo section */
+    .demo-section { background: linear-gradient(135deg,#0F172A,#1E293B); padding: 60px 20px; text-align: center; margin-bottom: 60px; }
+    .demo-section h2 { color: #fff; font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; }
+    .demo-section p { color: #94A3B8; margin-bottom: 28px; font-size: .95rem; }
+    .demo-section .demo-card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 24px; max-width: 480px; margin: 0 auto 24px; text-align: left; }
+    .demo-section .demo-card .demo-label { color: #94A3B8; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .demo-section .demo-card .demo-val { color: #fff; font-weight: 600; font-size: .95rem; }
+
+    /* Upgrade payment modal */
+    .modal-content { border-radius: 16px; border: 1.5px solid #E2E8F0; }
+    .razorpay-info { background: #F0FDF4; border: 1px solid #86EFAC; border-radius: 8px; padding: 12px 16px; font-size: .85rem; color: #15803D; }
+
+    footer { background: #0F172A; color: #64748B; text-align: center; padding: 24px; font-size: .85rem; }
+    footer a { color: #F97316; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="pricing-nav">
+  <a href="/" class="brand">
+    <img src="{% static 'img/logo.png' %}" alt="logo">
+    <span>Zayro ₹ Invoice</span>
+  </a>
+  <div class="nav-links">
+    <a href="/auth/login/">Login</a>
+    <a href="/auth/register/" style="background:#F97316;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;margin-left:16px">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Simple, Transparent Pricing</h1>
+  <p>Start free. Upgrade when your business grows. No hidden fees.</p>
+</div>
+
+<!-- Plan Cards -->
+<div class="plans-row">
+
+  <!-- Free -->
+  <div class="plan-card">
+    <div class="plan-name">Essentials</div>
+    <div class="plan-tagline">Early invoices, receipts & payments</div>
+    <div class="plan-price">₹0</div>
+    <div class="plan-period">forever free</div>
+    <button class="plan-btn free-btn" onclick="location.href='/auth/register/'">Get Started Free</button>
+    <ul class="feature-list">
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span><strong>3 invoices</strong> per day</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Unlimited estimates</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Online payments (QR code)</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>PDF download</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Customer management</span></li>
+      <li><i class="bi bi-circle fi fi-no"></i><span style="color:#CBD5E1">Business reports</span></li>
+      <li><i class="bi bi-circle fi fi-no"></i><span style="color:#CBD5E1">Due date reminders</span></li>
+      <li><i class="bi bi-circle fi fi-no"></i><span style="color:#CBD5E1">Priority support</span></li>
+    </ul>
+  </div>
+
+  <!-- Plus -->
+  <div class="plan-card popular">
+    <div class="popular-badge">⭐ Most Popular</div>
+    <div class="plan-name">Plus</div>
+    <div class="plan-tagline">Add customization, reporting & automation</div>
+    <div class="plan-price" id="plus-price-display">₹1,499<sub>/mo</sub></div>
+    <div class="plan-period">billed monthly</div>
+    <button class="plan-btn paid-btn" onclick="openUpgrade('plus')">Buy Now</button>
+    <ul class="feature-list">
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span><strong>10 invoices</strong> per month</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Everything in Essentials</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Business summary reports</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Due date reminders</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Ratings &amp; reviews</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Photo attachments</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Email &amp; chat support</span></li>
+      <li><i class="bi bi-circle fi fi-no"></i><span style="color:#CBD5E1">Priority support</span></li>
+    </ul>
+  </div>
+
+  <!-- Premium -->
+  <div class="plan-card">
+    <div class="plan-name">Premium</div>
+    <div class="plan-tagline">Unlimited invoicing &amp; priority support</div>
+    <div class="plan-price" id="premium-price-display">₹2,299<sub>/mo</sub></div>
+    <div class="plan-period">billed monthly</div>
+    <button class="plan-btn paid-btn" onclick="openUpgrade('premium')">Buy Now</button>
+    <ul class="feature-list">
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span><strong>Unlimited</strong> invoices</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Everything in Plus</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Deposit payments</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Premium templates</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Version history</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>24/7 priority support</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Advanced analytics</span></li>
+      <li><i class="bi bi-check-circle-fill fi fi-yes"></i><span>Custom branding</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Free Demo Section -->
+<div class="demo-section">
+  <h2>Try a Free Invoice — No Account Needed</h2>
+  <p>See what a professional Zayro ₹ Invoice looks like. Create one sample invoice for free, then register to save and send.</p>
+  <div class="demo-card">
+    <div class="demo-label">What you get with the free demo</div>
+    <div class="demo-val" style="margin-top:8px">
+      <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#34D399;margin-right:6px"></i>Professional invoice PDF</div>
+      <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#34D399;margin-right:6px"></i>Your business logo &amp; details</div>
+      <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#34D399;margin-right:6px"></i>GST &amp; tax calculations</div>
+      <div><i class="bi bi-check-circle-fill" style="color:#34D399;margin-right:6px"></i>Instant download</div>
+    </div>
+  </div>
+  <a href="/auth/register/" style="display:inline-block;background:#F97316;color:#fff;padding:14px 36px;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none">
+    <i class="bi bi-person-plus-fill me-2"></i>Create Free Account
+  </a>
+</div>
+
+<!-- Feature Comparison Table -->
+<div class="compare-section">
+  <h2>Compare All Features</h2>
+  <div style="overflow-x:auto">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width:45%">Feature</th>
+          <th>Essentials</th>
+          <th class="col-popular">Plus</th>
+          <th>Premium</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="4">Core</td></tr>
+        <tr><td>Invoices per month</td><td><span class="val">3/day</span></td><td><span class="val">10</span></td><td><span class="val">Unlimited</span></td></tr>
+        <tr><td>Estimates per month</td><td><span class="val">Unlimited</span></td><td><span class="val">Unlimited</span></td><td><span class="val">Unlimited</span></td></tr>
+        <tr><td>PDF Download</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+
+        <tr class="section-row"><td colspan="4">Payments & Collaboration</td></tr>
+        <tr><td>Online Payments (QR)</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Deposit payments</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Passing payment transaction fees</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Premium templates</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Version history</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+
+        <tr class="section-row"><td colspan="4">Views & Reporting</td></tr>
+        <tr><td>Real-time status updates</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Autofill clients and items</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Business summary reports</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+
+        <tr class="section-row"><td colspan="4">Invoicing</td></tr>
+        <tr><td>Due date reminders</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Ratings &amp; reviews</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Add photos</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+
+        <tr class="section-row"><td colspan="4">Support</td></tr>
+        <tr><td>Email &amp; chat support</td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+        <tr><td>Priority queue</td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-x-circle cross"></i></td><td><i class="bi bi-check-circle-fill check"></i></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="text-align:center;margin-top:20px;font-size:.85rem;color:#94A3B8">Need help deciding? <a href="mailto:support@zayroninfotech.com" style="color:#F97316">Contact Support</a></p>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;border:1.5px solid #E2E8F0">
+      <div class="modal-header" style="border-bottom:1px solid #F1F5F9;padding:24px 28px">
+        <div>
+          <h5 class="modal-title fw-800" style="color:#0F172A" id="upgrade-modal-title">Upgrade to Plus</h5>
+          <div style="font-size:.8rem;color:#64748B" id="upgrade-modal-sub">Billed monthly • Cancel anytime</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:24px 28px">
+        <div id="not-logged-in-msg" class="d-none" style="text-align:center;padding:20px 0">
+          <i class="bi bi-person-lock" style="font-size:2.5rem;color:#F97316;display:block;margin-bottom:12px"></i>
+          <div style="font-weight:700;color:#0F172A;margin-bottom:8px">Login Required</div>
+          <div style="color:#64748B;font-size:.9rem;margin-bottom:20px">Please login or create an account to upgrade your plan.</div>
+          <a href="/auth/login/" class="btn btn-primary px-4 me-2">Login</a>
+          <a href="/auth/register/" class="btn btn-outline-secondary px-4">Register</a>
+        </div>
+        <div id="payment-section">
+          <div class="razorpay-info mb-4">
+            <i class="bi bi-shield-check me-2"></i>Secure payment powered by <strong>Razorpay</strong>. Your data is 100% safe.
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F1F5F9">
+            <span style="color:#64748B">Plan</span>
+            <span style="font-weight:700;color:#0F172A" id="order-plan-label">Plus</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F1F5F9">
+            <span style="color:#64748B">Amount</span>
+            <span style="font-weight:700;color:#0F172A;font-size:1.1rem" id="order-amount-label">₹1,499</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:14px 0">
+            <span style="color:#64748B">Duration</span>
+            <span style="font-weight:600;color:#0F172A">30 days</span>
+          </div>
+          <div id="payments-disabled-msg" class="d-none" style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 16px;font-size:.85rem;color:#D97706;margin-top:12px">
+            <i class="bi bi-exclamation-triangle me-2"></i>Online payments are not yet configured. Please contact <a href="mailto:support@zayroninfotech.com" style="color:#D97706;font-weight:600">support</a> to upgrade.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #F1F5F9;padding:16px 28px;gap:8px">
+        <button class="btn btn-primary px-5 fw-700" id="pay-btn" onclick="startPayment()">
+          <i class="bi bi-lock-fill me-2"></i>Pay Securely
+        </button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Zayron Infotech Pvt. Ltd. · <a href="/pricing/">Pricing</a> · <a href="mailto:support@zayroninfotech.com">Support</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let selectedPlan = 'plus';
+let pricingData = {};
+const upgradeModal = new bootstrap.Modal(document.getElementById('upgradeModal'));
+const IS_LOGGED_IN = (document.cookie.includes('access_token') || localStorage.getItem('access_token'));
+
+// Load pricing from API
+fetch('/api/subscriptions/pricing-config/')
+  .then(r => r.json())
+  .then(res => {
+    if (!res.success) return;
+    pricingData = res.data;
+    const plusAmt = (pricingData.plus_price / 100).toLocaleString('en-IN');
+    const premAmt = (pricingData.premium_price / 100).toLocaleString('en-IN');
+    document.getElementById('plus-price-display').innerHTML = `₹${plusAmt}<sub>/mo</sub>`;
+    document.getElementById('premium-price-display').innerHTML = `₹${premAmt}<sub>/mo</sub>`;
+  }).catch(() => {});
+
+function openUpgrade(plan) {
+  selectedPlan = plan;
+  const token = localStorage.getItem('access_token');
+  document.getElementById('upgrade-modal-title').textContent = `Upgrade to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+
+  if (!token) {
+    document.getElementById('not-logged-in-msg').classList.remove('d-none');
+    document.getElementById('payment-section').classList.add('d-none');
+    document.getElementById('pay-btn').classList.add('d-none');
+  } else {
+    document.getElementById('not-logged-in-msg').classList.add('d-none');
+    document.getElementById('payment-section').classList.remove('d-none');
+    document.getElementById('pay-btn').classList.remove('d-none');
+
+    const price = plan === 'plus' ? pricingData.plus_price : pricingData.premium_price;
+    const priceInRs = price ? (price / 100).toLocaleString('en-IN') : '—';
+    document.getElementById('order-plan-label').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+    document.getElementById('order-amount-label').textContent = `₹${priceInRs}`;
+
+    if (!pricingData.is_payments_enabled) {
+      document.getElementById('payments-disabled-msg').classList.remove('d-none');
+      document.getElementById('pay-btn').disabled = true;
+    } else {
+      document.getElementById('payments-disabled-msg').classList.add('d-none');
+      document.getElementById('pay-btn').disabled = false;
+    }
+  }
+  upgradeModal.show();
+}
+
+async function startPayment() {
+  const token = localStorage.getItem('access_token');
+  if (!token) { location.href = '/auth/login/'; return; }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating order…';
+
+  const res = await fetch('/api/subscriptions/create-order/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ plan: selectedPlan }),
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Pay Securely';
+
+  if (!res.success) {
+    alert(res.message || 'Failed to create order.');
+    return;
+  }
+
+  const opts = {
+    key: res.data.key_id,
+    amount: res.data.amount,
+    currency: res.data.currency,
+    name: 'Zayro ₹ Invoice',
+    description: `${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan - 30 days`,
+    order_id: res.data.order_id,
+    handler: async function(response) {
+      const verRes = await fetch('/api/subscriptions/verify-payment/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ...response, plan: selectedPlan }),
+      }).then(r => r.json());
+      if (verRes.success) {
+        upgradeModal.hide();
+        alert(`✅ ${verRes.message} Redirecting to dashboard…`);
+        location.href = '/';
+      } else {
+        alert('Payment verification failed: ' + verRes.message);
+      }
+    },
+    theme: { color: '#F97316' },
+  };
+  const rzp = new Razorpay(opts);
+  rzp.open();
+}
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+</body>
+</html>

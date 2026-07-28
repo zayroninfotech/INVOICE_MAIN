@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (RegisterView, LoginView, RefreshTokenView,
                     MeView, ChangePasswordView, UserListView, UserDetailView,
+                    UserStatsView, UserResetPasswordView,
                     BusinessProfileView, BusinessProfileLogoView)
 
 urlpatterns = [
@@ -15,4 +16,6 @@ urlpatterns = [
     # Superadmin: user management
     path('users/', UserListView.as_view(), name='user_list'),
     path('users/<str:pk>/', UserDetailView.as_view(), name='user_detail'),
+    path('users/<str:pk>/stats/', UserStatsView.as_view(), name='user_stats'),
+    path('users/<str:pk>/reset-password/', UserResetPasswordView.as_view(), name='user_reset_password'),
 ]

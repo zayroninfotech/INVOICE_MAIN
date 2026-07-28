@@ -48,10 +48,25 @@ class InvoiceListCreateView(APIView):
         })
 
     def post(self, request):
+        # Superadmin has no limits
+        if getattr(request.user, 'role', '') != 'superadmin':
+            from apps.subscriptions.models import Subscription
+            sub = Subscription.objects(user_id=str(request.user.pk)).first()
+            if not sub:
+                sub = Subscription(user_id=str(request.user.pk)).save()
+            can, reason = sub.can_create_invoice()
+            if not can:
+                return error(reason, {"upgrade_required": True}, status=402)
+
         serializer = InvoiceSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
         invoice = serializer.save()
+
+        # Increment usage counter
+        if getattr(request.user, 'role', '') != 'superadmin':
+            sub.increment_usage()
+
         return success(InvoiceDetailSerializer(invoice).data, "Invoice created.", 201)
 
 

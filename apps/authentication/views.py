@@ -11,6 +11,8 @@ from utils.response import success, error
 import jwt
 import os
 import uuid
+import secrets
+import string
 
 
 class RegisterView(APIView):
@@ -21,6 +23,12 @@ class RegisterView(APIView):
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
         user = serializer.save()
+        # Auto-create free subscription
+        try:
+            from apps.subscriptions.models import Subscription
+            Subscription(user_id=str(user.pk)).save()
+        except Exception:
+            pass
         tokens = generate_tokens(user)
         return success({'user': UserSerializer(user).data, 'tokens': tokens}, "Registration successful.", 201)
 
@@ -159,6 +167,79 @@ class UserDetailView(APIView):
         user.is_active = False
         user.save()
         return success(message="User deactivated.")
+
+
+class UserStatsView(APIView):
+    """Superadmin: per-user activity stats."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request, pk):
+        from apps.invoices.models import Invoice
+        from apps.customers.models import Customer
+        from apps.payments.models import Payment
+
+        user = User.objects(pk=pk).first()
+        if not user:
+            return error("User not found.", status=404)
+
+        uid = str(user.pk)
+        invoices = Invoice.objects(created_by=uid)
+        inv_count = invoices.count()
+        revenue = sum(float(i.grand_total) for i in invoices)
+        paid_count = invoices.filter(status='Paid').count()
+        overdue_count = invoices.filter(status='Overdue').count()
+        cust_count = Customer.objects(created_by=uid).count()
+
+        # Recent 5 invoices
+        recent = invoices.order_by('-created_at').limit(5)
+        recent_list = [{
+            'invoice_number': i.invoice_number,
+            'customer_name': i.customer_name,
+            'grand_total': float(i.grand_total),
+            'status': i.status,
+            'invoice_date': i.invoice_date.strftime('%d %b %Y') if i.invoice_date else '',
+        } for i in recent]
+
+        bp = BusinessProfile.objects(user_id=uid).first()
+        company = bp.company_name if bp else ''
+
+        return success({
+            'user': UserSerializer(user).data,
+            'company_name': company,
+            'invoice_count': inv_count,
+            'revenue': round(revenue, 2),
+            'paid_count': paid_count,
+            'overdue_count': overdue_count,
+            'customer_count': cust_count,
+            'recent_invoices': recent_list,
+        })
+
+
+class UserResetPasswordView(APIView):
+    """Superadmin: generate and set a new password for a user."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request, pk):
+        user = User.objects(pk=pk).first()
+        if not user:
+            return error("User not found.", status=404)
+        if str(user.pk) == str(request.user.pk):
+            return error("Cannot reset your own password here.")
+
+        new_password = request.data.get('new_password', '').strip()
+        if not new_password:
+            # Auto-generate a secure 12-char password
+            alphabet = string.ascii_letters + string.digits + '!@#$'
+            new_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+
+        if len(new_password) < 6:
+            return error("Password must be at least 6 characters.")
+
+        user.password = make_password(new_password)
+        user.save()
+        return success({'new_password': new_password}, "Password reset successfully.")
 
 
 # ── Business Profile ─────────────────────────────────────────────────────────

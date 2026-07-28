@@ -22,6 +22,25 @@
 
 {% block content %}
 
+<!-- ── Onboarding Checklist (shown only if setup incomplete) ── -->
+<div id="onboarding-banner" style="display:none;margin-bottom:24px">
+  <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:14px;padding:24px 28px;color:#fff">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:40px;height:40px;background:#F97316;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="bi bi-rocket-takeoff-fill" style="font-size:1.1rem"></i>
+      </div>
+      <div>
+        <div style="font-size:1.1rem;font-weight:700">Welcome to Zayro ₹ Invoice!</div>
+        <div style="color:#94A3B8;font-size:.85rem">Complete these steps to start creating invoices</div>
+      </div>
+      <button onclick="document.getElementById('onboarding-banner').style.display='none'" style="margin-left:auto;background:none;border:none;color:#64748B;font-size:1.2rem;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="row g-3" id="onboarding-steps">
+      <!-- steps injected by JS -->
+    </div>
+  </div>
+</div>
+
 <!-- Superadmin: User stats row -->
 <div id="superadmin-cards" class="row g-3 mb-4" style="display:none">
   <div class="col-sm-4">
@@ -239,5 +258,64 @@ async function loadDashboard() {
     </tr>`).join('');
 }
 loadDashboard();
+
+async function loadOnboarding() {
+  const [bpRes, custRes, prodRes, invRes] = await Promise.all([
+    API.get('/api/auth/business-profile/'),
+    API.get('/api/customers/?page_size=1'),
+    API.get('/api/products/?page_size=1'),
+    API.get('/api/invoices/?page_size=1'),
+  ]);
+
+  const bp   = bpRes.success ? bpRes.data : {};
+  const hasProfile  = bp.company_name && bp.company_name.trim() !== '';
+  const hasCustomer = custRes.success && custRes.data.total > 0;
+  const hasProduct  = prodRes.success && prodRes.data.total > 0;
+  const hasInvoice  = invRes.success  && invRes.data.total > 0;
+
+  if (hasProfile && hasCustomer && hasProduct && hasInvoice) return; // all done, hide
+
+  const steps = [
+    { done: hasProfile,  icon: 'bi-building',       label: 'Business Profile', sub: 'Add your company name & logo', link: '/auth/profile/' },
+    { done: hasCustomer, icon: 'bi-person-plus-fill',label: 'Add a Customer',   sub: 'Who you will bill',            link: '/customers/' },
+    { done: hasProduct,  icon: 'bi-box-fill',        label: 'Add a Product',    sub: 'What you are selling',         link: '/products/' },
+    { done: hasInvoice,  icon: 'bi-file-earmark-text-fill', label: 'Create Invoice', sub: 'Generate your first PDF', link: '/invoices/?new=1' },
+  ];
+
+  const completedCount = steps.filter(s => s.done).length;
+  const pct = Math.round((completedCount / steps.length) * 100);
+
+  document.getElementById('onboarding-steps').innerHTML = `
+    <div class="col-12" style="margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:.8rem;color:#94A3B8">${completedCount} of ${steps.length} steps completed</span>
+        <span style="font-size:.8rem;font-weight:700;color:#F97316">${pct}%</span>
+      </div>
+      <div style="background:#334155;border-radius:99px;height:6px">
+        <div style="background:#F97316;width:${pct}%;height:6px;border-radius:99px;transition:width .4s"></div>
+      </div>
+    </div>
+    ${steps.map(s => `
+    <div class="col-6 col-md-3">
+      <a href="${s.link}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;
+        background:${s.done ? 'rgba(34,197,94,.1)' : 'rgba(255,255,255,.05)'};
+        border:1.5px solid ${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'};
+        text-decoration:none;transition:all .15s"
+        onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'}'">
+        <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+          background:${s.done ? '#22C55E' : '#F97316'}">
+          <i class="bi ${s.done ? 'bi-check-lg' : s.icon}" style="color:#fff;font-size:.95rem"></i>
+        </div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:${s.done ? '#86EFAC' : '#fff'}">${s.label}</div>
+          <div style="font-size:.72rem;color:#64748B">${s.sub}</div>
+        </div>
+      </a>
+    </div>`).join('')}
+  `;
+
+  document.getElementById('onboarding-banner').style.display = '';
+}
+loadOnboarding();
 </script>
 {% endblock %}

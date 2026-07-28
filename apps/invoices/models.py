@@ -52,7 +52,9 @@ class Invoice(me.Document):
 
     def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()
-        if self.status in ['Draft', 'Sent'] and self.due_date and self.due_date < datetime.utcnow():
+        from django.utils import timezone
+        now = timezone.now() if self.due_date and self.due_date.tzinfo else datetime.utcnow()
+        if self.status in ['Draft', 'Sent'] and self.due_date and self.due_date < now:
             self.status = 'Overdue'
         return super().save(*args, **kwargs)
 

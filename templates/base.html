@@ -281,6 +281,19 @@
       </a>
     </div>
 
+    <!-- Upgrade / Plan (non-superadmin) -->
+    <div id="plan-nav-section">
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Your Plan</div>
+      <div class="nav-item-wrap">
+        <a href="/pricing/upgrade/" class="nav-link-main {% block nav_upgrade %}{% endblock %}" id="plan-nav-link" style="color:#F97316">
+          <span class="nav-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+          <span id="plan-nav-label">Upgrade Plan</span>
+          <span id="plan-nav-badge" style="margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;background:#FFF7ED;color:#F97316">FREE</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Admin section (superadmin only) -->
     <div id="admin-section" style="display:none">
       <div class="sidebar-divider"></div>
@@ -289,6 +302,12 @@
         <a href="/auth/users/" class="nav-link-main {% block nav_users %}{% endblock %}">
           <span class="nav-icon"><i class="bi bi-shield-person"></i></span>
           User Management
+        </a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="/pricing/manage/" class="nav-link-main {% block nav_subscriptions %}{% endblock %}">
+          <span class="nav-icon"><i class="bi bi-diagram-3"></i></span>
+          Subscriptions
         </a>
       </div>
     </div>
@@ -347,6 +366,36 @@
 </div>
 
 <div id="toast-container"></div>
+
+<!-- ── Upgrade Limit Modal (shown when invoice limit hit) ── -->
+<div class="modal fade" id="limitModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:32px;text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(249,115,22,.15);border:2px solid #F97316;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.8rem">⚡</div>
+        <div style="font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:8px">Plan Limit Reached</div>
+        <div style="color:#94A3B8;font-size:.9rem;max-width:300px;margin:0 auto" id="limit-msg">You've reached your daily invoice limit.</div>
+      </div>
+      <div style="padding:28px">
+        <div style="display:flex;gap:12px;margin-bottom:20px">
+          <div style="flex:1;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:.75rem;color:#F97316;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Plus</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#0F172A" id="lm-plus-price">₹1,499<span style="font-size:.8rem;font-weight:500;color:#64748B">/mo</span></div>
+            <div style="font-size:.8rem;color:#64748B;margin-top:4px">10 invoices/month</div>
+            <button class="btn btn-primary w-100 mt-3" style="font-size:.85rem;padding:8px" onclick="goUpgrade('plus')"><i class="bi bi-arrow-up-circle me-1"></i>Upgrade to Plus</button>
+          </div>
+          <div style="flex:1;background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:.75rem;color:#7C3AED;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Premium</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#0F172A" id="lm-premium-price">₹2,299<span style="font-size:.8rem;font-weight:500;color:#64748B">/mo</span></div>
+            <div style="font-size:.8rem;color:#64748B;margin-top:4px">Unlimited invoices</div>
+            <button class="btn w-100 mt-3" style="background:#7C3AED;color:#fff;font-size:.85rem;padding:8px;font-weight:600" onclick="goUpgrade('premium')"><i class="bi bi-gem me-1"></i>Upgrade to Premium</button>
+          </div>
+        </div>
+        <button class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -445,6 +494,71 @@
 
   if (role === 'superadmin') {
     document.getElementById('admin-section').style.display = 'block';
+    document.getElementById('plan-nav-section').style.display = 'none';
+  }
+
+  /* ── Plan badge in sidebar ── */
+  const _limitModal = new bootstrap.Modal(document.getElementById('limitModal'));
+
+  async function loadUserPlan() {
+    if (role === 'superadmin') return;
+    try {
+      const res = await API.get('/api/subscriptions/my/');
+      if (!res.success) return;
+      const s = res.data;
+      const planColors = { free:'background:#F1F5F9;color:#64748B', plus:'background:#FFF7ED;color:#F97316', premium:'background:#F5F3FF;color:#7C3AED' };
+      const badge = document.getElementById('plan-nav-badge');
+      if (badge) {
+        badge.textContent = s.plan.toUpperCase();
+        badge.style.cssText = `margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;${planColors[s.plan] || ''}`;
+      }
+      const label = document.getElementById('plan-nav-label');
+      if (label) label.textContent = s.plan === 'free' ? 'Upgrade Plan' : `${s.plan.charAt(0).toUpperCase()+s.plan.slice(1)} Plan`;
+
+      // Show daily usage progress for free plan
+      if (s.plan === 'free' && s.daily_limit) {
+        const used = s.invoices_used_today || 0;
+        const pct = Math.min(100, Math.round(used / s.daily_limit * 100));
+        const link = document.getElementById('plan-nav-link');
+        if (link) {
+          const bar = document.createElement('div');
+          bar.style.cssText = 'width:100%;margin-top:6px;padding:0 4px';
+          bar.innerHTML = `<div style="font-size:.7rem;color:#94A3B8;margin-bottom:3px">${used}/${s.daily_limit} invoices today</div>
+            <div style="height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${pct>=100?'#EF4444':'#F97316'};border-radius:4px;transition:width .3s"></div>
+            </div>`;
+          link.parentElement.appendChild(bar);
+        }
+      }
+    } catch(e) {}
+  }
+
+  /* Load pricing for limit modal */
+  async function loadPricingForModal() {
+    try {
+      const res = await API.get('/api/subscriptions/pricing-config/');
+      if (!res.success) return;
+      const d = res.data;
+      const fmt = v => (v/100).toLocaleString('en-IN');
+      document.getElementById('lm-plus-price').innerHTML = `₹${fmt(d.plus_price)}<span style="font-size:.8rem;font-weight:500;color:#64748B">/mo</span>`;
+      document.getElementById('lm-premium-price').innerHTML = `₹${fmt(d.premium_price)}<span style="font-size:.8rem;font-weight:500;color:#64748B">/mo</span>`;
+    } catch(e) {}
+  }
+
+  function showLimitModal(msg) {
+    document.getElementById('limit-msg').textContent = msg || "You've reached your invoice limit.";
+    _limitModal.show();
+  }
+
+  function goUpgrade(plan) {
+    _limitModal.hide();
+    window.location.href = `/pricing/upgrade/?plan=${plan}`;
+  }
+
+  // Load plan info on every page
+  if (localStorage.getItem('access_token')) {
+    loadUserPlan();
+    loadPricingForModal();
   }
   // All roles (user/admin/superadmin) now have full access
 </script>

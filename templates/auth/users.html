@@ -97,7 +97,6 @@
   <!-- ── FORM VIEW ── -->
   <div id="form-view" class="d-none">
     <div class="card-ms">
-      <!-- Header band -->
       <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:10px 10px 0 0;padding:20px 28px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:12px">
           <i class="bi bi-person-plus-fill" style="font-size:1.3rem;color:#FB923C"></i>
@@ -105,13 +104,12 @@
             <div style="font-size:1rem;font-weight:700;color:#fff">New User</div>
             <div style="font-size:.75rem;color:#94A3B8">Create a new account</div>
           </div>
-          <span id="form-badge" style="margin-left:8px;background:#DCFCE7;color:#15803D;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px">NEW</span>
+          <span style="margin-left:8px;background:#DCFCE7;color:#15803D;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px">NEW</span>
         </div>
         <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="closeForm()">
           <i class="bi bi-arrow-left me-1"></i>Back to List
         </button>
       </div>
-
       <div style="padding:28px">
         <form id="user-form" onsubmit="submitForm(event)">
           <div class="row g-4">
@@ -141,7 +139,6 @@
               </select>
             </div>
           </div>
-
           <div style="display:flex;gap:12px;margin-top:32px;padding-top:20px;border-top:1px solid #F1F5F9">
             <button type="submit" class="btn btn-primary px-5" id="submit-btn">
               <i class="bi bi-check-lg me-2"></i>Create User
@@ -149,6 +146,104 @@
             <button type="button" class="btn btn-outline-secondary px-4" onclick="closeForm()">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DETAIL VIEW (Phase 2) ── -->
+  <div id="detail-view" class="d-none">
+    <!-- Header band -->
+    <div class="card-ms mb-4">
+      <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:10px 10px 0 0;padding:20px 28px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div id="dv-avatar" style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#F97316,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;flex-shrink:0"></div>
+          <div>
+            <div style="font-size:1rem;font-weight:700;color:#fff" id="dv-username"></div>
+            <div style="font-size:.8rem;color:#94A3B8" id="dv-email"></div>
+          </div>
+          <span id="dv-role-badge" style="margin-left:8px;font-size:.72rem;font-weight:700;padding:3px 12px;border-radius:20px"></span>
+        </div>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="closeDetail()">
+          <i class="bi bi-arrow-left me-1"></i>Back to List
+        </button>
+      </div>
+
+      <!-- User quick-actions bar -->
+      <div style="padding:16px 28px;border-bottom:1px solid #F1F5F9;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:.8rem;color:#64748B;margin-right:4px">Quick Actions:</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="openEditFromDetail()"><i class="bi bi-shield-lock me-1"></i>Change Role</button>
+        <button class="btn btn-sm" id="dv-toggle-btn" onclick="toggleActiveFromDetail()"></button>
+        <button class="btn btn-sm btn-outline-danger" onclick="openResetPwdModal()"><i class="bi bi-key me-1"></i>Reset Password</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4" id="dv-stats-row">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Invoices</div>
+          <div class="stat-value" id="dv-inv-count">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value" id="dv-revenue" style="color:#15803D">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Paid Invoices</div>
+          <div class="stat-value" id="dv-paid" style="color:#0284C7">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Customers</div>
+          <div class="stat-value" id="dv-customers">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company + Recent Invoices -->
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card-ms h-100">
+          <div style="padding:20px;border-bottom:1px solid #F1F5F9">
+            <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-building me-2 text-primary"></i>Business Info</div>
+          </div>
+          <div style="padding:20px">
+            <div style="margin-bottom:16px">
+              <div style="font-size:.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Company Name</div>
+              <div style="font-weight:600;color:#0F172A" id="dv-company">—</div>
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Status</div>
+              <div id="dv-status-badge"></div>
+            </div>
+            <div>
+              <div style="font-size:.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Overdue Invoices</div>
+              <div style="font-weight:700;color:#EF4444;font-size:1.3rem" id="dv-overdue">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card-ms">
+          <div style="padding:18px 20px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-receipt me-2 text-primary"></i>Recent Invoices</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="ms-table">
+              <thead>
+                <tr><th>#</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody id="dv-invoices-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:30px;color:#94A3B8">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -179,13 +274,45 @@
     </div>
   </div>
 </div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPwdModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:12px;border:1.5px solid #E2E8F0">
+      <div class="modal-header" style="border-bottom:1px solid #F1F5F9;padding:20px 24px">
+        <h6 class="modal-title fw-700"><i class="bi bi-key me-2 text-warning"></i>Reset Password</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px">
+        <div style="color:#64748B;font-size:.85rem;margin-bottom:16px">Resetting password for: <strong id="reset-modal-username" style="color:#0F172A"></strong></div>
+        <label class="form-label">New Password</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" id="reset-pwd-input" placeholder="Leave blank to auto-generate">
+          <button class="btn btn-outline-secondary" type="button" onclick="generatePassword()"><i class="bi bi-shuffle"></i> Generate</button>
+        </div>
+        <div style="font-size:.8rem;color:#94A3B8">Leave blank to auto-generate a secure password. The new password will be shown after saving.</div>
+        <div id="new-pwd-result" class="d-none" style="margin-top:16px;padding:14px;background:#DCFCE7;border:1.5px solid #86EFAC;border-radius:8px">
+          <div style="font-size:.8rem;color:#15803D;font-weight:600;margin-bottom:4px"><i class="bi bi-check-circle me-1"></i>Password Reset Successfully</div>
+          <div style="font-family:monospace;font-size:1rem;color:#0F172A;font-weight:700" id="new-pwd-display"></div>
+          <div style="font-size:.75rem;color:#64748B;margin-top:6px">Share this with the user and ask them to change it after login.</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #F1F5F9;padding:16px 24px;gap:8px">
+        <button class="btn btn-warning btn-sm px-4" id="reset-pwd-btn" onclick="doResetPassword()"><i class="bi bi-key me-1"></i>Reset Password</button>
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let page = 1, total = 0, search = '', roleFilter = '';
 let editingUserId = null;
+let detailUserId = null, detailUserData = null;
 const modal = new bootstrap.Modal(document.getElementById('editModal'));
+const resetPwdModal = new bootstrap.Modal(document.getElementById('resetPwdModal'));
 
 if (window.USER_ROLE !== 'superadmin') {
   document.getElementById('access-denied').classList.remove('d-none');
@@ -197,22 +324,19 @@ if (window.USER_ROLE !== 'superadmin') {
   if (params.get('new')) openForm();
 }
 
-/* ── View toggle ── */
-function openForm() {
-  document.getElementById('list-view').classList.add('d-none');
-  document.getElementById('form-view').classList.remove('d-none');
-  document.getElementById('user-form').reset();
-  document.getElementById('f-username').focus();
+/* ── View toggle helpers ── */
+function showView(id) {
+  ['list-view','form-view','detail-view'].forEach(v => {
+    document.getElementById(v).classList.toggle('d-none', v !== id);
+  });
 }
 
-function closeForm() {
-  document.getElementById('form-view').classList.add('d-none');
-  document.getElementById('list-view').classList.remove('d-none');
-}
+function openForm()   { showView('form-view'); document.getElementById('user-form').reset(); document.getElementById('f-username').focus(); }
+function closeForm()  { showView('list-view'); }
+function closeDetail(){ showView('list-view'); }
 
 function togglePwd() {
-  const inp = document.getElementById('f-password');
-  const eye = document.getElementById('pwd-eye');
+  const inp = document.getElementById('f-password'), eye = document.getElementById('pwd-eye');
   if (inp.type === 'password') { inp.type = 'text'; eye.className = 'bi bi-eye-slash'; }
   else { inp.type = 'password'; eye.className = 'bi bi-eye'; }
 }
@@ -223,40 +347,35 @@ async function submitForm(e) {
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
-
   const payload = {
     username: document.getElementById('f-username').value.trim(),
     email:    document.getElementById('f-email').value.trim(),
     password: document.getElementById('f-password').value,
     role:     document.getElementById('f-role').value,
   };
-
   const res = await API.post('/api/auth/users/', payload);
   btn.disabled = false;
   btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Create User';
-
-  if (res.success) {
-    toast('User created successfully.');
-    closeForm();
-    loadUsers();
-    loadStats();
-  } else {
+  if (res.success) { toast('User created successfully.'); closeForm(); loadUsers(); loadStats(); }
+  else {
     const msgs = res.errors ? Object.values(res.errors).flat().join(' ') : res.message;
     toast(msgs || 'Failed to create user.', 'error');
   }
 }
 
-/* ── Stats & list ── */
+/* ── Stats ── */
 async function loadStats() {
   const res = await API.get('/api/dashboard/stats/');
   if (!res.success) return;
-  document.getElementById('total-users').textContent    = res.data.total_users ?? 0;
-  document.getElementById('total-admins').textContent   = res.data.total_admins ?? 0;
+  document.getElementById('total-users').textContent     = res.data.total_users ?? 0;
+  document.getElementById('total-admins').textContent    = res.data.total_admins ?? 0;
   document.getElementById('total-reg-users').textContent = res.data.total_regular_users ?? 0;
 }
 
+/* ── User list ── */
 async function loadUsers() {
   const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading…</td></tr>';
   const res = await API.get(`/api/auth/users/?page=${page}&search=${encodeURIComponent(search)}&role=${encodeURIComponent(roleFilter)}`);
   if (!res.success) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#EF4444">Failed to load. Please refresh.</td></tr>';
@@ -285,6 +404,9 @@ async function loadUsers() {
       }</td>
       <td style="color:#64748B;font-size:.85rem">${new Date(u.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
       <td style="white-space:nowrap">
+        <button class="btn-icon btn-icon-primary me-1" onclick="openDetail('${u.id}')" title="View Details">
+          <i class="bi bi-eye"></i>
+        </button>
         <button class="btn-icon btn-icon-primary me-1" onclick="openEdit('${u.id}','${u.username}','${u.role}')" title="Change Role">
           <i class="bi bi-shield-lock"></i>
         </button>
@@ -299,6 +421,137 @@ async function loadUsers() {
   document.getElementById('next-btn').disabled = page * 20 >= total;
 }
 
+/* ── User Detail (Phase 2) ── */
+async function openDetail(userId) {
+  detailUserId = userId;
+  showView('detail-view');
+  // Reset stats
+  ['dv-inv-count','dv-revenue','dv-paid','dv-customers','dv-overdue'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  document.getElementById('dv-invoices-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading…</td></tr>';
+
+  const res = await API.get(`/api/auth/users/${userId}/stats/`);
+  if (!res.success) {
+    toast('Failed to load user data.', 'error');
+    closeDetail();
+    return;
+  }
+  const d = res.data;
+  detailUserData = d;
+
+  // Header
+  document.getElementById('dv-avatar').textContent    = d.user.username[0].toUpperCase();
+  document.getElementById('dv-username').textContent  = d.user.username;
+  document.getElementById('dv-email').textContent     = d.user.email;
+
+  const roleBadge = document.getElementById('dv-role-badge');
+  const roleColors = { superadmin: '#FEF3C7:#D97706', admin: '#FFF7ED:#F97316', user: '#F1F5F9:#64748B' };
+  const [bg, fg] = (roleColors[d.user.role] || '#F1F5F9:#64748B').split(':');
+  roleBadge.style.background = bg; roleBadge.style.color = fg;
+  roleBadge.textContent = d.user.role;
+
+  // Toggle btn
+  const toggleBtn = document.getElementById('dv-toggle-btn');
+  if (d.user.is_active) {
+    toggleBtn.className = 'btn btn-sm btn-outline-danger';
+    toggleBtn.innerHTML = '<i class="bi bi-person-x me-1"></i>Deactivate';
+  } else {
+    toggleBtn.className = 'btn btn-sm btn-outline-success';
+    toggleBtn.innerHTML = '<i class="bi bi-person-check me-1"></i>Activate';
+  }
+
+  // Status badge
+  const sbEl = document.getElementById('dv-status-badge');
+  sbEl.innerHTML = d.user.is_active
+    ? '<span style="background:#DCFCE7;color:#15803D;border-radius:20px;padding:3px 12px;font-size:.8rem;font-weight:600">Active</span>'
+    : '<span style="background:#FEE2E2;color:#B91C1C;border-radius:20px;padding:3px 12px;font-size:.8rem;font-weight:600">Inactive</span>';
+
+  // Company
+  document.getElementById('dv-company').textContent = d.company_name || '(not set)';
+
+  // Stats
+  document.getElementById('dv-inv-count').textContent = d.invoice_count;
+  document.getElementById('dv-revenue').textContent   = '₹' + fmtNum(d.revenue);
+  document.getElementById('dv-paid').textContent      = d.paid_count;
+  document.getElementById('dv-customers').textContent = d.customer_count;
+  document.getElementById('dv-overdue').textContent   = d.overdue_count;
+
+  // Recent invoices
+  const invTbody = document.getElementById('dv-invoices-tbody');
+  if (!d.recent_invoices.length) {
+    invTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#94A3B8">No invoices yet.</td></tr>';
+  } else {
+    const statusColor = { Paid:'#15803D:#DCFCE7', Draft:'#64748B:#F1F5F9', Sent:'#0284C7:#E0F2FE', Overdue:'#B91C1C:#FEE2E2', Partial:'#D97706:#FEF3C7', Cancelled:'#9CA3AF:#F3F4F6' };
+    invTbody.innerHTML = d.recent_invoices.map(inv => {
+      const [fg2, bg2] = (statusColor[inv.status] || '#64748B:#F1F5F9').split(':');
+      return `<tr>
+        <td style="font-weight:600;color:#0F172A">${inv.invoice_number}</td>
+        <td style="color:#64748B">${inv.customer_name}</td>
+        <td style="font-weight:600">₹${fmtNum(inv.grand_total)}</td>
+        <td><span style="background:${bg2};color:${fg2};border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600">${inv.status}</span></td>
+        <td style="color:#94A3B8;font-size:.85rem">${inv.invoice_date}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function openEditFromDetail() {
+  if (!detailUserData) return;
+  editingUserId = detailUserId;
+  document.getElementById('modal-username').textContent = detailUserData.user.username;
+  document.getElementById('modal-role').value = detailUserData.user.role;
+  modal.show();
+}
+
+async function toggleActiveFromDetail() {
+  if (!detailUserData) return;
+  const activate = !detailUserData.user.is_active;
+  const label = activate ? 'activate' : 'deactivate';
+  if (!confirm(`${label.charAt(0).toUpperCase() + label.slice(1)} user "${detailUserData.user.username}"?`)) return;
+  const res = activate
+    ? await API.patch(`/api/auth/users/${detailUserId}/`, { is_active: true })
+    : await API.del(`/api/auth/users/${detailUserId}/`);
+  if (res.success) { toast(`User ${label}d.`); openDetail(detailUserId); loadUsers(); loadStats(); }
+  else toast(res.message, 'error');
+}
+
+/* ── Reset Password (Phase 2) ── */
+function openResetPwdModal() {
+  if (!detailUserData) return;
+  document.getElementById('reset-modal-username').textContent = detailUserData.user.username;
+  document.getElementById('reset-pwd-input').value = '';
+  document.getElementById('new-pwd-result').classList.add('d-none');
+  document.getElementById('reset-pwd-btn').disabled = false;
+  resetPwdModal.show();
+}
+
+function generatePassword() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+  let pwd = '';
+  for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('reset-pwd-input').value = pwd;
+}
+
+async function doResetPassword() {
+  const btn = document.getElementById('reset-pwd-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resetting…';
+  const newPwd = document.getElementById('reset-pwd-input').value.trim();
+  const payload = newPwd ? { new_password: newPwd } : {};
+  const res = await API.post(`/api/auth/users/${detailUserId}/reset-password/`, payload);
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-key me-1"></i>Reset Password';
+  if (res.success) {
+    document.getElementById('new-pwd-display').textContent = res.data.new_password;
+    document.getElementById('new-pwd-result').classList.remove('d-none');
+    toast('Password reset successfully.');
+  } else {
+    toast(res.message || 'Failed to reset password.', 'error');
+  }
+}
+
+/* ── Edit role ── */
 function openEdit(id, username, currentRole) {
   editingUserId = id;
   document.getElementById('modal-username').textContent = username;
@@ -310,8 +563,11 @@ async function saveRole() {
   const role = document.getElementById('modal-role').value;
   const res = await API.patch(`/api/auth/users/${editingUserId}/`, { role });
   modal.hide();
-  if (res.success) { toast('Role updated.'); loadUsers(); loadStats(); }
-  else toast(res.message, 'error');
+  if (res.success) {
+    toast('Role updated.');
+    loadUsers(); loadStats();
+    if (detailUserId === editingUserId) openDetail(detailUserId);
+  } else toast(res.message, 'error');
 }
 
 async function toggleActive(id, username, activate) {
@@ -325,6 +581,10 @@ async function toggleActive(id, username, activate) {
 }
 
 function changePage(dir) { page += dir; loadUsers(); }
+
+function fmtNum(n) {
+  return parseFloat(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 let timer;
 document.getElementById('search').addEventListener('input', e => {

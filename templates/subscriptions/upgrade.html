@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}Upgrade Plan – Zayro ₹ Invoice{% endblock %}
+{% block page_title %}Upgrade Your Plan{% endblock %}
+
+{% block content %}
+<!-- Current Plan Banner -->
+<div id="current-plan-banner" class="mb-4" style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:12px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+  <div>
+    <div style="font-size:.8rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Your Current Plan</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.4rem;font-weight:800;color:#fff" id="cp-name">—</span>
+      <span id="cp-badge" style="font-size:.75rem;font-weight:700;padding:3px 12px;border-radius:20px"></span>
+    </div>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap">
+    <div style="text-align:center">
+      <div style="font-size:.75rem;color:#94A3B8">Today's Usage</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#fff" id="cp-today">—</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:.75rem;color:#94A3B8">This Month</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#fff" id="cp-month">—</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:.75rem;color:#94A3B8">Expires</div>
+      <div style="font-size:1rem;font-weight:600;color:#94A3B8" id="cp-expires">Never</div>
+    </div>
+  </div>
+</div>
+
+<!-- Plan Cards -->
+<div class="row g-4 mb-5">
+
+  <!-- Free -->
+  <div class="col-md-4">
+    <div class="card-ms h-100" style="position:relative;border:2px solid #E2E8F0" id="card-free">
+      <div style="padding:28px">
+        <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748B;margin-bottom:8px">Essentials</div>
+        <div style="font-size:2rem;font-weight:800;color:#0F172A;margin-bottom:4px">₹0</div>
+        <div style="font-size:.82rem;color:#94A3B8;margin-bottom:20px">forever free</div>
+        <button class="btn btn-outline-secondary w-100 mb-4" disabled id="free-btn">Current Plan</button>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i><strong>3 invoices</strong>/day</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i>Unlimited estimates</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i>PDF download</li>
+          <li style="padding:7px 0;font-size:.88rem;color:#CBD5E1;display:flex;align-items:center;gap:8px"><i class="bi bi-x-circle" style="color:#CBD5E1"></i>Business reports</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plus -->
+  <div class="col-md-4">
+    <div class="card-ms h-100" style="position:relative;border:2px solid #F97316;box-shadow:0 8px 32px rgba(249,115,22,.15)" id="card-plus">
+      <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#F97316;color:#fff;font-size:.72rem;font-weight:700;padding:4px 16px;border-radius:20px;white-space:nowrap">⭐ Most Popular</div>
+      <div style="padding:28px">
+        <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#F97316;margin-bottom:8px">Plus</div>
+        <div style="font-size:2rem;font-weight:800;color:#0F172A;margin-bottom:4px" id="plus-price">₹1,499<span style="font-size:1rem;font-weight:500;color:#64748B">/mo</span></div>
+        <div style="font-size:.82rem;color:#94A3B8;margin-bottom:20px">billed monthly</div>
+        <button class="btn btn-primary w-100 mb-4" id="plus-btn" onclick="startUpgrade('plus')"><i class="bi bi-arrow-up-circle me-2"></i>Upgrade to Plus</button>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i><strong>10 invoices</strong>/month</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i>Business reports</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i>Due date reminders</li>
+          <li style="padding:7px 0;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#16A34A"></i>Email &amp; chat support</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium -->
+  <div class="col-md-4">
+    <div class="card-ms h-100" style="position:relative;border:2px solid #7C3AED" id="card-premium">
+      <div style="padding:28px">
+        <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7C3AED;margin-bottom:8px">Premium</div>
+        <div style="font-size:2rem;font-weight:800;color:#0F172A;margin-bottom:4px" id="premium-price">₹2,299<span style="font-size:1rem;font-weight:500;color:#64748B">/mo</span></div>
+        <div style="font-size:.82rem;color:#94A3B8;margin-bottom:20px">billed monthly</div>
+        <button class="btn w-100 mb-4" style="background:#7C3AED;color:#fff;font-weight:700" id="premium-btn" onclick="startUpgrade('premium')"><i class="bi bi-gem me-2"></i>Upgrade to Premium</button>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#7C3AED"></i><strong>Unlimited</strong> invoices</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#7C3AED"></i>Premium templates</li>
+          <li style="padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#7C3AED"></i>Priority support 24/7</li>
+          <li style="padding:7px 0;font-size:.88rem;color:#475569;display:flex;align-items:center;gap:8px"><i class="bi bi-check-circle-fill" style="color:#7C3AED"></i>Version history</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bank Transfer Option -->
+<div class="card-ms mb-4" id="bank-section" style="display:none">
+  <div style="padding:20px 24px;border-bottom:1px solid #F1F5F9">
+    <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-bank me-2 text-primary"></i>Manual Bank Transfer</div>
+    <div style="font-size:.8rem;color:#94A3B8">Pay via NEFT/IMPS and contact support to activate your plan</div>
+  </div>
+  <div style="padding:20px 24px">
+    <div class="row g-3">
+      <div class="col-md-3"><div style="font-size:.75rem;color:#94A3B8;margin-bottom:4px">Account Holder</div><div style="font-weight:600;color:#0F172A" id="bank-holder">—</div></div>
+      <div class="col-md-3"><div style="font-size:.75rem;color:#94A3B8;margin-bottom:4px">Bank Name</div><div style="font-weight:600;color:#0F172A" id="bank-name">—</div></div>
+      <div class="col-md-3"><div style="font-size:.75rem;color:#94A3B8;margin-bottom:4px">Account Number</div><div style="font-weight:600;color:#0F172A" id="bank-account">—</div></div>
+      <div class="col-md-3"><div style="font-size:.75rem;color:#94A3B8;margin-bottom:4px">IFSC Code</div><div style="font-weight:600;color:#0F172A" id="bank-ifsc">—</div></div>
+    </div>
+    <div style="margin-top:16px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:12px 16px;font-size:.85rem;color:#D97706">
+      <i class="bi bi-info-circle me-2"></i>After transfer, email us at <strong>support@zayroninfotech.com</strong> with your transaction ID and username to activate your plan within 24 hours.
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+<script>
+let pricingConfig = {};
+let currentPlan = 'free';
+
+async function init() {
+  const [subRes, cfgRes] = await Promise.all([
+    API.get('/api/subscriptions/my/'),
+    API.get('/api/subscriptions/pricing-config/'),
+  ]);
+
+  if (subRes.success) {
+    const s = subRes.data;
+    currentPlan = s.plan;
+    document.getElementById('cp-name').textContent = s.plan.charAt(0).toUpperCase() + s.plan.slice(1);
+    const planColors = { free:'background:#F1F5F9;color:#64748B', plus:'background:#FFF7ED;color:#F97316', premium:'background:#F5F3FF;color:#7C3AED' };
+    const badge = document.getElementById('cp-badge');
+    badge.style.cssText = planColors[s.plan] || '';
+    badge.textContent = s.plan === 'free' ? 'Free Forever' : s.plan === 'plus' ? 'Active' : 'Active';
+    const daily = s.daily_limit ? `${s.invoices_used_today} / ${s.daily_limit}` : `${s.invoices_used_today} (unlimited)`;
+    const monthly = s.monthly_limit ? `${s.invoices_used_month} / ${s.monthly_limit}` : `${s.invoices_used_month} (unlimited)`;
+    document.getElementById('cp-today').textContent = daily;
+    document.getElementById('cp-month').textContent = monthly;
+    document.getElementById('cp-expires').textContent = s.end_date ? new Date(s.end_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'Never';
+
+    // Highlight current plan card
+    ['free','plus','premium'].forEach(p => {
+      const card = document.getElementById(`card-${p}`);
+      if (p === s.plan) card.style.opacity = '1';
+      else card.style.opacity = '.85';
+    });
+
+    // Update button states
+    if (s.plan === 'plus') {
+      document.getElementById('plus-btn').textContent = '✓ Current Plan';
+      document.getElementById('plus-btn').disabled = true;
+    }
+    if (s.plan === 'premium') {
+      document.getElementById('premium-btn').textContent = '✓ Current Plan';
+      document.getElementById('premium-btn').disabled = true;
+      document.getElementById('plus-btn').innerHTML = '<i class="bi bi-arrow-up-circle me-2"></i>Downgrade to Plus';
+    }
+  }
+
+  if (cfgRes.success) {
+    pricingConfig = cfgRes.data;
+    const plusAmt = (pricingConfig.plus_price / 100).toLocaleString('en-IN');
+    const premAmt = (pricingConfig.premium_price / 100).toLocaleString('en-IN');
+    document.getElementById('plus-price').innerHTML = `₹${plusAmt}<span style="font-size:1rem;font-weight:500;color:#64748B">/mo</span>`;
+    document.getElementById('premium-price').innerHTML = `₹${premAmt}<span style="font-size:1rem;font-weight:500;color:#64748B">/mo</span>`;
+
+    // Show bank details if set
+    if (cfgRes.data.bank_name || cfgRes.data.bank_account) {
+      document.getElementById('bank-section').style.display = '';
+      document.getElementById('bank-holder').textContent = cfgRes.data.bank_holder || '—';
+      document.getElementById('bank-name').textContent = cfgRes.data.bank_name || '—';
+      document.getElementById('bank-account').textContent = cfgRes.data.bank_account || '—';
+      document.getElementById('bank-ifsc').textContent = cfgRes.data.bank_ifsc || '—';
+    }
+  }
+}
+
+async function startUpgrade(plan) {
+  if (!pricingConfig.is_payments_enabled) {
+    toast('Online payments not yet configured. Please contact support or use bank transfer.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById(`${plan}-btn`);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating order…';
+
+  const res = await API.post('/api/subscriptions/create-order/', { plan });
+  btn.disabled = false;
+  btn.innerHTML = plan === 'plus' ? '<i class="bi bi-arrow-up-circle me-2"></i>Upgrade to Plus' : '<i class="bi bi-gem me-2"></i>Upgrade to Premium';
+
+  if (!res.success) { toast(res.message || 'Failed to create order.', 'error'); return; }
+
+  const opts = {
+    key: res.data.key_id,
+    amount: res.data.amount,
+    currency: res.data.currency,
+    name: 'Zayro ₹ Invoice',
+    description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - 30 days`,
+    order_id: res.data.order_id,
+    handler: async function(response) {
+      const verRes = await API.post('/api/subscriptions/verify-payment/', { ...response, plan });
+      if (verRes.success) {
+        toast(`Upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)} successfully!`);
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        toast('Payment verification failed: ' + verRes.message, 'error');
+      }
+    },
+    theme: { color: plan === 'plus' ? '#F97316' : '#7C3AED' },
+  };
+  new Razorpay(opts).open();
+}
+
+init();
+</script>
+{% endblock %}

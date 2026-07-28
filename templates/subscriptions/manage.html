@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% block title %}Subscription Management – Zayro ₹ Invoice{% endblock %}
+{% block page_title %}Subscription Management{% endblock %}
+
+{% block content %}
+<div id="access-denied" class="d-none">
+  <div class="card-ms p-5 text-center">
+    <i class="bi bi-shield-x" style="font-size:3rem;color:#EF4444;display:block;margin-bottom:12px"></i>
+    <div style="font-size:1.1rem;font-weight:700;color:#0F172A">Access Denied</div>
+    <div style="color:#64748B;margin-top:4px">Superadmin only.</div>
+  </div>
+</div>
+
+<div id="main-section" class="d-none">
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="subTabs">
+    <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('users',this)"><i class="bi bi-people me-1"></i>All Subscriptions</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('settings',this)"><i class="bi bi-gear me-1"></i>Payment Settings</a></li>
+  </ul>
+
+  <!-- ── TAB: Users Subscriptions ── -->
+  <div id="tab-users">
+    <!-- Summary stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="st-total">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Free Plan</div>
+          <div class="stat-value" style="color:#64748B" id="st-free">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Plus Plan</div>
+          <div class="stat-value" style="color:#F97316" id="st-plus">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-label">Premium Plan</div>
+          <div class="stat-value" style="color:#7C3AED" id="st-premium">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="section-header mb-4">
+      <div class="d-flex gap-3 flex-wrap align-items-center">
+        <div class="input-group" style="max-width:260px">
+          <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #E2E8F0;border-radius:8px 0 0 8px"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="sub-search" placeholder="Search users…" style="border:1.5px solid #E2E8F0;border-left:none;border-radius:0 8px 8px 0">
+        </div>
+        <select class="form-select" id="plan-filter" style="max-width:150px">
+          <option value="">All Plans</option>
+          <option value="free">Free</option>
+          <option value="plus">Plus</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card-ms">
+      <div style="overflow-x:auto">
+        <table class="ms-table">
+          <thead>
+            <tr><th>User</th><th>Plan</th><th>Status</th><th>Usage Today</th><th>Usage Month</th><th>Expires</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="sub-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-top:1px solid #F1F5F9">
+        <small style="color:#94A3B8" id="sub-page-info"></small>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-outline-secondary" id="sub-prev" onclick="subChangePage(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+          <button class="btn btn-sm btn-outline-secondary" id="sub-next" onclick="subChangePage(1)">Next <i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: Payment Settings ── -->
+  <div id="tab-settings" class="d-none">
+    <div class="row g-4">
+      <!-- Razorpay Config -->
+      <div class="col-lg-7">
+        <div class="card-ms">
+          <div style="padding:20px 24px;border-bottom:1px solid #F1F5F9">
+            <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-credit-card me-2 text-primary"></i>Razorpay Configuration</div>
+            <div style="font-size:.8rem;color:#94A3B8;margin-top:2px">Configure online payment gateway for plan upgrades</div>
+          </div>
+          <div style="padding:24px">
+            <form id="settings-form" onsubmit="saveSettings(event)">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-600">Razorpay Key ID</label>
+                  <input type="text" class="form-control" id="s-key-id" placeholder="rzp_live_xxxxx">
+                  <div style="font-size:.75rem;color:#94A3B8;margin-top:4px">Get from <a href="https://dashboard.razorpay.com/app/keys" target="_blank" style="color:#F97316">Razorpay Dashboard → Settings → API Keys</a></div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-600">Razorpay Key Secret</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control" id="s-key-secret" placeholder="••••••••••••••••">
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleSecret()"><i class="bi bi-eye" id="secret-eye"></i></button>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600">Plus Plan Price (₹)</label>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" class="form-control" id="s-plus-price" placeholder="1499" min="1">
+                  </div>
+                  <div style="font-size:.75rem;color:#94A3B8;margin-top:4px">Displayed as ₹X/month</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600">Premium Plan Price (₹)</label>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" class="form-control" id="s-premium-price" placeholder="2299" min="1">
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch" style="padding-left:2.5rem">
+                    <input class="form-check-input" type="checkbox" id="s-enabled" style="width:2.5rem;height:1.3rem">
+                    <label class="form-check-label fw-600" for="s-enabled">Enable Online Payments</label>
+                  </div>
+                  <div style="font-size:.75rem;color:#94A3B8;margin-top:4px;margin-left:2.5rem">When disabled, users see a "contact support" message instead of Razorpay checkout.</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid #F1F5F9">
+                <button type="submit" class="btn btn-primary px-5" id="save-settings-btn"><i class="bi bi-check-lg me-2"></i>Save Settings</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Details -->
+      <div class="col-lg-5">
+        <div class="card-ms">
+          <div style="padding:20px 24px;border-bottom:1px solid #F1F5F9">
+            <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-bank me-2 text-primary"></i>Bank Details</div>
+            <div style="font-size:.8rem;color:#94A3B8;margin-top:2px">Shown to users as a manual payment option</div>
+          </div>
+          <div style="padding:24px">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-600">Account Holder Name</label>
+                <input type="text" class="form-control" id="s-bank-holder" placeholder="Zayron Infotech Pvt. Ltd.">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-600">Bank Name</label>
+                <input type="text" class="form-control" id="s-bank-name" placeholder="HDFC Bank">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-600">Account Number</label>
+                <input type="text" class="form-control" id="s-bank-account" placeholder="XXXX XXXX XXXX">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-600">IFSC Code</label>
+                <input type="text" class="form-control" id="s-bank-ifsc" placeholder="HDFC0001234">
+              </div>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9">
+              <button class="btn btn-primary w-100" onclick="saveBankDetails()"><i class="bi bi-check-lg me-2"></i>Save Bank Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current plan prices preview -->
+        <div class="card-ms mt-4">
+          <div style="padding:20px 24px;border-bottom:1px solid #F1F5F9">
+            <div style="font-weight:700;color:#0F172A;font-size:.95rem"><i class="bi bi-tag me-2 text-primary"></i>Current Pricing</div>
+          </div>
+          <div style="padding:20px 24px">
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9">
+              <span style="color:#64748B">Free Plan</span><span style="font-weight:700">₹0 / forever</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9">
+              <span style="color:#F97316;font-weight:600">Plus Plan</span>
+              <span style="font-weight:700" id="preview-plus">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0">
+              <span style="color:#7C3AED;font-weight:600">Premium Plan</span>
+              <span style="font-weight:700" id="preview-premium">—</span>
+            </div>
+            <a href="/pricing/" target="_blank" style="display:block;text-align:center;margin-top:16px;font-size:.85rem;color:#F97316;text-decoration:none">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Preview Pricing Page
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Change Plan Modal -->
+<div class="modal fade" id="changePlanModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style="border-radius:12px;border:1.5px solid #E2E8F0">
+      <div class="modal-header" style="border-bottom:1px solid #F1F5F9;padding:20px 24px">
+        <h6 class="modal-title fw-700">Change Plan</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px">
+        <div style="color:#64748B;font-size:.85rem;margin-bottom:12px">User: <strong id="cp-username" style="color:#0F172A"></strong></div>
+        <label class="form-label">Select Plan</label>
+        <select class="form-select" id="cp-plan">
+          <option value="free">Free (3/day)</option>
+          <option value="plus">Plus (10/month)</option>
+          <option value="premium">Premium (Unlimited)</option>
+        </select>
+        <div style="font-size:.75rem;color:#94A3B8;margin-top:8px">Manually overrides subscription. Use for gifting/testing.</div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #F1F5F9;padding:16px 24px;gap:8px">
+        <button class="btn btn-primary btn-sm px-4" onclick="doChangePlan()">Save</button>
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let subPage = 1, subTotal = 0, subSearch = '', subPlanFilter = '';
+let changingUserId = null;
+const cpModal = new bootstrap.Modal(document.getElementById('changePlanModal'));
+
+if (window.USER_ROLE !== 'superadmin') {
+  document.getElementById('access-denied').classList.remove('d-none');
+} else {
+  document.getElementById('main-section').classList.remove('d-none');
+  loadSubs();
+  loadSettings();
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#subTabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-users').classList.toggle('d-none', tab !== 'users');
+  document.getElementById('tab-settings').classList.toggle('d-none', tab !== 'settings');
+  return false;
+}
+
+async function loadSubs() {
+  const tbody = document.getElementById('sub-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading…</td></tr>';
+
+  const res = await API.get(`/api/subscriptions/admin/all/?page=${subPage}&search=${encodeURIComponent(subSearch)}&plan=${encodeURIComponent(subPlanFilter)}`);
+  if (!res.success) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#EF4444">Failed to load.</td></tr>'; return; }
+
+  subTotal = res.data.total;
+  const rows = res.data.results;
+
+  // Compute stats
+  const free = rows.filter(r => r.plan === 'free').length;
+  const plus = rows.filter(r => r.plan === 'plus').length;
+  const prem = rows.filter(r => r.plan === 'premium').length;
+  document.getElementById('st-total').textContent = subTotal;
+  document.getElementById('st-free').textContent = free;
+  document.getElementById('st-plus').textContent = plus;
+  document.getElementById('st-premium').textContent = prem;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#94A3B8">No users found.</td></tr>';
+    return;
+  }
+
+  const planStyle = {
+    free: 'background:#F1F5F9;color:#64748B',
+    plus: 'background:#FFF7ED;color:#F97316',
+    premium: 'background:#F5F3FF;color:#7C3AED',
+  };
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#F97316,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0">${r.username[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600;color:#0F172A;font-size:.9rem">${r.username}</div>
+            <div style="font-size:.75rem;color:#94A3B8">${r.email}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="${planStyle[r.plan] || ''};border-radius:20px;padding:3px 12px;font-size:.8rem;font-weight:700;display:inline-block">${r.plan.charAt(0).toUpperCase() + r.plan.slice(1)}</span></td>
+      <td>${r.is_active
+        ? '<span style="background:#DCFCE7;color:#15803D;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600">Active</span>'
+        : '<span style="background:#FEE2E2;color:#B91C1C;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600">Inactive</span>'
+      }</td>
+      <td style="font-weight:600;color:#0F172A">${r.invoices_today}</td>
+      <td style="font-weight:600;color:#0F172A">${r.invoices_month}</td>
+      <td style="color:#64748B;font-size:.85rem">${r.end_date}</td>
+      <td>
+        <button class="btn-icon btn-icon-primary" onclick="openChangePlan('${r.user_id}','${r.username}','${r.plan}')" title="Change Plan">
+          <i class="bi bi-arrow-up-circle"></i>
+        </button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('sub-page-info').textContent = `Showing ${(subPage-1)*20+1}–${Math.min(subPage*20,subTotal)} of ${subTotal} users`;
+  document.getElementById('sub-prev').disabled = subPage === 1;
+  document.getElementById('sub-next').disabled = subPage * 20 >= subTotal;
+}
+
+function subChangePage(dir) { subPage += dir; loadSubs(); }
+
+function openChangePlan(uid, username, currentPlan) {
+  changingUserId = uid;
+  document.getElementById('cp-username').textContent = username;
+  document.getElementById('cp-plan').value = currentPlan;
+  cpModal.show();
+}
+
+async function doChangePlan() {
+  const plan = document.getElementById('cp-plan').value;
+  const res = await API.post(`/api/subscriptions/admin/change-plan/${changingUserId}/`, { plan });
+  cpModal.hide();
+  if (res.success) { toast(`Plan changed to ${plan}.`); loadSubs(); }
+  else toast(res.message, 'error');
+}
+
+async function loadSettings() {
+  const res = await API.get('/api/subscriptions/admin/settings/');
+  if (!res.success) return;
+  const d = res.data;
+  document.getElementById('s-key-id').value = d.razorpay_key_id || '';
+  document.getElementById('s-key-secret').value = d.razorpay_key_secret || '';
+  document.getElementById('s-plus-price').value = d.plus_price ? d.plus_price / 100 : 1499;
+  document.getElementById('s-premium-price').value = d.premium_price ? d.premium_price / 100 : 2299;
+  document.getElementById('s-enabled').checked = d.is_payments_enabled || false;
+  document.getElementById('s-bank-holder').value = d.bank_holder || '';
+  document.getElementById('s-bank-name').value = d.bank_name || '';
+  document.getElementById('s-bank-account').value = d.bank_account || '';
+  document.getElementById('s-bank-ifsc').value = d.bank_ifsc || '';
+  document.getElementById('preview-plus').textContent = d.plus_price ? `₹${(d.plus_price/100).toLocaleString('en-IN')} / month` : '—';
+  document.getElementById('preview-premium').textContent = d.premium_price ? `₹${(d.premium_price/100).toLocaleString('en-IN')} / month` : '—';
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById('save-settings-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
+  const payload = {
+    razorpay_key_id: document.getElementById('s-key-id').value.trim(),
+    razorpay_key_secret: document.getElementById('s-key-secret').value.trim(),
+    plus_price: Math.round(parseFloat(document.getElementById('s-plus-price').value) * 100),
+    premium_price: Math.round(parseFloat(document.getElementById('s-premium-price').value) * 100),
+    is_payments_enabled: document.getElementById('s-enabled').checked,
+  };
+  const res = await API.put('/api/subscriptions/admin/settings/', payload);
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Save Settings';
+  if (res.success) { toast('Payment settings saved.'); loadSettings(); }
+  else toast(res.message || 'Failed to save.', 'error');
+}
+
+async function saveBankDetails() {
+  const payload = {
+    bank_holder: document.getElementById('s-bank-holder').value.trim(),
+    bank_name: document.getElementById('s-bank-name').value.trim(),
+    bank_account: document.getElementById('s-bank-account').value.trim(),
+    bank_ifsc: document.getElementById('s-bank-ifsc').value.trim(),
+  };
+  const res = await API.put('/api/subscriptions/admin/settings/', payload);
+  if (res.success) toast('Bank details saved.');
+  else toast(res.message || 'Failed to save.', 'error');
+}
+
+function toggleSecret() {
+  const inp = document.getElementById('s-key-secret'), eye = document.getElementById('secret-eye');
+  if (inp.type === 'password') { inp.type = 'text'; eye.className = 'bi bi-eye-slash'; }
+  else { inp.type = 'password'; eye.className = 'bi bi-eye'; }
+}
+
+let timer;
+document.getElementById('sub-search').addEventListener('input', e => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { subSearch = e.target.value; subPage = 1; loadSubs(); }, 400);
+});
+document.getElementById('plan-filter').addEventListener('change', e => {
+  subPlanFilter = e.target.value; subPage = 1; loadSubs();
+});
+</script>
+{% endblock %}
