@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Zayro ₹ Invoice{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-w: 256px;
+      --topbar-h: 60px;
+      --primary: #F97316;
+      --primary-dark: #EA580C;
+      --primary-light: #FFF7ED;
+      --primary-border: #FED7AA;
+      --sidebar-bg: #1C1C1C;
+      --sidebar-hover: rgba(255,255,255,.06);
+      --sidebar-active: #F97316;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F1F5F9; font-family: 'Segoe UI', system-ui, sans-serif; color: #1E293B; }
+
+    /* ── Sidebar ──────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w); height: 100vh; background: var(--sidebar-bg);
+      position: fixed; top: 0; left: 0; z-index: 200;
+      display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+    }
+    .sidebar-brand {
+      padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-brand .logo-icon {
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      padding: 4px;
+    }
+    .sidebar-brand .logo-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .sidebar-brand .brand-text { color: #fff; font-weight: 700; font-size: 1.1rem; line-height: 1; }
+    .sidebar-brand .brand-sub { color: #64748B; font-size: .7rem; margin-top: 2px; }
+
+    .sidebar-section-label {
+      color: #475569; font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; padding: 16px 20px 6px;
+    }
+    .nav-item-wrap { margin: 1px 10px; }
+    .nav-link-main {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+      color: #E2E8F0; text-decoration: none; font-size: .875rem; font-weight: 500; transition: all .15s;
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-link-main:hover { background: var(--sidebar-hover); color: #fff; }
+    .nav-link-main.active { background: var(--sidebar-active); color: #fff; }
+    .nav-link-main .nav-icon { width: 20px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .nav-link-main .nav-arrow { margin-left: auto; font-size: .7rem; transition: transform .2s; color: #475569; }
+    .nav-link-main[aria-expanded="true"] .nav-arrow { transform: rotate(90deg); }
+    .nav-link-main[aria-expanded="true"] { color: #CBD5E1; }
+
+    .nav-sub { padding: 2px 0 4px 32px; }
+    .nav-sub-link {
+      display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 7px;
+      color: #64748B; text-decoration: none; font-size: .8rem; transition: all .15s;
+    }
+    .nav-sub-link:hover { color: #CBD5E1; background: var(--sidebar-hover); }
+    .nav-sub-link.active { color: #FB923C; font-weight: 600; }
+    .nav-sub-link::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .5; flex-shrink: 0; }
+
+    .sidebar-divider { border-top: 1px solid rgba(255,255,255,.06); margin: 8px 16px; }
+    .sidebar-footer { margin-top: auto; padding: 12px 10px 16px; }
+
+    /* ── Main area ────────────────────────────────────────── */
+    #main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: var(--topbar-h); background: #fff; border-bottom: 1px solid #E2E8F0;
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .page-heading { font-size: 1rem; font-weight: 700; color: #0F172A; margin: 0; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-pill {
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+      background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 50px; padding: 5px 14px 5px 8px;
+      transition: border-color .15s;
+    }
+    .user-pill:hover { border-color: var(--primary); }
+    .user-avatar {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--primary);
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: .75rem; font-weight: 700;
+    }
+    .user-info .user-name { font-size: .8rem; font-weight: 600; color: #1E293B; line-height: 1.2; }
+    .user-info .user-role-text { font-size: .7rem; color: #64748B; line-height: 1.2; }
+    .user-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px;
+      background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12); padding: 6px; display: none; z-index: 200;
+    }
+    .user-dropdown.open { display: block; }
+    .ud-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+      color: #334155; font-size: .85rem; font-weight: 500; text-decoration: none; transition: background .12s;
+    }
+    .ud-item:hover { background: #F1F5F9; color: #0F172A; }
+    .ud-item i { font-size: 1rem; width: 18px; text-align: center; }
+    .ud-divider { height: 1px; background: #F1F5F9; margin: 4px 0; }
+    .ud-danger { color: #EF4444 !important; }
+    .ud-danger:hover { background: #FEF2F2 !important; }
+
+    .page-body { padding: 24px; flex: 1; }
+
+    /* ── Cards ────────────────────────────────────────────── */
+    .card-ms { background: #fff; border: 1px solid #E2E8F0; border-radius: var(--radius); }
+    .stat-card {
+      background: #fff; border: 1px solid #E2E8F0; border-radius: var(--radius);
+      padding: 20px; transition: box-shadow .2s, transform .2s;
+    }
+    .stat-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); transform: translateY(-1px); }
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .stat-label { font-size: .7rem; font-weight: 700; letter-spacing: .06em; color: #94A3B8; text-transform: uppercase; }
+    .stat-value { font-size: 1.75rem; font-weight: 800; color: #0F172A; line-height: 1.1; margin-top: 4px; }
+    .stat-sub { font-size: .75rem; color: #64748B; margin-top: 3px; }
+
+    /* ── Tables ───────────────────────────────────────────── */
+    .ms-table { width: 100%; }
+    .ms-table th {
+      font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      color: #94A3B8; background: #F8FAFC; padding: 10px 16px; border-bottom: 1px solid #E2E8F0;
+    }
+    .ms-table td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; vertical-align: middle; color: #334155; font-size: .875rem; }
+    .ms-table tbody tr:hover { background: #F8FAFC; }
+    .ms-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ── Badges ───────────────────────────────────────────── */
+    .badge-ms {
+      display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px;
+      font-size: .72rem; font-weight: 600; letter-spacing: .01em;
+    }
+    .badge-Draft     { background:#F1F5F9; color:#64748B; }
+    .badge-Sent      { background:#FED7AA; color:#EA580C; }
+    .badge-Paid      { background:#DCFCE7; color:#15803D; }
+    .badge-Partial   { background:#FEF9C3; color:#92400E; }
+    .badge-Overdue   { background:#FEE2E2; color:#B91C1C; }
+    .badge-Cancelled { background:#F1F5F9; color:#94A3B8; }
+    .badge-superadmin { background: linear-gradient(135deg,#7C3AED,#5B21B6); color:#fff; }
+    .badge-admin     { background: linear-gradient(135deg,#F97316,#EA580C); color:#fff; }
+    .badge-user      { background:#E2E8F0; color:#64748B; }
+    /* Legacy bootstrap badge compatibility */
+    .badge.badge-Draft     { background:#F1F5F9!important; color:#64748B!important; }
+    .badge.badge-Sent      { background:#FED7AA!important; color:#EA580C!important; }
+    .badge.badge-Paid      { background:#DCFCE7!important; color:#15803D!important; }
+    .badge.badge-Partial   { background:#FEF9C3!important; color:#92400E!important; }
+    .badge.badge-Overdue   { background:#FEE2E2!important; color:#B91C1C!important; }
+    .badge.badge-Cancelled { background:#F1F5F9!important; color:#94A3B8!important; }
+    .badge.badge-superadmin{ background: linear-gradient(135deg,#7C3AED,#5B21B6)!important; color:#fff!important; }
+    .badge.badge-admin     { background: linear-gradient(135deg,#F97316,#EA580C)!important; color:#fff!important; }
+    .badge.badge-user      { background:#E2E8F0!important; color:#64748B!important; }
+
+    /* ── Buttons ──────────────────────────────────────────── */
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+    /* ── Action buttons ───────────────────────────────────── */
+    .btn-icon {
+      width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 7px; border: 1px solid #E2E8F0; background: #fff; color: #64748B;
+      transition: all .15s; cursor: pointer; font-size: .85rem; text-decoration: none;
+    }
+    .btn-icon:hover { background: #F1F5F9; color: #334155; border-color: #CBD5E1; }
+    .btn-icon.btn-icon-primary:hover { background: #FFF7ED; color: var(--primary); border-color: #FED7AA; }
+    .btn-icon.btn-icon-success:hover { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
+    .btn-icon.btn-icon-danger:hover  { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
+
+    /* ── Toast ────────────────────────────────────────────── */
+    #toast-container { position: fixed; top: 16px; right: 20px; z-index: 9999; min-width: 280px; }
+    .ms-toast {
+      background: #0F172A; color: #fff; border-radius: 10px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.2); animation: slideIn .2s ease; font-size: .875rem;
+    }
+    .ms-toast.success .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; flex-shrink: 0; }
+    .ms-toast.error   .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+    @keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+
+    /* ── Readonly notice ──────────────────────────────────── */
+    .readonly-notice {
+      background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px;
+      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+      font-size: .85rem; color: #C2410C; margin-bottom: 20px;
+    }
+
+    /* ── Section heading ──────────────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    }
+    .section-title { font-size: 1rem; font-weight: 700; color: #0F172A; margin: 0; }
+
+    /* ── Form styles ──────────────────────────────────────── */
+    .form-label { font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
+    .form-control, .form-select {
+      border: 1.5px solid #E2E8F0; border-radius: 8px; font-size: .875rem;
+      padding: 9px 12px; transition: border-color .15s, box-shadow .15s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(249,115,22,.12); outline: none;
+    }
+    textarea.form-control { resize: vertical; }
+
+    /* ── Misc helpers ─────────────────────────────────────── */
+    .text-primary { color: var(--primary) !important; }
+    .fw-700 { font-weight: 700; }
+    .bg-ms { background: #F8FAFC; }
+    .rounded-ms { border-radius: var(--radius); }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<div id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon"><img src="/static/img/logo.png" alt="Zayro ₹ Invoice"></div>
+    <div>
+      <div class="brand-text">Zayro ₹ Invoice</div>
+      <div class="brand-sub">Smart Billing Platform</div>
+    </div>
+  </div>
+
+  <div style="flex:1; padding: 8px 0;">
+    <div class="sidebar-section-label">Main Menu</div>
+
+    <!-- Dashboard -->
+    <div class="nav-item-wrap">
+      <a href="/" class="nav-link-main {% block nav_dashboard %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+        Dashboard
+      </a>
+    </div>
+
+    <!-- Invoices -->
+    <div class="nav-item-wrap">
+      <a href="/invoices/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-file-text"></i></span>
+        Invoices
+      </a>
+    </div>
+
+    <!-- Customers -->
+    <div class="nav-item-wrap">
+      <a href="/customers/" class="nav-link-main {% block nav_customers %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-people"></i></span>
+        Customers
+      </a>
+    </div>
+
+    <!-- Products -->
+    <div class="nav-item-wrap">
+      <a href="/products/" class="nav-link-main {% block nav_products %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+        Products
+      </a>
+    </div>
+
+    <!-- Payments -->
+    <div class="nav-item-wrap">
+      <a href="/payments/" class="nav-link-main {% block nav_payments %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-credit-card"></i></span>
+        Payments
+      </a>
+    </div>
+
+    <!-- Reports -->
+    <div class="nav-item-wrap">
+      <a href="/reports/" class="nav-link-main {% block nav_reports %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
+        Reports
+      </a>
+    </div>
+
+    <!-- Admin section (superadmin only) -->
+    <div id="admin-section" style="display:none">
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Administration</div>
+      <div class="nav-item-wrap">
+        <a href="/auth/users/" class="nav-link-main {% block nav_users %}{% endblock %}">
+          <span class="nav-icon"><i class="bi bi-shield-person"></i></span>
+          User Management
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-divider"></div>
+    <div class="nav-item-wrap">
+      <a href="/auth/profile/" class="nav-link-main {% block nav_profile %}{% endblock %}" style="color:#94A3B8">
+        <span class="nav-icon"><i class="bi bi-person-circle"></i></span>
+        My Profile
+      </a>
+    </div>
+    <div class="nav-item-wrap">
+      <a href="/auth/logout/" class="nav-link-main" style="color:#64748B">
+        <span class="nav-icon"><i class="bi bi-box-arrow-right"></i></span>
+        Logout
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════════ -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-heading">{% block page_title %}Dashboard{% endblock %}</h1>
+    </div>
+    <div class="topbar-right">
+      <div style="position:relative">
+        <div class="user-pill" onclick="toggleUserMenu()" id="user-pill-btn">
+          <div class="user-avatar" id="user-avatar-letter">V</div>
+          <div class="user-info">
+            <div class="user-name" id="user-username">Loading…</div>
+            <div class="user-role-text" id="user-role-text">—</div>
+          </div>
+          <i class="bi bi-chevron-down" style="font-size:.65rem;color:#94A3B8;margin-left:2px"></i>
+        </div>
+        <div class="user-dropdown" id="user-dropdown">
+          <a href="/auth/profile/" class="ud-item"><i class="bi bi-person-circle"></i> My Profile</a>
+          <a href="/auth/profile/" class="ud-item"><i class="bi bi-shield-lock"></i> Change Password</a>
+          <div class="ud-divider"></div>
+          <a href="/auth/logout/" class="ud-item ud-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div id="readonly-notice" class="readonly-notice d-none">
+      <i class="bi bi-info-circle-fill fs-5"></i>
+      <span>You have <strong>view-only</strong> access. Contact an admin to make changes.</span>
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ── API helper ── */
+  /* ── User dropdown ── */
+  function toggleUserMenu() {
+    document.getElementById('user-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const pill = document.getElementById('user-pill-btn');
+    const dd   = document.getElementById('user-dropdown');
+    if (pill && !pill.contains(e.target)) dd.classList.remove('open');
+  });
+
+  function doLogout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_username');
+    localStorage.removeItem('user_role');
+    window.location = '/auth/login/';
+  }
+
+  const API = {
+    token: () => localStorage.getItem('access_token'),
+    headers: () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API.token() }),
+    _checkAuth(status) { if (status === 401 || (status === 403 && !API.token())) { doLogout(); return true; } return false; },
+    async get(url) {
+      try {
+        const r = await fetch(url, { headers: API.headers() });
+        if (API._checkAuth(r.status)) return {};
+        return r.json();
+      } catch { return { success: false }; }
+    },
+    async post(url, data) {
+      try {
+        const r = await fetch(url, { method: 'POST', headers: API.headers(), body: JSON.stringify(data) });
+        if (API._checkAuth(r.status)) return {};
+        return r.json();
+      } catch { return { success: false }; }
+    },
+    async put(url, data) {
+      try {
+        const r = await fetch(url, { method: 'PUT', headers: API.headers(), body: JSON.stringify(data) });
+        if (API._checkAuth(r.status)) return {};
+        return r.json();
+      } catch { return { success: false }; }
+    },
+    async patch(url, data) {
+      try {
+        const r = await fetch(url, { method: 'PATCH', headers: API.headers(), body: JSON.stringify(data) });
+        if (API._checkAuth(r.status)) return {};
+        return r.json();
+      } catch { return { success: false }; }
+    },
+    async del(url) {
+      try {
+        const r = await fetch(url, { method: 'DELETE', headers: API.headers() });
+        if (API._checkAuth(r.status)) return {};
+        return r.json();
+      } catch { return { success: false }; }
+    },
+  };
+
+  /* ── Toast ── */
+  function toast(msg, type = 'success') {
+    const id = 't_' + Date.now();
+    const tc = document.getElementById('toast-container');
+    tc.insertAdjacentHTML('beforeend', `
+      <div id="${id}" class="ms-toast ${type}">
+        <div class="toast-dot"></div>
+        <span>${msg}</span>
+        <button onclick="document.getElementById('${id}').remove()" style="margin-left:auto;background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.9rem;">✕</button>
+      </div>`);
+    setTimeout(() => document.getElementById(id)?.remove(), 4000);
+  }
+
+  function statusBadge(status) {
+    return `<span class="badge badge-${status}">${status}</span>`;
+  }
+
+  /* ── Auth guard ── */
+  if (!localStorage.getItem('access_token') && !window.location.pathname.startsWith('/auth/')) {
+    window.location = '/auth/login/';
+  }
+
+  /* ── Apply user info ── */
+  const role     = localStorage.getItem('user_role')     || 'user';
+  const username = localStorage.getItem('user_username') || '';
+  const email    = localStorage.getItem('user_email')    || '';
+
+  document.getElementById('user-username').textContent  = username;
+  document.getElementById('user-role-text').textContent = role;
+  document.getElementById('user-avatar-letter').textContent = (username[0] || 'U').toUpperCase();
+  window.USER_ROLE = role;
+
+  if (role === 'superadmin') {
+    document.getElementById('admin-section').style.display = 'block';
+  }
+  // All roles (user/admin/superadmin) now have full access
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

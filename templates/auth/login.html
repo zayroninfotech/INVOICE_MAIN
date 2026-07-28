@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Zayro ₹ Invoice – Smart Billing Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{--primary:#F97316;--primary-d:#EA580C;--dark:#0F172A;--slate:#1E293B;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',system-ui,sans-serif;background:#fff;color:#0F172A;overflow-x:hidden;}
+
+    /* ─── NAV ─── */
+    .lp-nav{
+      position:fixed;top:0;left:0;right:0;z-index:200;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 48px;height:64px;
+      background:rgba(15,23,42,.96);backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .logo-wrap{display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .logo-icon{width:36px;height:36px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+    .logo-name{font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.02em;}
+    .nav-btns{display:flex;gap:10px;align-items:center;}
+    .btn-nl{padding:8px 20px;border:1.5px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-weight:600;font-size:.875rem;cursor:pointer;background:none;transition:all .15s;}
+    .btn-nl:hover{border-color:#fff;background:rgba(255,255,255,.08);}
+    .btn-np{padding:8px 20px;background:var(--primary);border:none;border-radius:8px;color:#fff;font-weight:600;font-size:.875rem;cursor:pointer;transition:background .15s;}
+    .btn-np:hover{background:var(--primary-d);}
+
+    /* ─── HERO ─── */
+    .hero{
+      min-height:100vh;padding-top:64px;
+      background:linear-gradient(135deg,#0F172A 0%,#1E293B 55%,#0F172A 100%);
+      display:flex;align-items:center;
+      position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:'';position:absolute;width:800px;height:800px;
+      background:radial-gradient(circle,rgba(249,115,22,.18) 0%,transparent 70%);
+      top:-10%;left:30%;transform:translateX(-50%);pointer-events:none;
+    }
+    .hero-inner{
+      position:relative;z-index:1;width:100%;max-width:1200px;
+      margin:0 auto;padding:60px 48px;
+      display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+    }
+    /* Left column */
+    .hero-left{}
+    .hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.35);border-radius:100px;padding:6px 18px;font-size:.78rem;font-weight:700;color:#FDBA74;margin-bottom:28px;letter-spacing:.04em;text-transform:uppercase;}
+    .hero-h1{font-size:clamp(2rem,4.5vw,3.4rem);font-weight:900;color:#fff;line-height:1.1;margin-bottom:20px;letter-spacing:-.03em;}
+    .hero-h1 span{color:#FB923C;}
+    .hero-sub{font-size:1rem;color:#94A3B8;margin-bottom:36px;line-height:1.7;max-width:480px;}
+    .hero-btns{display:flex;gap:12px;flex-wrap:nowrap;margin-bottom:44px;align-items:center;}
+    .btn-h1{padding:13px 24px;background:var(--primary);color:#fff;font-weight:700;font-size:.9rem;border-radius:10px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+    .btn-h1:hover{background:var(--primary-d);transform:translateY(-1px);}
+    .btn-h2{padding:13px 24px;border:1.5px solid rgba(255,255,255,.22);color:#fff;font-weight:600;font-size:.9rem;border-radius:10px;background:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+    .btn-h2:hover{border-color:#fff;background:rgba(255,255,255,.06);}
+    .btn-h3{padding:13px 24px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);color:#fff;font-weight:600;font-size:.9rem;border-radius:10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+    .btn-h3:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);}
+    /* Mini feature strip */
+    .hero-features{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;}
+    .hero-feat{display:flex;align-items:center;gap:10px;}
+    .hero-feat-icon{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;}
+    .hero-feat-txt{font-size:.78rem;color:#64748B;line-height:1.35;}
+    .hero-feat-txt strong{display:block;color:#CBD5E1;font-weight:700;font-size:.82rem;margin-bottom:1px;}
+    /* Right column — invoice card + floating feature cards */
+    .hero-right{position:relative;height:440px;}
+    .hero-img-invoice{
+      position:absolute;left:0;top:0;
+      width:76%;border-radius:16px;
+      box-shadow:0 24px 80px rgba(0,0,0,.55);
+    }
+    .hero-img-cards{
+      position:absolute;right:0;top:50%;transform:translateY(-50%);
+      width:28%;border-radius:14px;
+      box-shadow:0 16px 48px rgba(0,0,0,.5);
+    }
+    @media(max-width:1024px){
+      .hero-inner{gap:40px;}
+      .hero-right{height:380px;}
+    }
+    @media(max-width:900px){
+      .hero-inner{grid-template-columns:1fr;text-align:center;}
+      .hero-sub{max-width:100%;}
+      .hero-btns{justify-content:center;flex-wrap:wrap;}
+      .hero-features{justify-items:start;margin:0 auto;}
+      .hero-right{height:320px;width:100%;max-width:520px;margin:0 auto;}
+    }
+    @media(max-width:600px){
+      .hero-inner{padding:40px 20px;}
+      .hero-right{height:auto;display:flex;flex-direction:column;gap:16px;align-items:center;}
+      .hero-img-invoice,.hero-img-cards{position:static;width:90%;transform:none;}
+    }
+
+    /* ─── FREE INVOICE GENERATOR ─── */
+    .free-zone{max-width:1120px;margin:0 auto;padding:0 20px 80px;}
+    .gen-card{background:#fff;border-radius:16px;padding:0;margin-top:32px;box-shadow:0 8px 48px rgba(0,0,0,.35);overflow:hidden;}
+    /* Layout: main + sidebar */
+    .gen-layout{display:flex;align-items:flex-start;}
+    .gen-main{flex:1;min-width:0;}
+    .gen-sidebar{width:240px;flex-shrink:0;background:#F8FAFC;border-left:1px solid #E2E8F0;padding:20px 16px;min-height:100%;}
+    /* Form body */
+    .gen-body{padding:28px 28px 16px;}
+    /* TOP: Invoice label + Logo */
+    .gen-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+    .inv-label-box{flex:1;}
+    .inv-label-input{font-size:1.5rem;font-weight:900;color:#0F172A;border:1.5px solid #E2E8F0;border-radius:8px;outline:none;padding:10px 16px;width:100%;max-width:240px;background:#fff;transition:border-color .15s;}
+    .inv-label-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+    .logo-upload-box{width:130px;height:85px;border:2px dashed #CBD5E1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;overflow:hidden;flex-shrink:0;transition:all .15s;}
+    .logo-upload-box:hover{border-color:#F97316;background:#FFF7ED;}
+    .logo-upload-box img{width:100%;height:100%;object-fit:contain;display:none;}
+    .logo-placeholder-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
+    .logo-upload-box span{font-size:.7rem;color:#94A3B8;font-weight:600;}
+    /* From/To */
+    .from-to-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:24px;}
+    .gen-section-title{font-size:1rem;font-weight:700;color:#0F172A;margin-bottom:14px;}
+    .gen-field{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;}
+    .gen-field-lbl{font-size:.82rem;font-weight:700;color:#374151;min-width:80px;flex-shrink:0;}
+    .gen-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;outline:none;font-size:.875rem;color:#0F172A;padding:7px 10px;background:#fff;transition:border-color .15s;width:100%;}
+    .gen-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(249,115,22,.1);}
+    .gen-input::placeholder{color:#CBD5E1;}
+    .gen-input-icon{position:relative;flex:1;}
+    .gen-input-icon input{width:100%;}
+    .gen-input-icon .icon{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#94A3B8;font-size:.85rem;}
+    .show-more-link{color:#F97316;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:4px;display:inline-block;}
+    .additional-from{display:none;margin-top:2px;}
+    /* Invoice meta */
+    .inv-meta-section{border-top:1px solid #E2E8F0;padding-top:20px;margin-bottom:20px;}
+    .inv-meta-field{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .inv-meta-lbl{font-size:.85rem;font-weight:700;color:#374151;width:90px;flex-shrink:0;}
+    .inv-meta-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:.875rem;color:#0F172A;outline:none;max-width:260px;background:#fff;transition:border-color .15s;}
+    .inv-meta-input:focus{border-color:var(--primary);}
+    .inv-meta-input.error{border-color:#EF4444;}
+    .inv-err{color:#EF4444;font-size:.75rem;margin-left:102px;margin-top:-8px;margin-bottom:8px;}
+    /* Items */
+    .items-section{border-top:1px solid #E2E8F0;padding-top:20px;}
+    .items-thead{display:grid;grid-template-columns:32px 1fr 90px 70px 80px;gap:8px;padding:6px 0;border-bottom:2px solid #0F172A;margin-bottom:4px;}
+    .items-thead span{font-size:.72rem;font-weight:800;color:#0F172A;letter-spacing:.06em;text-transform:uppercase;}
+    .items-thead span.right{text-align:right;}
+    .item-block{border-bottom:1px solid #F1F5F9;padding:8px 0 12px;}
+    .item-main-row{display:grid;grid-template-columns:32px 1fr 90px 70px 80px;gap:8px;align-items:center;}
+    .item-x-btn{width:28px;height:28px;border:1px solid #E2E8F0;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748B;font-size:.8rem;flex-shrink:0;transition:all .15s;}
+    .item-x-btn:hover{border-color:#EF4444;color:#EF4444;}
+    .item-desc-input{width:100%;border:1px solid transparent;border-radius:4px;padding:6px 6px;font-size:.875rem;color:#0F172A;outline:none;background:transparent;transition:border-color .15s;}
+    .item-desc-input:focus{border-color:#E2E8F0;background:#fff;}
+    .item-desc-input::placeholder{color:#CBD5E1;}
+    .item-num-input{width:100%;border:1px solid #E2E8F0;border-radius:4px;padding:6px 6px;font-size:.875rem;color:#0F172A;outline:none;text-align:right;background:#fff;}
+    .item-num-input:focus{border-color:var(--primary);}
+    .item-amount{font-size:.875rem;font-weight:600;color:#0F172A;text-align:right;padding-right:4px;}
+    .item-detail-row{padding-left:40px;margin-top:6px;}
+    .item-detail-textarea{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px;font-size:.82rem;color:#475569;outline:none;resize:vertical;min-height:56px;font-family:inherit;background:#FAFAFA;}
+    .item-detail-textarea:focus{border-color:var(--primary);}
+    .item-detail-textarea::placeholder{color:#CBD5E1;}
+    .item-amt{font-size:.875rem;font-weight:600;color:#0F172A;text-align:right;white-space:nowrap;}
+    .char-count{font-size:.7rem;color:#94A3B8;text-align:right;margin-top:2px;}
+    .btn-add-item-round{width:36px;height:36px;border-radius:50%;background:#1E293B;border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:14px;transition:background .15s;}
+    .btn-add-item-round:hover{background:#F97316;}
+    /* Totals */
+    .gen-totals{margin-top:16px;display:flex;justify-content:flex-end;}
+    .totals-box{width:260px;}
+    .tot-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.875rem;color:#374151;}
+    .tot-row.bal{font-weight:800;font-size:1rem;color:#0F172A;border-top:2px solid #0F172A;padding-top:8px;margin-top:4px;}
+    /* Notes */
+    .gen-notes{border-top:1px solid #E2E8F0;padding-top:20px;margin-top:20px;}
+    .gen-sec-title{font-size:.95rem;font-weight:700;color:#0F172A;margin-bottom:10px;}
+    .gen-big-textarea{width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:12px;font-size:.85rem;color:#0F172A;outline:none;resize:vertical;min-height:100px;font-family:inherit;background:#fff;}
+    .gen-big-textarea:focus{border-color:var(--primary);}
+    .gen-big-textarea::placeholder{color:#CBD5E1;}
+    /* Signature / Photos */
+    .gen-section-block{border-top:1px solid #E2E8F0;padding-top:16px;margin-top:16px;}
+    .btn-plus-dark{width:32px;height:32px;background:#1E293B;border:none;border-radius:4px;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .photo-box{width:100px;height:70px;border:1.5px solid #E2E8F0;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;color:#94A3B8;font-size:.78rem;gap:4px;flex-direction:column;transition:border-color .15s;}
+    .photo-box:hover{border-color:var(--primary);}
+    /* Action bar */
+    .gen-actions{display:flex;gap:12px;padding:16px 28px;background:#F8FAFC;border-top:1px solid #E2E8F0;flex-wrap:wrap;}
+    .btn-gen-primary{padding:10px 28px;background:var(--primary);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;}
+    .btn-gen-primary:hover{background:var(--primary-d);}
+    .btn-gen-primary:disabled{opacity:.6;}
+    .btn-gen-sec{padding:10px 20px;border:1.5px solid #E2E8F0;border-radius:8px;color:#374151;font-weight:600;font-size:.9rem;cursor:pointer;background:#fff;display:flex;align-items:center;gap:8px;transition:all .15s;}
+    .btn-gen-sec:hover{border-color:#94A3B8;}
+    /* Sidebar */
+    .sb-section{margin-bottom:20px;}
+    .sb-lbl{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #E2E8F0;}
+    .sb-input{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:.82rem;outline:none;background:#fff;}
+    .sb-input:focus{border-color:var(--primary);}
+    .sb-btn{width:100%;padding:9px;background:#64748B;border:none;border-radius:6px;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;margin-top:8px;transition:background .15s;}
+    .sb-btn:hover{background:#475569;}
+    .color-swatches{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+    .color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;position:relative;}
+    .color-swatch:hover,.color-swatch.active{border-color:#0F172A;transform:scale(1.15);}
+    .color-swatch.none{background:#fff;border:1.5px solid #E2E8F0;display:flex;align-items:center;justify-content:center;}
+    .sb-select{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:.82rem;background:#fff;outline:none;color:#0F172A;}
+    .currency-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;}
+    .currency-flag{font-size:1.2rem;}
+    /* Result */
+    .result-card{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:28px;margin-top:24px;}
+    .result-inv-number{font-size:1.3rem;font-weight:900;color:#FB923C;}
+    .result-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.82rem;}
+    .result-table th{color:#64748B;font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.06em;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);}
+    .result-table td{padding:8px 0;color:#CBD5E1;border-bottom:1px solid rgba(255,255,255,.05);}
+    .result-total-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#EA580C,#F97316);border-radius:10px;margin-top:16px;}
+    .upsell{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:20px 24px;margin-top:20px;text-align:center;}
+
+    /* ─── STATS STRIP ─── */
+    .stats-strip{background:#F8FAFC;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;padding:32px 48px;}
+
+    /* ─── FEATURES ─── */
+    .features-sec{padding:80px 48px;max-width:1100px;margin:0 auto;}
+    .sec-pill{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--primary);text-transform:uppercase;margin-bottom:10px;}
+    .sec-h2{font-size:2.2rem;font-weight:900;color:#0F172A;letter-spacing:-.04em;margin-bottom:12px;}
+    .sec-sub{color:#64748B;font-size:1rem;max-width:500px;line-height:1.65;}
+    .feat-card{background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:28px;transition:all .2s;height:100%;}
+    .feat-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 8px 32px rgba(249,115,22,.1);}
+    .feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.25rem;}
+    .feat-title{font-weight:700;color:#0F172A;margin-bottom:6px;font-size:.93rem;}
+    .feat-desc{color:#64748B;font-size:.83rem;line-height:1.6;}
+
+    /* ─── CTA ─── */
+    .cta-sec{background:linear-gradient(135deg,#C2410C,#F97316);padding:80px 48px;text-align:center;}
+    .cta-h2{font-size:2.2rem;font-weight:900;color:#fff;letter-spacing:-.04em;margin-bottom:12px;}
+    .cta-sub{color:rgba(255,255,255,.75);font-size:1rem;margin-bottom:32px;}
+
+    /* ─── FOOTER ─── */
+    .lp-footer{background:#0F172A;padding:24px 48px;text-align:center;color:#475569;font-size:.83rem;}
+
+    /* ─── MODALS ─── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;}
+    .overlay.open{display:flex;}
+    .auth-modal{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:420px;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.4);animation:modalIn .2s ease;}
+    @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+    .modal-close{position:absolute;top:16px;right:16px;background:#F1F5F9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:.9rem;}
+    .modal-close:hover{background:#E2E8F0;}
+    .modal-logo{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+    .modal-logo-icon{width:36px;height:36px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+    .modal-logo-name{font-size:1.25rem;font-weight:900;color:#0F172A;letter-spacing:-.02em;}
+    .modal-sub{color:#64748B;font-size:.875rem;margin-bottom:24px;}
+    .m-label{font-size:.82rem;font-weight:600;color:#374151;margin-bottom:4px;display:block;}
+    .m-input{width:100%;border:1.5px solid #E2E8F0;border-radius:8px;padding:10px 14px;font-size:.88rem;outline:none;transition:border-color .15s;}
+    .m-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+    .btn-modal-submit{width:100%;padding:12px;background:var(--primary);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.93rem;cursor:pointer;transition:background .15s;margin-top:4px;}
+    .btn-modal-submit:hover{background:var(--primary-d);}
+    .btn-modal-submit:disabled{opacity:.65;}
+    .modal-foot{text-align:center;margin-top:18px;font-size:.83rem;color:#64748B;}
+    .modal-foot a{color:var(--primary);font-weight:600;text-decoration:none;cursor:pointer;}
+    .pwd-eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.9rem;padding:0;}
+    .strength-bar{height:3px;border-radius:3px;background:#E2E8F0;margin-top:5px;overflow:hidden;}
+    .strength-fill{height:100%;border-radius:3px;transition:width .3s,background .3s;width:0;}
+
+    @media(max-width:600px){
+      .lp-nav,.stats-strip,.features-sec,.cta-sec,.lp-footer{padding-left:20px;padding-right:20px;}
+      .from-to-grid{grid-template-columns:1fr;}
+      .auth-modal{padding:28px 20px;margin:16px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav class="lp-nav">
+  <a class="logo-wrap" href="/auth/login/">
+    <div class="logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div>
+    <div class="logo-name">Zayro ₹ Invoice</div>
+  </a>
+  <div class="nav-btns">
+    <button class="btn-nl" onclick="openModal('login-modal')">Login</button>
+    <button class="btn-np" onclick="openModal('reg-modal')">Register</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="hero-section">
+  <div class="hero-inner">
+
+    <!-- LEFT: Text -->
+    <div class="hero-left">
+      <div class="hero-pill"><i class="bi bi-stars"></i> Smart Billing Platform</div>
+      <h1 class="hero-h1">Simplify Your<br><span>Billing Process</span></h1>
+      <p class="hero-sub">Create invoices, track payments, manage customers and products, and generate reports — all from one easy-to-use dashboard with built-in GST support.</p>
+      <div class="hero-btns">
+        <button class="btn-h1" onclick="openModal('reg-modal')"><i class="bi bi-person-plus-fill"></i> Get Started Free</button>
+        <button class="btn-h3" onclick="showFreeForm()"><i class="bi bi-lightning-charge-fill"></i> Try Free Invoice</button>
+        <button class="btn-h2" onclick="openModal('login-modal')"><i class="bi bi-box-arrow-in-right"></i> Sign In</button>
+      </div>
+      <div class="hero-features">
+        <div class="hero-feat">
+          <div class="hero-feat-icon" style="color:#F97316"><i class="bi bi-receipt-cutoff"></i></div>
+          <div class="hero-feat-txt"><strong>Create Invoices</strong>Professional invoices in seconds</div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon" style="color:#22C55E"><i class="bi bi-send-fill"></i></div>
+          <div class="hero-feat-txt"><strong>Send Instantly</strong>Email or WhatsApp to customers</div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon" style="color:#F59E0B"><i class="bi bi-credit-card-fill"></i></div>
+          <div class="hero-feat-txt"><strong>Track Payments</strong>Get paid faster with tracking</div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon" style="color:#A78BFA"><i class="bi bi-bar-chart-fill"></i></div>
+          <div class="hero-feat-txt"><strong>Business Reports</strong>Powerful insights for growth</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Images -->
+    <div class="hero-right">
+      <img class="hero-img-invoice" src="/static/img/hero-invoice.png" alt="Invoice preview">
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── FREE INVOICE GENERATOR ─── -->
+<section id="free-section" style="background:linear-gradient(180deg,#0F172A 0%,#1E293B 100%);display:none;padding-bottom:60px">
+  <div class="free-zone">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:40px;margin-bottom:16px">
+      <div style="color:#FB923C;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em"><i class="bi bi-lightning-charge-fill me-2"></i>Free Invoice Generator — No account needed</div>
+      <button onclick="hideFreeForm()" style="background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.85rem"><i class="bi bi-x-lg"></i> Close</button>
+    </div>
+
+    <!-- ══ FORM CARD ══ -->
+    <div class="gen-card" id="free-form-card">
+      <div class="gen-layout">
+
+        <!-- ── MAIN FORM ── -->
+        <div class="gen-main">
+          <div class="gen-body">
+
+            <!-- TOP: Invoice label + Logo -->
+            <div class="gen-top">
+              <div class="inv-label-box">
+                <input class="inv-label-input" id="fi-inv-label" value="Invoice" maxlength="30">
+              </div>
+              <div>
+                <div class="logo-upload-box" onclick="document.getElementById('fi-logo-file').click()">
+                  <img id="fi-logo-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain">
+                  <div class="logo-placeholder-wrap" id="fi-logo-placeholder">
+                    <i class="bi bi-image" style="font-size:1.5rem;color:#CBD5E1"></i>
+                    <span>+ Logo</span>
+                  </div>
+                </div>
+                <input type="file" id="fi-logo-file" accept="image/*" style="display:none" onchange="previewLogo(this)">
+                <div id="logo-remove-wrap" style="display:none;text-align:center;margin-top:3px">
+                  <button onclick="removeLogo()" style="background:none;border:none;color:#EF4444;font-size:.7rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- FROM / BILL TO -->
+            <div class="from-to-grid">
+              <!-- FROM -->
+              <div>
+                <div class="gen-section-title">From</div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Name</span>
+                  <input class="gen-input" id="fi-from-name" placeholder="Business Name">
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Email</span>
+                  <div class="gen-input-icon">
+                    <input class="gen-input" id="fi-from-email" type="email" placeholder="name@business.com" style="padding-right:28px">
+                    <i class="bi bi-check-circle-fill icon" style="color:#10B981;display:none" id="from-email-ok"></i>
+                  </div>
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Address</span>
+                  <div style="flex:1">
+                    <input class="gen-input" id="fi-from-street" placeholder="Street" style="margin-bottom:6px">
+                    <input class="gen-input" id="fi-from-city" placeholder="City, State" style="margin-bottom:6px">
+                    <input class="gen-input" id="fi-from-zip" placeholder="Zip code">
+                  </div>
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Phone</span>
+                  <input class="gen-input" id="fi-from-phone" placeholder="(123) 456 789">
+                </div>
+                <div class="gen-field" id="from-biz-num-row">
+                  <span class="gen-field-lbl">Business<br>Number</span>
+                  <input class="gen-input" id="fi-from-gst" placeholder="GST / Business Number">
+                </div>
+                <a class="show-more-link" onclick="toggleAdditionalFrom()"><i class="bi bi-chevron-down me-1" id="from-chevron"></i>Show additional business details</a>
+                <div class="additional-from" id="additional-from">
+                  <div class="gen-field" style="margin-top:8px">
+                    <span class="gen-field-lbl">Website</span>
+                    <input class="gen-input" id="fi-from-website" placeholder="www.business.com">
+                  </div>
+                </div>
+              </div>
+              <!-- BILL TO -->
+              <div>
+                <div class="gen-section-title">Bill To</div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Name</span>
+                  <input class="gen-input" id="fi-name" placeholder="Client Name" required>
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Email</span>
+                  <div class="gen-input-icon">
+                    <input class="gen-input" id="fi-email" type="email" placeholder="name@client.com" style="padding-right:28px" required>
+                    <i class="bi bi-check-circle-fill icon" style="color:#10B981;display:none" id="to-email-ok"></i>
+                  </div>
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Address</span>
+                  <input class="gen-input" id="fi-cust-address" placeholder="Street">
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Phone</span>
+                  <input class="gen-input" id="fi-cust-phone" placeholder="(123) 456 789">
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Mobile</span>
+                  <input class="gen-input" id="fi-cust-mobile" placeholder="(123) 456 789">
+                </div>
+                <div class="gen-field">
+                  <span class="gen-field-lbl">Fax</span>
+                  <input class="gen-input" id="fi-cust-fax" placeholder="(123) 456 789">
+                </div>
+              </div>
+            </div>
+
+            <!-- INVOICE META -->
+            <div class="inv-meta-section">
+              <div class="inv-meta-field">
+                <span class="inv-meta-lbl">Number</span>
+                <input class="inv-meta-input" id="fi-inv-number" placeholder="INV000">
+                <i class="bi bi-exclamation-circle-fill" style="color:#EF4444;margin-left:8px;display:none" id="inv-num-err-icon"></i>
+              </div>
+              <div class="inv-err" id="inv-num-err" style="display:none">Number is required</div>
+              <div class="inv-meta-field">
+                <span class="inv-meta-lbl">Date</span>
+                <input class="inv-meta-input" id="fi-inv-date" type="date">
+              </div>
+              <div class="inv-meta-field">
+                <span class="inv-meta-lbl">Terms</span>
+                <select class="inv-meta-input" id="fi-terms">
+                  <option value="On Receipt">On Receipt</option>
+                  <option value="Net 7">Net 7</option>
+                  <option value="Net 15">Net 15</option>
+                  <option value="Net 30">Net 30</option>
+                  <option value="Net 60">Net 60</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ITEMS -->
+            <div class="items-section">
+              <div class="items-thead">
+                <span></span>
+                <span>Description</span>
+                <span style="text-align:right">Rate</span>
+                <span style="text-align:right">Qty</span>
+                <span style="text-align:right">Amount</span>
+              </div>
+              <div id="fi-items"></div>
+              <div style="margin-top:14px">
+                <button class="btn-add-item-round" onclick="addFreeItem()" title="Add item"><i class="bi bi-plus"></i></button>
+              </div>
+            </div>
+
+            <!-- TOTALS -->
+            <div class="gen-totals">
+              <div class="totals-box">
+                <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">Rs.0.00</span></div>
+                <div class="tot-row"><span>Total</span><span id="fi-tax-total">Rs.0.00</span></div>
+                <div class="tot-row bal"><span>Balance Due</span><span id="fi-total">Rs.0.00</span></div>
+              </div>
+            </div>
+
+            <!-- NOTES -->
+            <div class="gen-notes">
+              <div class="gen-sec-title">Notes</div>
+              <textarea class="gen-big-textarea" id="fi-notes" maxlength="5000"
+                placeholder="Notes - any relevant information not covered, additional terms and conditions"
+                oninput="updateCharCount('fi-notes','notes-count',5000)"></textarea>
+              <div class="char-count"><span id="notes-count">0</span>/5000</div>
+            </div>
+
+            <!-- SIGNATURE -->
+            <div class="gen-section-block">
+              <div class="gen-sec-title" style="margin-bottom:10px">Signature</div>
+              <button class="btn-plus-dark" title="Add signature (available after registration)" onclick="openModal('reg-modal')"><i class="bi bi-plus"></i></button>
+            </div>
+
+            <!-- PHOTOS -->
+            <div class="gen-section-block" style="margin-bottom:20px">
+              <div class="gen-sec-title" style="margin-bottom:10px">Photos</div>
+              <div class="photo-box" onclick="openModal('reg-modal')" title="Add photos (available after registration)">
+                <i class="bi bi-image" style="font-size:1.2rem"></i>
+                <span>Add Photo</span>
+              </div>
+            </div>
+
+            <div id="fi-error" style="color:#EF4444;font-size:.82rem;margin:12px 0;display:none;background:#FEF2F2;border-radius:8px;padding:10px 14px;border:1px solid #FCA5A5"></div>
+          </div>
+
+          <!-- Action bar -->
+          <div class="gen-actions">
+            <button class="btn-gen-primary" id="fi-btn" onclick="createFreeInvoice()">
+              <i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF
+            </button>
+            <button class="btn-gen-sec" onclick="hideFreeForm()">Cancel</button>
+            <div style="margin-left:auto;font-size:.78rem;color:#94A3B8;display:flex;align-items:center;gap:6px">
+              <i class="bi bi-info-circle"></i> Want unlimited?
+              <a onclick="openModal('reg-modal')" style="color:var(--primary);cursor:pointer;font-weight:600">Register free →</a>
+            </div>
+          </div>
+        </div><!-- /gen-main -->
+
+        <!-- ── SIDEBAR ── -->
+        <div class="gen-sidebar">
+
+          <!-- Email -->
+          <div class="sb-section">
+            <input class="sb-input" id="sb-email" type="email" placeholder="name@business.com">
+            <button class="sb-btn" style="margin-top:6px" onclick="openModal('reg-modal')">Send</button>
+          </div>
+
+          <!-- Template colors -->
+          <div class="sb-section">
+            <div class="sb-lbl">Template</div>
+            <div class="color-swatches" id="color-swatches">
+              <div class="color-swatch none active" data-color="#F97316" onclick="selectColor(this)" title="Default">
+                <i class="bi bi-slash-circle" style="color:#CBD5E1;font-size:.75rem"></i>
+              </div>
+              <div class="color-swatch" style="background:#1E293B" data-color="#1E293B" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#475569" data-color="#475569" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#0F5132" data-color="#0F5132" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#B91C1C" data-color="#B91C1C" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#DB2777" data-color="#DB2777" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#7C3AED" data-color="#7C3AED" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#5B21B6" data-color="#5B21B6" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#DC2626" data-color="#DC2626" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#0284C7" data-color="#0284C7" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#0F766E" data-color="#0F766E" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#15803D" data-color="#15803D" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#4D7C0F" data-color="#4D7C0F" onclick="selectColor(this)"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;cursor:pointer;margin-bottom:8px" onclick="document.getElementById('custom-color-pick').click()">
+              <input type="color" id="custom-color-pick" style="display:none" onchange="applyCustomColor(this.value)">
+              <div style="width:20px;height:20px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);flex-shrink:0"></div>
+              <span style="font-size:.82rem;color:#374151;font-weight:500">Custom Color</span>
+              <i class="bi bi-chevron-down" style="margin-left:auto;color:#94A3B8;font-size:.75rem"></i>
+            </div>
+          </div>
+
+          <!-- Tax -->
+          <div class="sb-section">
+            <div class="sb-lbl">Tax</div>
+            <div style="font-size:.75rem;color:#94A3B8;margin-bottom:6px">Type</div>
+            <select class="sb-select" id="sb-tax-type" onchange="recalcFreeTotal()">
+              <option value="none">None</option>
+              <option value="percent">Percent (%)</option>
+              <option value="fixed">Fixed (Rs.)</option>
+            </select>
+            <div id="sb-tax-val-wrap" style="display:none;margin-top:6px">
+              <input class="sb-input" type="number" id="sb-tax-val" placeholder="0" min="0" step="0.01" oninput="recalcFreeTotal()">
+            </div>
+          </div>
+
+          <!-- Discount -->
+          <div class="sb-section">
+            <div class="sb-lbl">Discount</div>
+            <div style="font-size:.75rem;color:#94A3B8;margin-bottom:6px">Type</div>
+            <select class="sb-select" id="sb-disc-type" onchange="recalcFreeTotal()">
+              <option value="none">None</option>
+              <option value="percent">Percent (%)</option>
+              <option value="fixed">Fixed (Rs.)</option>
+            </select>
+            <div id="sb-disc-val-wrap" style="display:none;margin-top:6px">
+              <input class="sb-input" type="number" id="sb-disc-val" placeholder="0" min="0" step="0.01" oninput="recalcFreeTotal()">
+            </div>
+          </div>
+
+          <!-- Currency -->
+          <div class="sb-section">
+            <div class="sb-lbl">Currency</div>
+            <div class="currency-row">
+              <span style="font-size:.85rem;font-weight:700;color:#0F172A">INR</span>
+              <span style="font-size:.9rem;color:#374151">Rs.</span>
+              <span class="currency-flag">🇮🇳</span>
+            </div>
+          </div>
+
+        </div><!-- /sidebar -->
+      </div><!-- /gen-layout -->
+    </div><!-- /gen-card -->
+
+    <!-- ── RESULT CARD ── -->
+    <div class="result-card d-none" id="free-result-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em">Invoice Created</div>
+          <div class="result-inv-number" id="res-number"></div>
+          <div style="color:#94A3B8;font-size:.82rem;margin-top:4px" id="res-customer"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="color:#64748B;font-size:.75rem;margin-bottom:4px">Balance Due</div>
+          <div style="font-size:1.6rem;font-weight:900;color:#FB923C" id="res-total"></div>
+        </div>
+      </div>
+      <table class="result-table">
+        <thead><tr><th>Item</th><th style="text-align:right">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
+        <tbody id="res-items"></tbody>
+      </table>
+      <div class="result-total-bar">
+        <span style="color:rgba(255,255,255,.8);font-weight:600">Balance Due</span>
+        <span style="color:#fff;font-weight:900;font-size:1.2rem" id="res-total2"></span>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+        <a id="res-pdf-btn" href="#" target="_blank"
+           style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:#10B981;border-radius:10px;color:#fff;font-weight:700;font-size:.9rem;text-decoration:none;">
+          <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+        </a>
+        <button onclick="createAnotherFree()" id="try-again-btn"
+           style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-weight:600;font-size:.9rem;background:none;cursor:pointer">
+          <i class="bi bi-arrow-repeat"></i> New Invoice
+        </button>
+      </div>
+      <div class="upsell">
+        <div style="font-size:1rem;font-weight:800;color:#C4B5FD;margin-bottom:6px"><i class="bi bi-stars me-2"></i>Want unlimited invoices + customer management?</div>
+        <div style="color:#94A3B8;font-size:.85rem;margin-bottom:16px">Register free to save invoices, manage customers, track payments, and download anytime.</div>
+        <button class="btn-np" onclick="openModal('reg-modal')"><i class="bi bi-person-plus-fill me-1"></i> Register Free</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── STATS STRIP ─── -->
+<div class="stats-strip">
+  <div class="row g-3 text-center" style="max-width:860px;margin:0 auto">
+    <div class="col-6 col-md-3"><div style="font-size:1.9rem;font-weight:900;color:var(--primary)">GST</div><div style="font-size:.78rem;color:#64748B;font-weight:600;margin-top:2px">Ready</div></div>
+    <div class="col-6 col-md-3"><div style="font-size:1.9rem;font-weight:900;color:var(--primary)">PDF</div><div style="font-size:.78rem;color:#64748B;font-weight:600;margin-top:2px">Export</div></div>
+    <div class="col-6 col-md-3"><div style="font-size:1.9rem;font-weight:900;color:var(--primary)">∞</div><div style="font-size:.78rem;color:#64748B;font-weight:600;margin-top:2px">Customers</div></div>
+    <div class="col-6 col-md-3"><div style="font-size:1.9rem;font-weight:900;color:var(--primary)">3</div><div style="font-size:.78rem;color:#64748B;font-weight:600;margin-top:2px">User Roles</div></div>
+  </div>
+</div>
+
+<!-- ─── FEATURES ─── -->
+<section class="features-sec">
+  <div style="margin-bottom:48px">
+    <div class="sec-pill">Everything you need</div>
+    <h2 class="sec-h2">Built for Modern Businesses</h2>
+    <p class="sec-sub">From invoice creation to payment tracking — Zayro ₹ Invoice covers the complete billing lifecycle.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-receipt-cutoff" style="color:#F97316"></i></div><div class="feat-title">Smart Invoicing</div><div class="feat-desc">Create professional invoices with GST, HSN codes, discounts, and multi-currency support in seconds.</div></div></div>
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED"></i></div><div class="feat-title">Customer Management</div><div class="feat-desc">Maintain a complete customer database with addresses, GST numbers, and billing history.</div></div></div>
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#ECFDF5"><i class="bi bi-cash-coin" style="color:#059669"></i></div><div class="feat-title">Payment Tracking</div><div class="feat-desc">Record partial and full payments, track outstanding dues, and get instant status updates.</div></div></div>
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-box-seam-fill" style="color:#EA580C"></i></div><div class="feat-title">Product Catalogue</div><div class="feat-desc">Manage your products with categories, HSN codes, tax rates, and price snapshots on invoices.</div></div></div>
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#FEF2F2"><i class="bi bi-file-earmark-pdf-fill" style="color:#DC2626"></i></div><div class="feat-title">PDF Generation</div><div class="feat-desc">Download professional PDF invoices and send them directly to customers via email.</div></div></div>
+    <div class="col-md-4"><div class="feat-card"><div class="feat-icon" style="background:#F0FDF4"><i class="bi bi-bar-chart-fill" style="color:#16A34A"></i></div><div class="feat-title">Reports &amp; Analytics</div><div class="feat-desc">Monthly revenue charts, sales reports, CSV exports — complete visibility into your business.</div></div></div>
+  </div>
+</section>
+
+<!-- ─── CTA ─── -->
+
+<!-- ─── FOOTER ─── -->
+<footer class="lp-footer">© 2026 <strong style="color:#94A3B8">Zayron Infotech Pvt. Ltd.</strong> · Zayro ₹ Invoice · Built for Indian Businesses · GST Ready</footer>
+
+
+<!-- ════════ LOGIN MODAL ════════ -->
+<div class="overlay" id="login-modal" onclick="overlayClick(event,'login-modal')">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeModal('login-modal')"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-logo">
+      <div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div>
+      <div class="modal-logo-name">Zayro ₹ Invoice</div>
+    </div>
+    <p class="modal-sub">Sign in to your account</p>
+    <div id="login-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="mb-3">
+        <label class="m-label">Email or Username</label>
+        <input type="text" class="m-input" id="l-ident" placeholder="email or username" autocomplete="username" required>
+      </div>
+      <div class="mb-4">
+        <label class="m-label">Password</label>
+        <div style="position:relative">
+          <input type="password" class="m-input" id="l-pwd" placeholder="••••••••" autocomplete="current-password" required style="padding-right:40px">
+          <button type="button" class="pwd-eye-btn" onclick="toggleEye('l-pwd','eye-l')"><i class="bi bi-eye" id="eye-l"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="btn-modal-submit" id="login-btn">
+        <span id="login-btn-txt">Sign In</span>
+        <span id="login-spinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
+      </button>
+    </form>
+    <div class="modal-foot">Don't have an account? <a onclick="switchModal('login-modal','reg-modal')">Register</a></div>
+  </div>
+</div>
+
+
+<!-- ════════ REGISTER MODAL ════════ -->
+<div class="overlay" id="reg-modal" onclick="overlayClick(event,'reg-modal')">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeModal('reg-modal')"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-logo">
+      <div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div>
+      <div class="modal-logo-name">Zayro ₹ Invoice</div>
+    </div>
+    <p class="modal-sub">Create your free account</p>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#F1F5F9;border-radius:100px;padding:4px 12px;font-size:.75rem;font-weight:600;color:#64748B;margin-bottom:20px"><i class="bi bi-person"></i> You'll join as a <strong style="color:#0F172A;margin-left:2px">User</strong></div>
+    <div id="reg-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <div id="reg-ok" class="alert alert-success d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <form id="reg-form" onsubmit="doRegister(event)">
+      <div class="mb-3">
+        <label class="m-label">Username</label>
+        <input type="text" class="m-input" id="r-user" placeholder="johndoe" autocomplete="username" required>
+      </div>
+      <div class="mb-3">
+        <label class="m-label">Email</label>
+        <input type="email" class="m-input" id="r-email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="mb-4">
+        <label class="m-label">Password</label>
+        <div style="position:relative">
+          <input type="password" class="m-input" id="r-pwd" placeholder="Min 8 characters" autocomplete="new-password" required minlength="8" style="padding-right:40px" oninput="checkStrength(this.value)">
+          <button type="button" class="pwd-eye-btn" onclick="toggleEye('r-pwd','eye-r')"><i class="bi bi-eye" id="eye-r"></i></button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="s-fill"></div></div>
+        <div id="s-text" style="font-size:.7rem;margin-top:3px;color:#94A3B8"></div>
+      </div>
+      <button type="submit" class="btn-modal-submit" id="reg-btn">
+        <span id="reg-btn-txt">Create Account</span>
+        <span id="reg-spinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
+      </button>
+    </form>
+    <div class="modal-foot">Already have an account? <a onclick="switchModal('reg-modal','login-modal')">Sign In</a></div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ─── If already logged in → dashboard ─── */
+if (localStorage.getItem('access_token')) window.location = '/';
+
+/* ─── Check URL params for ?login or ?register ─── */
+const _p = new URLSearchParams(location.search);
+if (_p.get('login') !== null)    { setTimeout(() => openModal('login-modal'), 100); }
+if (_p.get('register') !== null) { setTimeout(() => openModal('reg-modal'), 100); }
+
+/* ─── Modal helpers ─── */
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function overlayClick(e, id){ if(e.target===e.currentTarget) closeModal(id); }
+function switchModal(from, to){ closeModal(from); openModal(to); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal('login-modal'); closeModal('reg-modal'); }});
+
+/* ─── Password helpers ─── */
+function toggleEye(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  eye.className = inp.type==='password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+function checkStrength(val) {
+  let s=0;
+  if(val.length>=8) s++; if(/[A-Z]/.test(val)) s++; if(/[0-9]/.test(val)) s++; if(/[^A-Za-z0-9]/.test(val)) s++;
+  const L=[{w:'0%',c:'#EF4444',t:''},{w:'25%',c:'#EF4444',t:'Weak'},{w:'50%',c:'#F59E0B',t:'Fair'},{w:'75%',c:'#F97316',t:'Good'},{w:'100%',c:'#10B981',t:'Strong'}];
+  const l=L[s]; const f=document.getElementById('s-fill'); const t=document.getElementById('s-text');
+  f.style.width=l.w; f.style.background=l.c; t.textContent=l.t; t.style.color=l.c;
+}
+
+/* ─── Login ─── */
+async function doLogin(e) {
+  e.preventDefault();
+  const btn=document.getElementById('login-btn'); const err=document.getElementById('login-err');
+  err.classList.add('d-none'); btn.disabled=true;
+  document.getElementById('login-btn-txt').textContent='Signing in…';
+  document.getElementById('login-spinner').classList.remove('d-none');
+
+  const ident=document.getElementById('l-ident').value.trim();
+  try {
+    const r=await fetch('/api/auth/login/',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({[ident.includes('@')?'email':'username']:ident, password:document.getElementById('l-pwd').value})});
+    const d=await r.json();
+    if(d.success){
+      localStorage.setItem('access_token',d.data.tokens.access);
+      localStorage.setItem('refresh_token',d.data.tokens.refresh);
+      localStorage.setItem('user_email',d.data.user.email);
+      localStorage.setItem('user_username',d.data.user.username);
+      localStorage.setItem('user_role',d.data.user.role);
+      localStorage.setItem('user_id',d.data.user.id);
+      window.location='/';
+    } else {
+      const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message;
+      err.textContent=msg||'Invalid credentials.'; err.classList.remove('d-none');
+    }
+  } catch { err.textContent='Network error. Try again.'; err.classList.remove('d-none'); }
+  btn.disabled=false;
+  document.getElementById('login-btn-txt').textContent='Sign In';
+  document.getElementById('login-spinner').classList.add('d-none');
+}
+
+/* ─── Register ─── */
+async function doRegister(e) {
+  e.preventDefault();
+  const btn=document.getElementById('reg-btn'); const err=document.getElementById('reg-err'); const ok=document.getElementById('reg-ok');
+  err.classList.add('d-none'); ok.classList.add('d-none'); btn.disabled=true;
+  document.getElementById('reg-btn-txt').textContent='Creating…';
+  document.getElementById('reg-spinner').classList.remove('d-none');
+
+  try {
+    const r=await fetch('/api/auth/register/',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:document.getElementById('r-user').value.trim(),email:document.getElementById('r-email').value.trim(),password:document.getElementById('r-pwd').value})});
+    const d=await r.json();
+    if(d.success){
+      localStorage.setItem('access_token',d.data.tokens.access);
+      localStorage.setItem('refresh_token',d.data.tokens.refresh);
+      localStorage.setItem('user_email',d.data.user.email);
+      localStorage.setItem('user_username',d.data.user.username);
+      localStorage.setItem('user_role',d.data.user.role);
+      localStorage.setItem('user_id',d.data.user.id);
+      ok.textContent='Account created! Redirecting…'; ok.classList.remove('d-none');
+      setTimeout(()=>window.location='/',900);
+    } else {
+      const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message;
+      err.textContent=msg||'Registration failed.'; err.classList.remove('d-none');
+    }
+  } catch { err.textContent='Network error.'; err.classList.remove('d-none'); }
+  btn.disabled=false;
+  document.getElementById('reg-btn-txt').textContent='Create Account';
+  document.getElementById('reg-spinner').classList.add('d-none');
+}
+
+/* ─── Free invoice generator ─── */
+let freeItems = [];
+
+function showFreeForm() {
+  const sec = document.getElementById('free-section');
+  sec.style.display = 'block';
+  sec.scrollIntoView({behavior:'smooth'});
+  if (freeItems.length === 0) addFreeItem();
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fi-inv-date').value = today;
+}
+function hideFreeForm() {
+  document.getElementById('free-section').style.display = 'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function previewLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const img = document.getElementById('fi-logo-img');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+  document.getElementById('fi-logo-placeholder').style.display = 'none';
+  document.getElementById('logo-remove-wrap').style.display = 'block';
+}
+function removeLogo() {
+  document.getElementById('fi-logo-file').value = '';
+  const img = document.getElementById('fi-logo-img');
+  img.src = ''; img.style.display = 'none';
+  document.getElementById('fi-logo-placeholder').style.display = 'flex';
+  document.getElementById('logo-remove-wrap').style.display = 'none';
+}
+
+function toggleAdditionalFrom() {
+  const el = document.getElementById('additional-from');
+  const ch = document.getElementById('from-chevron');
+  const open = el.style.display !== 'block';
+  el.style.display = open ? 'block' : 'none';
+  ch.className = open ? 'bi bi-chevron-up me-1' : 'bi bi-chevron-down me-1';
+}
+
+function updateCharCount(textareaId, countId, max) {
+  const len = (document.getElementById(textareaId).value||'').length;
+  document.getElementById(countId).textContent = len;
+}
+
+function _applyTemplateColor(hex) {
+  const card = document.getElementById('free-form-card');
+  card.style.setProperty('--primary', hex);
+  // Derive a darker shade (~20% darker) for hover states
+  const darker = '#' + hex.replace(/^#/, '').match(/../g)
+    .map(c => Math.max(0, parseInt(c,16) - 40).toString(16).padStart(2,'0')).join('');
+  card.style.setProperty('--primary-d', darker);
+  // Update items thead border color
+  const thead = card.querySelector('.items-thead');
+  if (thead) thead.style.borderBottomColor = hex;
+  // Update Balance Due row color
+  const bal = card.querySelector('.tot-row.bal');
+  if (bal) { bal.style.borderTopColor = hex; bal.style.color = hex; }
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const hex = el.dataset.color || '#F97316';
+  _applyTemplateColor(hex);
+}
+
+function applyCustomColor(val) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  _applyTemplateColor(val);
+}
+
+// Show/hide sidebar tax & discount value inputs
+document.addEventListener('DOMContentLoaded', () => {
+  ['sb-tax-type','sb-disc-type'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const wrapId = id === 'sb-tax-type' ? 'sb-tax-val-wrap' : 'sb-disc-val-wrap';
+    sel.addEventListener('change', () => {
+      document.getElementById(wrapId).style.display = sel.value === 'none' ? 'none' : 'block';
+      recalcFreeTotal();
+    });
+  });
+});
+
+function addFreeItem() {
+  freeItems.push({name:'', detail:'', rate:0, qty:1});
+  renderFreeItems();
+}
+function removeFreeItem(i) {
+  if (freeItems.length === 1) return;
+  freeItems.splice(i,1);
+  renderFreeItems();
+}
+function updateFreeItem(i, field, val) {
+  freeItems[i][field] = val;
+  recalcFreeTotal();
+}
+
+function renderFreeItems() {
+  const wrap = document.getElementById('fi-items');
+  wrap.innerHTML = freeItems.map((it,i)=>{
+    const amt = ((parseFloat(it.rate)||0)*(parseFloat(it.qty)||1)).toFixed(2);
+    const detLen = (it.detail||'').length;
+    return `
+    <div class="item-block">
+      <div class="item-main-row">
+        <button class="item-x-btn" onclick="removeFreeItem(${i})" title="Remove"><i class="bi bi-x"></i></button>
+        <input class="item-desc-input" placeholder="Description of service or product…" value="${(it.name||'').replace(/"/g,'&quot;')}"
+               oninput="updateFreeItem(${i},'name',this.value)">
+        <input class="item-num-input" type="number" placeholder="0.00" value="${it.rate||''}"
+               min="0" step="0.01" oninput="updateFreeItem(${i},'rate',parseFloat(this.value)||0)">
+        <input class="item-num-input" type="number" placeholder="1" value="${it.qty||1}"
+               min="0.01" step="any" oninput="updateFreeItem(${i},'qty',parseFloat(this.value)||1)">
+        <span class="item-amt">Rs.${amt}</span>
+      </div>
+      <div class="item-detail-row">
+        <textarea class="item-detail-textarea" maxlength="5000"
+          placeholder="Additional details (optional)"
+          oninput="updateFreeItem(${i},'detail',this.value);document.getElementById('det-cnt-${i}').textContent=this.value.length"
+        >${it.detail||''}</textarea>
+        <div class="char-count" style="margin-top:3px"><span id="det-cnt-${i}">${detLen}</span>/5000</div>
+      </div>
+    </div>`;
+  }).join('');
+  recalcFreeTotal();
+}
+
+function recalcFreeTotal() {
+  let sub = 0;
+  freeItems.forEach(it=>{
+    sub += (parseFloat(it.rate)||0) * (parseFloat(it.qty)||1);
+  });
+
+  // Discount
+  const discType = (document.getElementById('sb-disc-type')||{}).value || 'none';
+  const discVal  = parseFloat((document.getElementById('sb-disc-val')||{}).value) || 0;
+  let discount = 0;
+  if (discType === 'percent') discount = sub * discVal / 100;
+  else if (discType === 'fixed') discount = discVal;
+  const afterDisc = Math.max(0, sub - discount);
+
+  // Tax
+  const taxType = (document.getElementById('sb-tax-type')||{}).value || 'none';
+  const taxVal  = parseFloat((document.getElementById('sb-tax-val')||{}).value) || 0;
+  let taxAmt = 0;
+  if (taxType === 'percent') taxAmt = afterDisc * taxVal / 100;
+  else if (taxType === 'fixed') taxAmt = taxVal;
+
+  const total = afterDisc + taxAmt;
+  const fmt = n => 'Rs.'+n.toFixed(2);
+  document.getElementById('fi-subtotal').textContent  = fmt(sub);
+  document.getElementById('fi-tax-total').textContent = fmt(total);
+  document.getElementById('fi-total').textContent     = fmt(total);
+}
+
+async function createFreeInvoice() {
+  const name  = document.getElementById('fi-name').value.trim();
+  const email = document.getElementById('fi-email').value.trim();
+  const errEl = document.getElementById('fi-error');
+  errEl.style.display='none';
+
+  if (!name || !email) { errEl.textContent='Client name and email are required.'; errEl.style.display='block'; return; }
+  const validItems = freeItems.filter(it=>it.name && (parseFloat(it.rate)||0)>0);
+  if (!validItems.length) { errEl.textContent='Add at least one item with a description and rate.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('fi-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
+
+  const fromStreet = document.getElementById('fi-from-street').value.trim();
+  const fromCity   = document.getElementById('fi-from-city').value.trim();
+  const fromZip    = document.getElementById('fi-from-zip').value.trim();
+  const fromAddr   = [fromStreet, fromCity, fromZip].filter(Boolean).join(', ');
+
+  const payload = {
+    from_name:    document.getElementById('fi-from-name').value.trim(),
+    from_email:   document.getElementById('fi-from-email').value.trim(),
+    from_address: fromAddr,
+    from_phone:   document.getElementById('fi-from-phone').value.trim(),
+    from_gst:     document.getElementById('fi-from-gst').value.trim(),
+    customer_name:    name,
+    customer_email:   email,
+    customer_address: document.getElementById('fi-cust-address').value.trim(),
+    customer_phone:   document.getElementById('fi-cust-phone').value.trim(),
+    customer_mobile:  document.getElementById('fi-cust-mobile').value.trim(),
+    customer_fax:     document.getElementById('fi-cust-fax').value.trim(),
+    invoice_number:   document.getElementById('fi-inv-number').value.trim(),
+    terms:            document.getElementById('fi-terms').value,
+    notes:            document.getElementById('fi-notes').value.trim(),
+    items: validItems.map(it=>({
+      name: it.name,
+      price: parseFloat(it.rate)||0,
+      qty: parseFloat(it.qty)||1,
+      tax: 0,
+    })),
+  };
+
+  const fd = new FormData();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (k === 'items') fd.append(k, JSON.stringify(v));
+    else fd.append(k, v ?? '');
+  });
+  const logoFile = document.getElementById('fi-logo-file').files[0];
+  if (logoFile) fd.append('logo', logoFile);
+
+  try {
+    const r = await fetch('/api/invoices/free/', {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.success) {
+      showFreeResult(d.data);
+    } else {
+      if (r.status===429) {
+        errEl.innerHTML=`${d.message} <a onclick="openModal('reg-modal')" style="color:#F97316;cursor:pointer;font-weight:700">Register free →</a>`;
+      } else {
+        errEl.textContent = d.message || 'Failed to create invoice.';
+      }
+      errEl.style.display='block';
+    }
+  } catch { errEl.textContent='Network error. Please try again.'; errEl.style.display='block'; }
+
+  btn.disabled=false;
+  btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';
+}
+
+function showFreeResult(data) {
+  document.getElementById('free-form-card').classList.add('d-none');
+  const rc = document.getElementById('free-result-card');
+  rc.classList.remove('d-none');
+  rc.scrollIntoView({behavior:'smooth'});
+  const fmt = n => 'Rs.'+Number(n).toFixed(2);
+  document.getElementById('res-number').textContent   = data.invoice_number;
+  document.getElementById('res-customer').textContent = data.customer_name+' · '+data.customer_email;
+  document.getElementById('res-total').textContent    = fmt(data.grand_total);
+  document.getElementById('res-total2').textContent   = fmt(data.grand_total);
+  document.getElementById('res-pdf-btn').href         = '/api/invoices/free/'+data.id+'/pdf/';
+  document.getElementById('res-items').innerHTML = data.items.map(it=>`
+    <tr>
+      <td style="font-weight:600">${it.name}</td>
+      <td style="text-align:right">${it.qty}</td>
+      <td style="text-align:right">${fmt(it.price)}</td>
+      <td style="text-align:right;font-weight:700;color:#fff">${fmt(it.total)}</td>
+    </tr>`).join('');
+  if (data.remaining_today === 0) {
+    const btn = document.getElementById('try-again-btn');
+    btn.innerHTML='<i class="bi bi-clock me-1"></i> Come back tomorrow';
+    btn.disabled=true; btn.style.opacity='.5';
+  }
+}
+
+function createAnotherFree() {
+  document.getElementById('free-form-card').classList.remove('d-none');
+  document.getElementById('free-result-card').classList.add('d-none');
+  freeItems=[]; addFreeItem();
+  ['fi-name','fi-email','fi-notes','fi-from-name','fi-from-email',
+   'fi-from-street','fi-from-city','fi-from-zip','fi-from-phone','fi-from-gst','fi-from-website',
+   'fi-cust-address','fi-cust-phone','fi-cust-mobile','fi-cust-fax','fi-inv-number'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  removeLogo();
+  document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('notes-count').textContent='0';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}Customers – Zayro ₹ Invoice{% endblock %}
+{% block nav_customers %}active{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block extra_css %}
+<style>
+  .view-panel { transition: opacity .15s; }
+  .back-btn {
+    display:inline-flex; align-items:center; gap:6px; color:#64748B; font-size:.875rem;
+    font-weight:600; text-decoration:none; background:none; border:none; cursor:pointer; padding:0; margin-bottom:16px;
+  }
+  .back-btn:hover { color:var(--primary); }
+  .form-section-title {
+    font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8;
+    margin:20px 0 14px; display:flex; align-items:center; gap:8px;
+  }
+  .form-section-title::after { content:''; flex:1; height:1px; background:#F1F5F9; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ LIST VIEW ═══ -->
+<div id="list-view" class="view-panel">
+  <div class="section-header mb-4">
+    <div class="input-group" style="max-width:300px">
+      <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #E2E8F0;border-radius:8px 0 0 8px">
+        <i class="bi bi-search text-muted"></i>
+      </span>
+      <input type="text" class="form-control border-start-0" id="search" placeholder="Search customers…"
+             style="border:1.5px solid #E2E8F0;border-left:none;border-radius:0 8px 8px 0" oninput="onSearch(this.value)">
+    </div>
+    <button class="btn btn-primary" id="add-customer-btn" onclick="openForm()">
+      <i class="bi bi-person-plus me-1"></i>Add Customer
+    </button>
+  </div>
+
+  <div class="card-ms">
+    <div style="overflow-x:auto">
+      <table class="ms-table">
+        <thead><tr>
+          <th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>GST No.</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="customer-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8">
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-top:1px solid #F1F5F9">
+      <small style="color:#94A3B8" id="page-info"></small>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" id="prev-btn" onclick="changePage(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="next-btn" onclick="changePage(1)">Next <i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FORM VIEW ═══ -->
+<div id="form-view" class="view-panel d-none">
+  <button class="back-btn" onclick="closeForm()">
+    <i class="bi bi-arrow-left"></i> Back to Customers
+  </button>
+
+  <div class="card-ms p-4">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-size:1.1rem;font-weight:800;color:#0F172A" id="form-heading">Add Customer</div>
+      <span id="form-mode-badge" class="badge-ms" style="background:#FFF7ED;color:#EA580C">New</span>
+    </div>
+    <div id="form-error" class="alert alert-danger d-none rounded-3 mt-3"></div>
+
+    <form id="customer-form" onsubmit="submitForm(event)">
+      <div class="form-section-title"><i class="bi bi-person-vcard"></i> Customer Information</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="f-customer_name" required placeholder="Full name">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Company / Business</label>
+          <input type="text" class="form-control" id="f-company" placeholder="Company name (optional)">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" id="f-email" required placeholder="customer@example.com">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-control" id="f-phone" placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <div class="form-section-title"><i class="bi bi-geo-alt"></i> Address Details</div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Street Address</label>
+          <textarea class="form-control" id="f-address" rows="2" placeholder="House no., Street, Area"></textarea>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" id="f-city" placeholder="Mumbai">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          <input type="text" class="form-control" id="f-state" placeholder="Maharashtra">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Pincode</label>
+          <input type="text" class="form-control" id="f-pincode" placeholder="400001">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">GST Number</label>
+          <input type="text" class="form-control" id="f-gst_number" placeholder="22AAAAA0000A1Z5">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary px-4 fw-700" id="f-submit-btn">
+          <span id="f-btn-text"><i class="bi bi-check-lg me-1"></i>Save Customer</span>
+          <span id="f-btn-spinner" class="spinner-border spinner-border-sm d-none ms-1"></span>
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4" onclick="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let page = 1, total = 0, search = '';
+let editingId = null;
+
+/* ── Load list ── */
+async function loadCustomers() {
+  const tbody = document.getElementById('customer-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…</td></tr>';
+  const res = await API.get(`/api/customers/?page=${page}&search=${encodeURIComponent(search)}`);
+  if (!res.success) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#EF4444">Failed to load. Refresh to retry.</td></tr>';
+    return;
+  }
+  total = res.data.total;
+  const rows = res.data.results;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px;color:#94A3B8">
+      <i class="bi bi-people" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+      No customers yet. <a href="#" onclick="openForm();return false">Add your first customer →</a>
+    </td></tr>`;
+    document.getElementById('page-info').textContent = '';
+    return;
+  }
+  tbody.innerHTML = rows.map(c => `
+    <tr>
+      <td style="font-weight:600;color:#0F172A">${c.customer_name}</td>
+      <td style="color:#64748B">${c.company || '—'}</td>
+      <td style="color:#334155">${c.email}</td>
+      <td style="color:#64748B">${c.phone || '—'}</td>
+      <td style="color:#94A3B8;font-size:.8rem">${c.gst_number || '—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon btn-icon-primary me-1" onclick="openEdit('${c.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn-icon btn-icon-danger" onclick="deleteCustomer('${c.id}','${c.customer_name}')" title="Delete"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('page-info').textContent = `Showing ${(page-1)*20+1}–${Math.min(page*20,total)} of ${total} customers`;
+  document.getElementById('prev-btn').disabled = page === 1;
+  document.getElementById('next-btn').disabled = page * 20 >= total;
+}
+
+/* ── Form helpers ── */
+const FIELDS = ['customer_name','company','email','phone','address','city','state','pincode','gst_number'];
+
+function clearForm() {
+  FIELDS.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('form-error').classList.add('d-none');
+}
+
+function openForm() {
+  editingId = null;
+  clearForm();
+  document.getElementById('form-heading').textContent = 'Add Customer';
+  document.getElementById('form-mode-badge').textContent = 'New';
+  document.getElementById('form-mode-badge').style.cssText = 'background:#DCFCE7;color:#15803D';
+  document.getElementById('f-btn-text').innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Customer';
+  document.getElementById('list-view').classList.add('d-none');
+  document.getElementById('form-view').classList.remove('d-none');
+  document.getElementById('f-customer_name').focus();
+}
+
+async function openEdit(id) {
+  const res = await API.get(`/api/customers/${id}/`);
+  if (!res.success) { toast('Failed to load customer.', 'error'); return; }
+  editingId = id;
+  clearForm();
+  const c = res.data;
+  FIELDS.forEach(f => { const el = document.getElementById('f-'+f); if (el) el.value = c[f] || ''; });
+  document.getElementById('form-heading').textContent = 'Edit Customer';
+  document.getElementById('form-mode-badge').textContent = 'Editing';
+  document.getElementById('form-mode-badge').style.cssText = 'background:#FEF9C3;color:#92400E';
+  document.getElementById('f-btn-text').innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Customer';
+  document.getElementById('list-view').classList.add('d-none');
+  document.getElementById('form-view').classList.remove('d-none');
+  document.getElementById('f-customer_name').focus();
+}
+
+function closeForm() {
+  document.getElementById('form-view').classList.add('d-none');
+  document.getElementById('list-view').classList.remove('d-none');
+}
+
+async function submitForm(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('form-error');
+  const btn   = document.getElementById('f-submit-btn');
+  const spin  = document.getElementById('f-btn-spinner');
+  errEl.classList.add('d-none');
+  btn.disabled = true;
+  spin.classList.remove('d-none');
+
+  const payload = {};
+  FIELDS.forEach(f => payload[f] = document.getElementById('f-'+f)?.value || '');
+
+  try {
+    const res = editingId
+      ? await API.put(`/api/customers/${editingId}/`, payload)
+      : await API.post('/api/customers/', payload);
+    if (res.success) {
+      toast(editingId ? 'Customer updated.' : 'Customer added.');
+      closeForm();
+      loadCustomers();
+    } else {
+      const msg = res.errors ? Object.values(res.errors).flat().join(' ') : (res.message || 'Save failed.');
+      errEl.textContent = msg;
+      errEl.classList.remove('d-none');
+    }
+  } finally {
+    btn.disabled = false;
+    spin.classList.add('d-none');
+  }
+}
+
+async function deleteCustomer(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  const res = await API.del(`/api/customers/${id}/`);
+  if (res.success) { toast('Customer deleted.'); loadCustomers(); }
+  else toast(res.message, 'error');
+}
+
+function changePage(dir) { page += dir; loadCustomers(); }
+
+let searchTimer;
+function onSearch(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { search = val; page = 1; loadCustomers(); }, 400);
+}
+
+// all roles have full access
+
+/* Auto-open edit if URL has ?edit=<id> */
+const params = new URLSearchParams(location.search);
+if (params.get('edit')) openEdit(params.get('edit'));
+
+loadCustomers();
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Payments – Zayro ₹ Invoice{% endblock %}
+{% block nav_payments %}active{% endblock %}
+{% block page_title %}Payments{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <span class="section-title" style="font-size:.875rem;color:#64748B">All recorded payments</span>
+  <button class="btn btn-primary" onclick="openModal()">
+    <i class="bi bi-plus-lg me-1"></i>Record Payment
+  </button>
+</div>
+
+<div class="card-ms">
+  <div style="overflow-x:auto">
+    <table class="ms-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th><th>Customer</th><th>Amount</th><th>Date</th><th>Method</th><th>Reference</th>
+        </tr>
+      </thead>
+      <tbody id="payment-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8">
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-top:1px solid #F1F5F9">
+    <small style="color:#94A3B8" id="page-info"></small>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm btn-outline-secondary" id="prev-btn" onclick="changePage(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+      <button class="btn btn-sm btn-outline-secondary" id="next-btn" onclick="changePage(1)">Next <i class="bi bi-chevron-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Record Payment Modal ── -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-content" style="border-radius:14px;border:1.5px solid #E2E8F0">
+      <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:12px 12px 0 0;padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i class="bi bi-credit-card-fill" style="color:#F97316;font-size:1.2rem"></i>
+          <div style="font-size:1rem;font-weight:700;color:#fff">Record Payment</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div style="padding:24px">
+        <div id="modal-error" class="alert alert-danger d-none rounded-3 mb-3"></div>
+        <form id="payment-form" onsubmit="submitPayment(event)">
+
+          <div class="mb-3">
+            <label class="form-label fw-600">Invoice <span class="text-danger">*</span></label>
+            <select class="form-select" id="p-invoice_id" required>
+              <option value="">— Select Invoice —</option>
+            </select>
+            <div id="p-inv-info" style="margin-top:6px;font-size:.8rem;color:#64748B;display:none"></div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-600">Amount <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text" style="font-size:.85rem">₹</span>
+                <input type="number" class="form-control" id="p-amount" min="0.01" step="0.01" required placeholder="0.00">
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-600">Payment Date <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="p-payment_date" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-600">Payment Method</label>
+            <select class="form-select" id="p-payment_method">
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer" selected>Bank Transfer</option>
+              <option value="UPI">UPI</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Card">Card</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-600">Reference / Transaction ID</label>
+            <input type="text" class="form-control" id="p-reference" placeholder="UTR / Cheque no. (optional)">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-600">Notes</label>
+            <textarea class="form-control" id="p-notes" rows="2" placeholder="Any additional notes…"></textarea>
+          </div>
+
+          <div class="d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-primary px-4 fw-700" id="p-submit-btn">
+              <span id="p-btn-text"><i class="bi bi-check-lg me-1"></i>Record Payment</span>
+              <span id="p-btn-spin" class="spinner-border spinner-border-sm d-none ms-1"></span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let page = 1, total = 0;
+let invoices = [];
+const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+
+async function loadInvoiceOptions() {
+  const res = await API.get('/api/invoices/?page_size=200&status=');
+  invoices = res.success ? res.data.results : [];
+  const sel = document.getElementById('p-invoice_id');
+  sel.innerHTML = '<option value="">— Select Invoice —</option>';
+  invoices.filter(i => i.status !== 'Cancelled').forEach(i => {
+    sel.insertAdjacentHTML('beforeend',
+      `<option value="${i.id}" data-total="${i.grand_total}" data-cust="${i.customer_name}">${i.invoice_number} — ${i.customer_name} (₹${Number(i.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})})</option>`);
+  });
+}
+
+document.getElementById('p-invoice_id').addEventListener('change', function() {
+  const opt = this.selectedOptions[0];
+  const info = document.getElementById('p-inv-info');
+  if (!opt?.value) { info.style.display='none'; return; }
+  document.getElementById('p-amount').value = Number(opt.dataset.total).toFixed(2);
+  info.textContent = `Customer: ${opt.dataset.cust} · Grand Total: ₹${Number(opt.dataset.total).toLocaleString('en-IN',{minimumFractionDigits:2})}`;
+  info.style.display = '';
+});
+
+function openModal() {
+  document.getElementById('payment-form').reset();
+  document.getElementById('modal-error').classList.add('d-none');
+  document.getElementById('p-inv-info').style.display = 'none';
+  document.getElementById('p-payment_date').value = new Date().toISOString().split('T')[0];
+  modal.show();
+}
+
+async function submitPayment(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('modal-error');
+  const btn   = document.getElementById('p-submit-btn');
+  const spin  = document.getElementById('p-btn-spin');
+  errEl.classList.add('d-none');
+  btn.disabled = true; spin.classList.remove('d-none');
+  document.getElementById('p-btn-text').innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving…';
+
+  const payload = {
+    invoice_id:     document.getElementById('p-invoice_id').value,
+    amount:         document.getElementById('p-amount').value,
+    payment_date:   document.getElementById('p-payment_date').value,
+    payment_method: document.getElementById('p-payment_method').value,
+    reference_number: document.getElementById('p-reference').value,
+    notes:          document.getElementById('p-notes').value,
+  };
+
+  try {
+    const res = await API.post('/api/payments/', payload);
+    if (res.success) {
+      toast('Payment recorded successfully!');
+      modal.hide();
+      loadPayments();
+    } else {
+      const msg = res.errors ? Object.values(res.errors).flat().join(' ') : (res.message || 'Save failed.');
+      errEl.textContent = msg; errEl.classList.remove('d-none');
+    }
+  } finally {
+    btn.disabled = false; spin.classList.add('d-none');
+    document.getElementById('p-btn-text').innerHTML = '<i class="bi bi-check-lg me-1"></i>Record Payment';
+  }
+}
+
+async function loadPayments() {
+  const tbody = document.getElementById('payment-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…</td></tr>';
+  const res = await API.get(`/api/payments/?page=${page}`);
+  if (!res.success) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#EF4444">Failed to load. Please refresh.</td></tr>';
+    return;
+  }
+  total = res.data.total;
+  const rows = res.data.results;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px;color:#94A3B8">
+      <i class="bi bi-credit-card" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+      No payments recorded yet.
+      <div style="margin-top:10px"><a href="#" onclick="openModal();return false" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Record First Payment</a></div>
+    </td></tr>`;
+    document.getElementById('page-info').textContent = '';
+    return;
+  }
+  tbody.innerHTML = rows.map(p => `
+    <tr>
+      <td><a href="/invoices/${p.invoice_id}/" class="fw-700 text-primary text-decoration-none">${p.invoice_number}</a></td>
+      <td style="font-weight:500">${p.customer_name}</td>
+      <td style="font-weight:700;color:#15803D">₹${Number(p.amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+      <td style="color:#64748B">${new Date(p.payment_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td><span style="background:#F1F5F9;color:#64748B;border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600">${p.payment_method}</span></td>
+      <td style="color:#94A3B8;font-size:.85rem">${p.reference_number||'—'}</td>
+    </tr>`).join('');
+  document.getElementById('page-info').textContent = `Showing ${(page-1)*20+1}–${Math.min(page*20,total)} of ${total} payments`;
+  document.getElementById('prev-btn').disabled = page === 1;
+  document.getElementById('next-btn').disabled = page * 20 >= total;
+}
+
+function changePage(dir) { page += dir; loadPayments(); }
+
+loadPayments();
+loadInvoiceOptions();
+</script>
+{% endblock %}

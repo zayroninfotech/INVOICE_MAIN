@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+{% block title %}My Profile – Zayro ₹ Invoice{% endblock %}
+{% block nav_profile %}active{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-hero {
+    background: linear-gradient(135deg,#0F172A,#1E293B);
+    border-radius:14px; padding:28px 32px; margin-bottom:24px;
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  }
+  .profile-avatar {
+    width:72px; height:72px; border-radius:50%;
+    background:linear-gradient(135deg,#F97316,#7C3AED);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem; font-weight:800; color:#fff; flex-shrink:0;
+  }
+  .profile-name  { font-size:1.5rem; font-weight:800; color:#fff; letter-spacing:-.02em; }
+  .profile-email { color:#94A3B8; font-size:.875rem; margin-top:2px; }
+  .profile-role-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    border-radius:100px; padding:4px 14px; font-size:.75rem; font-weight:700;
+    margin-top:8px;
+  }
+  .role-superadmin { background:rgba(124,58,237,.2); color:#C4B5FD; border:1px solid rgba(124,58,237,.3); }
+  .role-admin      { background:rgba(249,115,22,.2);  color:#FDBA74; border:1px solid rgba(249,115,22,.3); }
+  .role-user       { background:rgba(100,116,139,.2);color:#CBD5E1; border:1px solid rgba(100,116,139,.3); }
+
+  .info-card { background:#fff; border:1.5px solid #E2E8F0; border-radius:12px; padding:24px; margin-bottom:16px; }
+  .info-card-title { font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .info-card-title::after { content:''; flex:1; height:1px; background:#F1F5F9; }
+  .info-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #F8FAFC; font-size:.875rem; }
+  .info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .info-lbl { color:#64748B; font-weight:500; }
+  .info-val { color:#0F172A; font-weight:600; }
+
+  .usage-bar-wrap { background:#F1F5F9; border-radius:100px; height:8px; overflow:hidden; margin-top:8px; }
+  .usage-bar-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,#F97316,#7C3AED); transition:width .5s; }
+
+  .stat-mini { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:16px; text-align:center; }
+  .stat-mini-val { font-size:1.6rem; font-weight:900; color:#0F172A; letter-spacing:-.03em; }
+  .stat-mini-lbl { font-size:.75rem; color:#64748B; font-weight:600; margin-top:2px; }
+
+  .pwd-toggle { background:none; border:none; color:#94A3B8; cursor:pointer; font-size:.9rem; padding:0; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="profile-hero">
+  <div class="profile-avatar" id="p-avatar">—</div>
+  <div>
+    <div class="profile-name" id="p-name">—</div>
+    <div class="profile-email" id="p-email">—</div>
+    <div id="p-role-pill" class="profile-role-pill">—</div>
+  </div>
+  <div style="margin-left:auto">
+    <div style="color:#64748B;font-size:.75rem;font-weight:600;margin-bottom:4px">Member Since</div>
+    <div style="color:#fff;font-weight:700" id="p-joined">—</div>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Left col: info + password + business profile -->
+  <div class="col-lg-7">
+
+    <!-- Business Profile -->
+    <div class="info-card">
+      <div class="info-card-title"><i class="bi bi-building"></i> Business Profile <small style="font-weight:500;font-size:.7rem;color:#94A3B8;text-transform:none;letter-spacing:0">(shown on PDF invoices)</small></div>
+
+      <!-- Logo upload zone -->
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+        <div id="logo-preview-wrap" style="width:80px;height:80px;border-radius:12px;border:2px dashed #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#F8FAFC;cursor:pointer" onclick="document.getElementById('logo-file').click()">
+          <img id="logo-preview" src="" style="width:100%;height:100%;object-fit:contain;display:none">
+          <i id="logo-placeholder" class="bi bi-building" style="font-size:2rem;color:#CBD5E1"></i>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:.875rem;color:#374151;margin-bottom:4px">Company Logo</div>
+          <div style="font-size:.78rem;color:#94A3B8;margin-bottom:10px">PNG/JPG/WebP · Max 2 MB</div>
+          <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="uploadLogo(this)">
+          <button class="btn btn-outline-primary btn-sm me-2" onclick="document.getElementById('logo-file').click()">
+            <i class="bi bi-upload me-1"></i> Upload
+          </button>
+          <button class="btn btn-outline-danger btn-sm" id="logo-del-btn" onclick="deleteLogo()" style="display:none">
+            <i class="bi bi-trash3 me-1"></i> Remove
+          </button>
+        </div>
+      </div>
+
+      <form id="bp-form" onsubmit="saveBusinessProfile(event)">
+        <div class="row g-2 mb-2">
+          <div class="col-12">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">Company Name</label>
+            <input type="text" class="form-control form-control-sm" id="bp-company" placeholder="e.g. Zayron Infotech Pvt. Ltd.">
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">Address</label>
+            <input type="text" class="form-control form-control-sm" id="bp-address" placeholder="Street / Building">
+          </div>
+          <div class="col-5">
+            <input type="text" class="form-control form-control-sm" id="bp-city" placeholder="City">
+          </div>
+          <div class="col-4">
+            <input type="text" class="form-control form-control-sm" id="bp-state" placeholder="State">
+          </div>
+          <div class="col-3">
+            <input type="text" class="form-control form-control-sm" id="bp-pincode" placeholder="PIN">
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">Phone</label>
+            <input type="text" class="form-control form-control-sm" id="bp-phone" placeholder="+91 98765 43210">
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">Business Email</label>
+            <input type="email" class="form-control form-control-sm" id="bp-email" placeholder="billing@company.com">
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">GST Number</label>
+            <input type="text" class="form-control form-control-sm" id="bp-gst" placeholder="22AAAAA0000A1Z5">
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151">Website</label>
+            <input type="text" class="form-control form-control-sm" id="bp-website" placeholder="www.company.com">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm px-4 mt-1" id="bp-save-btn">
+          <i class="bi bi-check-lg me-1"></i>Save Business Profile
+        </button>
+      </form>
+    </div>
+
+    <!-- Account info -->
+    <div class="info-card">
+      <div class="info-card-title"><i class="bi bi-person-circle"></i> Account Info</div>
+      <div class="info-row">
+        <span class="info-lbl">Username</span>
+        <span class="info-val" id="d-username">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-lbl">Email</span>
+        <span class="info-val" id="d-email">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-lbl">Role</span>
+        <span class="info-val" id="d-role">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-lbl">Account Status</span>
+        <span style="background:#DCFCE7;color:#15803D;border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:700">Active</span>
+      </div>
+    </div>
+
+    <!-- Change password -->
+    <div class="info-card">
+      <div class="info-card-title"><i class="bi bi-lock"></i> Change Password</div>
+      <form id="pwd-form" onsubmit="changePassword(event)">
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.83rem;font-weight:600;color:#374151">Current Password</label>
+          <div style="position:relative">
+            <input type="password" class="form-control form-control-sm" id="old-pwd" required style="padding-right:38px">
+            <button type="button" class="pwd-toggle" onclick="toggleField('old-pwd','eye0')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%)"><i class="bi bi-eye" id="eye0"></i></button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.83rem;font-weight:600;color:#374151">New Password</label>
+          <div style="position:relative">
+            <input type="password" class="form-control form-control-sm" id="new-pwd" required minlength="8" style="padding-right:38px">
+            <button type="button" class="pwd-toggle" onclick="toggleField('new-pwd','eye1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%)"><i class="bi bi-eye" id="eye1"></i></button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm px-4" id="pwd-btn">
+          <i class="bi bi-check-lg me-1"></i>Update Password
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Right col: stats -->
+  <div class="col-lg-5">
+
+    <div class="info-card">
+      <div class="info-card-title"><i class="bi bi-bar-chart"></i> My Activity</div>
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="s-invoices">—</div>
+            <div class="stat-mini-lbl">Invoices</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="s-customers">—</div>
+            <div class="stat-mini-lbl">Customers</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="s-products">—</div>
+            <div class="stat-mini-lbl">Products</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="s-paid">—</div>
+            <div class="stat-mini-lbl">Paid Invoices</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:#64748B;font-weight:600;margin-bottom:6px">Total Revenue</div>
+      <div style="font-size:1.4rem;font-weight:900;color:#F97316" id="s-revenue">—</div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title"><i class="bi bi-info-circle"></i> Role Permissions</div>
+      <div id="role-perms" style="font-size:.85rem;color:#475569;line-height:2"></div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+
+function toggleField(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  eye.className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+
+async function loadProfile() {
+  const res = await API.get('/api/auth/me/');
+  if (!res.success) return;
+  const u = res.data;
+
+  const letter = (u.username[0] || 'U').toUpperCase();
+  document.getElementById('p-avatar').textContent  = letter;
+  document.getElementById('p-name').textContent    = u.username;
+  document.getElementById('p-email').textContent   = u.email;
+  document.getElementById('p-joined').textContent  = new Date(u.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('d-username').textContent = u.username;
+  document.getElementById('d-email').textContent    = u.email;
+  document.getElementById('d-role').textContent     = u.role.charAt(0).toUpperCase() + u.role.slice(1);
+
+  const pillEl = document.getElementById('p-role-pill');
+  const roleMap = { superadmin:['role-superadmin','bi-shield-fill-check','Superadmin'], admin:['role-admin','bi-shield-check','Admin'], user:['role-user','bi-person','User'] };
+  const [cls,icon,label] = roleMap[u.role] || roleMap['user'];
+  pillEl.className = `profile-role-pill ${cls}`;
+  pillEl.innerHTML = `<i class="bi ${icon}"></i>${label}`;
+
+  const permsMap = {
+    superadmin: ['<i class="bi bi-check-circle-fill text-success me-2"></i>Full system access','<i class="bi bi-check-circle-fill text-success me-2"></i>Manage all users','<i class="bi bi-check-circle-fill text-success me-2"></i>View all data','<i class="bi bi-check-circle-fill text-success me-2"></i>Create &amp; edit everything'],
+    admin:      ['<i class="bi bi-check-circle-fill text-success me-2"></i>Create invoices, customers, products','<i class="bi bi-check-circle-fill text-success me-2"></i>Record payments','<i class="bi bi-check-circle-fill text-success me-2"></i>Send invoice emails','<i class="bi bi-x-circle-fill text-danger me-2"></i>Cannot manage users'],
+    user:       ['<i class="bi bi-check-circle-fill text-success me-2"></i>Create invoices, customers, products','<i class="bi bi-check-circle-fill text-success me-2"></i>Record payments &amp; download PDFs','<i class="bi bi-check-circle-fill text-success me-2"></i>View reports','<i class="bi bi-x-circle-fill text-danger me-2"></i>Cannot manage users'],
+  };
+  document.getElementById('role-perms').innerHTML = (permsMap[u.role] || permsMap['user']).map(l => `<div>${l}</div>`).join('');
+}
+
+async function loadStats() {
+  const res = await API.get('/api/dashboard/stats/');
+  if (!res.success) return;
+  const d = res.data;
+  document.getElementById('s-invoices').textContent  = d.total_invoices  ?? 0;
+  document.getElementById('s-customers').textContent = d.total_customers ?? 0;
+  document.getElementById('s-products').textContent  = d.total_products  ?? 0;
+  document.getElementById('s-paid').textContent      = d.paid_invoices   ?? 0;
+  document.getElementById('s-revenue').textContent   = fmt(d.total_revenue ?? 0);
+}
+
+async function changePassword(e) {
+  e.preventDefault();
+  const btn = document.getElementById('pwd-btn');
+  btn.disabled = true; btn.textContent = 'Updating…';
+  const res = await API.post('/api/auth/change-password/', {
+    old_password: document.getElementById('old-pwd').value,
+    new_password: document.getElementById('new-pwd').value,
+  });
+  btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Password';
+  if (res.success) { toast('Password updated successfully.'); document.getElementById('pwd-form').reset(); }
+  else toast(res.message || 'Failed to update password.', 'error');
+}
+
+/* ── Business Profile ── */
+async function loadBusinessProfile() {
+  const res = await API.get('/api/auth/business-profile/');
+  if (!res.success) return;
+  const bp = res.data;
+  document.getElementById('bp-company').value = bp.company_name || '';
+  document.getElementById('bp-address').value = bp.address      || '';
+  document.getElementById('bp-city').value    = bp.city         || '';
+  document.getElementById('bp-state').value   = bp.state        || '';
+  document.getElementById('bp-pincode').value = bp.pincode      || '';
+  document.getElementById('bp-phone').value   = bp.phone        || '';
+  document.getElementById('bp-email').value   = bp.email        || '';
+  document.getElementById('bp-gst').value     = bp.gst          || '';
+  document.getElementById('bp-website').value = bp.website      || '';
+  if (bp.logo_url) {
+    document.getElementById('logo-preview').src = bp.logo_url;
+    document.getElementById('logo-preview').style.display = '';
+    document.getElementById('logo-placeholder').style.display = 'none';
+    document.getElementById('logo-del-btn').style.display = '';
+  }
+}
+
+async function saveBusinessProfile(e) {
+  e.preventDefault();
+  const btn = document.getElementById('bp-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+  try {
+    const res = await API.put('/api/auth/business-profile/', {
+      company_name: document.getElementById('bp-company').value,
+      address:      document.getElementById('bp-address').value,
+      city:         document.getElementById('bp-city').value,
+      state:        document.getElementById('bp-state').value,
+      pincode:      document.getElementById('bp-pincode').value,
+      phone:        document.getElementById('bp-phone').value,
+      email:        document.getElementById('bp-email').value,
+      gst:          document.getElementById('bp-gst').value,
+      website:      document.getElementById('bp-website').value,
+    });
+    if (res.success) {
+      toast('Business profile saved!');
+      btn.innerHTML = '<i class="bi bi-check-circle-fill me-1" style="color:#22C55E"></i>Saved!';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Business Profile';
+      }, 2000);
+    } else {
+      toast(res.message || 'Save failed.', 'error');
+      btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Business Profile';
+    }
+  } catch(err) {
+    toast('Network error. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    if (!btn.innerHTML.includes('Saved')) {
+      btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Business Profile';
+    }
+  }
+}
+
+async function uploadLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Max file size is 2 MB.', 'error'); return; }
+  const fd = new FormData();
+  fd.append('logo', file);
+  try {
+    const r = await fetch('/api/auth/business-profile/logo/', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') },
+      body: fd,
+    });
+    const res = await r.json();
+    if (res.success) {
+      document.getElementById('logo-preview').src = res.data.logo_url + '?t=' + Date.now();
+      document.getElementById('logo-preview').style.display = '';
+      document.getElementById('logo-placeholder').style.display = 'none';
+      document.getElementById('logo-del-btn').style.display = '';
+      toast('Logo uploaded!');
+    } else {
+      toast(res.message || 'Upload failed.', 'error');
+    }
+  } catch {
+    toast('Network error during upload.', 'error');
+  }
+  input.value = '';
+}
+
+async function deleteLogo() {
+  if (!confirm('Remove company logo?')) return;
+  try {
+    const r = await fetch('/api/auth/business-profile/logo/', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') },
+    });
+    const res = await r.json();
+    if (res.success) {
+      document.getElementById('logo-preview').src = '';
+      document.getElementById('logo-preview').style.display = 'none';
+      document.getElementById('logo-placeholder').style.display = '';
+      document.getElementById('logo-del-btn').style.display = 'none';
+      toast('Logo removed.');
+    } else {
+      toast(res.message || 'Delete failed.', 'error');
+    }
+  } catch {
+    toast('Network error.', 'error');
+  }
+}
+
+loadProfile();
+loadStats();
+loadBusinessProfile();
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Zayro ₹ Invoice – Smart Smart Billing Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root { --primary:#F97316; --primary-dark:#EA580C; --dark:#0F172A; --slate:#1E293B; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',system-ui,sans-serif; background:#fff; color:#0F172A; }
+
+    /* ── Navbar ── */
+    .lp-nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 40px; height:64px;
+      background:rgba(15,23,42,.95); backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .lp-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .lp-logo-icon { width:36px; height:36px; background:var(--primary); border-radius:8px;
+                    display:flex; align-items:center; justify-content:center; }
+    .lp-logo-text { font-size:1.2rem; font-weight:800; color:#fff; letter-spacing:-.02em; }
+    .lp-logo-sub { font-size:.68rem; color:#64748B; font-weight:500; margin-top:-2px; }
+    .lp-nav-links { display:flex; align-items:center; gap:12px; }
+    .btn-nav-outline {
+      padding:8px 20px; border:1.5px solid rgba(255,255,255,.18); border-radius:8px;
+      color:#fff; font-weight:600; font-size:.875rem; text-decoration:none; transition:all .15s;
+    }
+    .btn-nav-outline:hover { border-color:#fff; background:rgba(255,255,255,.08); color:#fff; }
+    .btn-nav-primary {
+      padding:8px 20px; background:var(--primary); border-radius:8px;
+      color:#fff; font-weight:600; font-size:.875rem; text-decoration:none; transition:background .15s;
+    }
+    .btn-nav-primary:hover { background:var(--primary-dark); color:#fff; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height:100vh; padding-top:64px;
+      background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0F172A 100%);
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; width:600px; height:600px;
+      background:radial-gradient(circle,rgba(249,115,22,.25) 0%,transparent 70%);
+      top:10%; left:50%; transform:translateX(-50%); pointer-events:none;
+    }
+    .hero-inner { position:relative; z-index:1; max-width:760px; padding:40px 20px; }
+    .hero-pill {
+      display:inline-flex; align-items:center; gap:8px; background:rgba(249,115,22,.15);
+      border:1px solid rgba(249,115,22,.3); border-radius:100px;
+      padding:6px 16px; font-size:.8rem; font-weight:600; color:#FDBA74; margin-bottom:24px;
+    }
+    .hero-h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900; color:#fff; line-height:1.1; margin-bottom:20px; letter-spacing:-.03em; }
+    .hero-h1 span { color:#FB923C; }
+    .hero-sub { font-size:1.1rem; color:#94A3B8; max-width:520px; margin:0 auto 36px; line-height:1.65; }
+    .hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .btn-hero-primary {
+      padding:14px 32px; background:var(--primary); color:#fff; font-weight:700;
+      font-size:1rem; border-radius:10px; text-decoration:none; transition:all .15s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-hero-primary:hover { background:var(--primary-dark); color:#fff; transform:translateY(-1px); }
+    .btn-hero-outline {
+      padding:14px 32px; border:1.5px solid rgba(255,255,255,.2); color:#fff; font-weight:600;
+      font-size:1rem; border-radius:10px; text-decoration:none; transition:all .15s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-hero-outline:hover { border-color:#fff; background:rgba(255,255,255,.05); color:#fff; }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      background:#F8FAFC; border-top:1px solid #E2E8F0; border-bottom:1px solid #E2E8F0;
+      padding:32px 40px;
+    }
+    .stat-item { text-align:center; }
+    .stat-num { font-size:2rem; font-weight:900; color:var(--primary); letter-spacing:-.04em; }
+    .stat-lbl { font-size:.8rem; color:#64748B; font-weight:600; margin-top:2px; }
+
+    /* ── Features ── */
+    .features { padding:80px 40px; max-width:1100px; margin:0 auto; }
+    .sec-label { font-size:.75rem; font-weight:700; letter-spacing:.12em; color:var(--primary); text-transform:uppercase; margin-bottom:12px; }
+    .sec-title { font-size:2.2rem; font-weight:900; color:#0F172A; letter-spacing:-.03em; margin-bottom:14px; }
+    .sec-sub { color:#64748B; font-size:1rem; max-width:500px; line-height:1.65; }
+    .feat-card {
+      background:#fff; border:1.5px solid #E2E8F0; border-radius:14px; padding:28px;
+      transition:all .2s; height:100%;
+    }
+    .feat-card:hover { border-color:var(--primary); transform:translateY(-2px); box-shadow:0 8px 32px rgba(249,115,22,.1); }
+    .feat-icon {
+      width:48px; height:48px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; margin-bottom:16px; font-size:1.3rem;
+    }
+    .feat-title { font-weight:700; color:#0F172A; margin-bottom:6px; font-size:.95rem; }
+    .feat-desc { color:#64748B; font-size:.85rem; line-height:1.6; }
+
+    /* ── CTA ── */
+    .cta-section {
+      background:linear-gradient(135deg,#C2410C,#F97316);
+      padding:72px 40px; text-align:center;
+    }
+    .cta-title { font-size:2.2rem; font-weight:900; color:#fff; margin-bottom:12px; letter-spacing:-.03em; }
+    .cta-sub { color:rgba(255,255,255,.75); font-size:1rem; margin-bottom:32px; }
+
+    /* ── Footer ── */
+    .lp-footer { background:#0F172A; padding:28px 40px; text-align:center; color:#475569; font-size:.85rem; }
+
+    @media (max-width:600px) {
+      .lp-nav { padding:0 20px; }
+      .features { padding:60px 20px; }
+      .stats-strip { padding:24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="lp-nav">
+  <a class="lp-logo" href="/">
+    <div class="lp-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div>
+    <div>
+      <div class="lp-logo-text">Zayro ₹ Invoice</div>
+      <div class="lp-logo-sub">Smart Billing Platform</div>
+    </div>
+  </a>
+  <div class="lp-nav-links">
+    <a href="/auth/login/" class="btn-nav-outline">Login</a>
+    <a href="/auth/register/" class="btn-nav-primary">Register</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-pill"><i class="bi bi-stars"></i> Smart Smart Billing Platform</div>
+    <h1 class="hero-h1">Create, Send &amp; Track<br><span>Invoices with Ease</span></h1>
+    <p class="hero-sub">Manage customers, products, payments and reports — all in one place. Built for Indian businesses with GST support.</p>
+    <div class="hero-btns">
+      <a href="/auth/register/" class="btn-hero-primary"><i class="bi bi-person-plus-fill"></i> Get Started Free</a>
+      <a href="/auth/login/" class="btn-hero-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-strip">
+  <div class="row g-3 text-center" style="max-width:800px;margin:0 auto">
+    <div class="col-6 col-md-3 stat-item"><div class="stat-num">GST</div><div class="stat-lbl">Ready</div></div>
+    <div class="col-6 col-md-3 stat-item"><div class="stat-num">PDF</div><div class="stat-lbl">Export</div></div>
+    <div class="col-6 col-md-3 stat-item"><div class="stat-num">∞</div><div class="stat-lbl">Customers</div></div>
+    <div class="col-6 col-md-3 stat-item"><div class="stat-num">3</div><div class="stat-lbl">User Roles</div></div>
+  </div>
+</div>
+
+<!-- Features -->
+<section class="features">
+  <div style="margin-bottom:48px">
+    <div class="sec-label">Everything you need</div>
+    <h2 class="sec-title">Built for Modern Businesses</h2>
+    <p class="sec-sub">From invoice creation to payment tracking — Zayro ₹ Invoice covers the complete billing lifecycle.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-receipt-cutoff" style="color:#F97316"></i></div>
+        <div class="feat-title">Smart Invoicing</div>
+        <div class="feat-desc">Create professional invoices with GST, HSN codes, discounts, and multi-currency support in seconds.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED"></i></div>
+        <div class="feat-title">Customer Management</div>
+        <div class="feat-desc">Maintain a complete customer database with addresses, GST numbers, and billing history.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#ECFDF5"><i class="bi bi-cash-coin" style="color:#059669"></i></div>
+        <div class="feat-title">Payment Tracking</div>
+        <div class="feat-desc">Record partial and full payments, track outstanding dues, and get instant status updates.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-box-seam-fill" style="color:#EA580C"></i></div>
+        <div class="feat-title">Product Catalogue</div>
+        <div class="feat-desc">Manage your products with categories, HSN codes, tax rates, and price snapshots on invoices.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#FEF2F2"><i class="bi bi-file-earmark-pdf-fill" style="color:#DC2626"></i></div>
+        <div class="feat-title">PDF Generation</div>
+        <div class="feat-desc">Download professional PDF invoices and send them directly to customers via email.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#F0FDF4"><i class="bi bi-bar-chart-fill" style="color:#16A34A"></i></div>
+        <div class="feat-title">Reports &amp; Analytics</div>
+        <div class="feat-desc">Monthly revenue charts, sales reports, CSV exports — complete visibility into your business.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 class="cta-title">Ready to get started?</h2>
+  <p class="cta-sub">Create your free account and start managing invoices in minutes.</p>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+    <a href="/auth/register/" class="btn-hero-primary" style="background:#fff;color:#F97316"><i class="bi bi-person-plus-fill"></i> Create Free Account</a>
+    <a href="/auth/login/" class="btn-hero-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="lp-footer">
+  © 2026 Zayro ₹ Invoice · Built for Indian Businesses · GST Ready
+</footer>
+
+<script>
+  if (localStorage.getItem('access_token')) window.location = '/dashboard/';
+</script>
+</body>
+</html>

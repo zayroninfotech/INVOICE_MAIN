@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}User Management – Zayro ₹ Invoice{% endblock %}
+{% block nav_users %}active{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div id="access-denied" class="d-none">
+  <div class="card-ms p-5 text-center">
+    <i class="bi bi-shield-x" style="font-size:3rem;color:#EF4444;display:block;margin-bottom:12px"></i>
+    <div style="font-size:1.1rem;font-weight:700;color:#0F172A">Access Denied</div>
+    <div style="color:#64748B;margin-top:4px">This page is restricted to Superadmin only.</div>
+  </div>
+</div>
+
+<div id="users-section" class="d-none">
+
+  <!-- ── LIST VIEW ── -->
+  <div id="list-view">
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED;font-size:1.2rem"></i></div>
+            <div><div class="stat-label">Total Users</div><div class="stat-value" id="total-users">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#FFF7ED"><i class="bi bi-shield-check" style="color:#F97316;font-size:1.2rem"></i></div>
+            <div><div class="stat-label">Admins</div><div class="stat-value" id="total-admins">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="stat-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:#F1F5F9"><i class="bi bi-person" style="color:#64748B;font-size:1.2rem"></i></div>
+            <div><div class="stat-label">Regular Users</div><div class="stat-value" id="total-reg-users">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="section-header mb-4">
+      <div class="d-flex gap-3 flex-wrap align-items-center justify-content-between">
+        <div class="d-flex gap-3 flex-wrap">
+          <div class="input-group" style="max-width:280px">
+            <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #E2E8F0;border-radius:8px 0 0 8px">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" id="search" placeholder="Search users…"
+                   style="border:1.5px solid #E2E8F0;border-left:none;border-radius:0 8px 8px 0">
+          </div>
+          <select class="form-select" id="role-filter" style="max-width:160px">
+            <option value="">All Roles</option>
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openForm()">
+          <i class="bi bi-person-plus-fill me-2"></i>New User
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card-ms">
+      <div style="overflow-x:auto">
+        <table class="ms-table">
+          <thead>
+            <tr>
+              <th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8">
+              <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-top:1px solid #F1F5F9">
+        <small style="color:#94A3B8" id="page-info"></small>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-outline-secondary" id="prev-btn" onclick="changePage(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+          <button class="btn btn-sm btn-outline-secondary" id="next-btn" onclick="changePage(1)">Next <i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FORM VIEW ── -->
+  <div id="form-view" class="d-none">
+    <div class="card-ms">
+      <!-- Header band -->
+      <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:10px 10px 0 0;padding:20px 28px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <i class="bi bi-person-plus-fill" style="font-size:1.3rem;color:#FB923C"></i>
+          <div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">New User</div>
+            <div style="font-size:.75rem;color:#94A3B8">Create a new account</div>
+          </div>
+          <span id="form-badge" style="margin-left:8px;background:#DCFCE7;color:#15803D;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px">NEW</span>
+        </div>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="closeForm()">
+          <i class="bi bi-arrow-left me-1"></i>Back to List
+        </button>
+      </div>
+
+      <div style="padding:28px">
+        <form id="user-form" onsubmit="submitForm(event)">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-600">Username <span style="color:#EF4444">*</span></label>
+              <input type="text" class="form-control" id="f-username" placeholder="e.g. john_doe" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600">Email <span style="color:#EF4444">*</span></label>
+              <input type="email" class="form-control" id="f-email" placeholder="e.g. john@example.com" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600">Password <span style="color:#EF4444">*</span></label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="f-password" placeholder="Min. 8 characters" required minlength="8">
+                <button type="button" class="btn btn-outline-secondary" onclick="togglePwd()" tabindex="-1">
+                  <i class="bi bi-eye" id="pwd-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600">Role <span style="color:#EF4444">*</span></label>
+              <select class="form-select" id="f-role">
+                <option value="user">User (view only)</option>
+                <option value="admin">Admin (full access)</option>
+                <option value="superadmin">Superadmin</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:32px;padding-top:20px;border-top:1px solid #F1F5F9">
+            <button type="submit" class="btn btn-primary px-5" id="submit-btn">
+              <i class="bi bi-check-lg me-2"></i>Create User
+            </button>
+            <button type="button" class="btn btn-outline-secondary px-4" onclick="closeForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Change Role Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style="border-radius:12px;border:1.5px solid #E2E8F0">
+      <div class="modal-header" style="border-bottom:1px solid #F1F5F9;padding:20px 24px">
+        <h6 class="modal-title fw-700">Change Role</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px">
+        <div style="color:#64748B;font-size:.85rem;margin-bottom:12px">User: <strong id="modal-username" style="color:#0F172A"></strong></div>
+        <label class="form-label">New Role</label>
+        <select class="form-select" id="modal-role">
+          <option value="user">User (view only)</option>
+          <option value="admin">Admin (full access)</option>
+          <option value="superadmin">Superadmin</option>
+        </select>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #F1F5F9;padding:16px 24px;gap:8px">
+        <button class="btn btn-primary btn-sm px-4" onclick="saveRole()">Save</button>
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let page = 1, total = 0, search = '', roleFilter = '';
+let editingUserId = null;
+const modal = new bootstrap.Modal(document.getElementById('editModal'));
+
+if (window.USER_ROLE !== 'superadmin') {
+  document.getElementById('access-denied').classList.remove('d-none');
+} else {
+  document.getElementById('users-section').classList.remove('d-none');
+  loadStats();
+  loadUsers();
+  const params = new URLSearchParams(location.search);
+  if (params.get('new')) openForm();
+}
+
+/* ── View toggle ── */
+function openForm() {
+  document.getElementById('list-view').classList.add('d-none');
+  document.getElementById('form-view').classList.remove('d-none');
+  document.getElementById('user-form').reset();
+  document.getElementById('f-username').focus();
+}
+
+function closeForm() {
+  document.getElementById('form-view').classList.add('d-none');
+  document.getElementById('list-view').classList.remove('d-none');
+}
+
+function togglePwd() {
+  const inp = document.getElementById('f-password');
+  const eye = document.getElementById('pwd-eye');
+  if (inp.type === 'password') { inp.type = 'text'; eye.className = 'bi bi-eye-slash'; }
+  else { inp.type = 'password'; eye.className = 'bi bi-eye'; }
+}
+
+/* ── Create user ── */
+async function submitForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
+
+  const payload = {
+    username: document.getElementById('f-username').value.trim(),
+    email:    document.getElementById('f-email').value.trim(),
+    password: document.getElementById('f-password').value,
+    role:     document.getElementById('f-role').value,
+  };
+
+  const res = await API.post('/api/auth/users/', payload);
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Create User';
+
+  if (res.success) {
+    toast('User created successfully.');
+    closeForm();
+    loadUsers();
+    loadStats();
+  } else {
+    const msgs = res.errors ? Object.values(res.errors).flat().join(' ') : res.message;
+    toast(msgs || 'Failed to create user.', 'error');
+  }
+}
+
+/* ── Stats & list ── */
+async function loadStats() {
+  const res = await API.get('/api/dashboard/stats/');
+  if (!res.success) return;
+  document.getElementById('total-users').textContent    = res.data.total_users ?? 0;
+  document.getElementById('total-admins').textContent   = res.data.total_admins ?? 0;
+  document.getElementById('total-reg-users').textContent = res.data.total_regular_users ?? 0;
+}
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  const res = await API.get(`/api/auth/users/?page=${page}&search=${encodeURIComponent(search)}&role=${encodeURIComponent(roleFilter)}`);
+  if (!res.success) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#EF4444">Failed to load. Please refresh.</td></tr>';
+    return;
+  }
+  total = res.data.total;
+  const rows = res.data.results;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#94A3B8">No users found.</td></tr>';
+    document.getElementById('page-info').textContent = '';
+    return;
+  }
+  tbody.innerHTML = rows.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#F97316,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0">${u.username[0].toUpperCase()}</div>
+          <span style="font-weight:600;color:#0F172A">${u.username}</span>
+        </div>
+      </td>
+      <td style="color:#64748B">${u.email}</td>
+      <td><span class="badge-ms badge-${u.role}">${u.role}</span></td>
+      <td>${u.is_active
+        ? '<span style="background:#DCFCE7;color:#15803D;border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600">Active</span>'
+        : '<span style="background:#FEE2E2;color:#B91C1C;border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600">Inactive</span>'
+      }</td>
+      <td style="color:#64748B;font-size:.85rem">${new Date(u.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon btn-icon-primary me-1" onclick="openEdit('${u.id}','${u.username}','${u.role}')" title="Change Role">
+          <i class="bi bi-shield-lock"></i>
+        </button>
+        ${u.is_active
+          ? `<button class="btn-icon btn-icon-danger" onclick="toggleActive('${u.id}','${u.username}',false)" title="Deactivate"><i class="bi bi-person-x"></i></button>`
+          : `<button class="btn-icon" onclick="toggleActive('${u.id}','${u.username}',true)" title="Activate" style="color:#15803D"><i class="bi bi-person-check"></i></button>`
+        }
+      </td>
+    </tr>`).join('');
+  document.getElementById('page-info').textContent = `Showing ${(page-1)*20+1}–${Math.min(page*20,total)} of ${total} users`;
+  document.getElementById('prev-btn').disabled = page === 1;
+  document.getElementById('next-btn').disabled = page * 20 >= total;
+}
+
+function openEdit(id, username, currentRole) {
+  editingUserId = id;
+  document.getElementById('modal-username').textContent = username;
+  document.getElementById('modal-role').value = currentRole;
+  modal.show();
+}
+
+async function saveRole() {
+  const role = document.getElementById('modal-role').value;
+  const res = await API.patch(`/api/auth/users/${editingUserId}/`, { role });
+  modal.hide();
+  if (res.success) { toast('Role updated.'); loadUsers(); loadStats(); }
+  else toast(res.message, 'error');
+}
+
+async function toggleActive(id, username, activate) {
+  const label = activate ? 'activate' : 'deactivate';
+  if (!confirm(`${label.charAt(0).toUpperCase() + label.slice(1)} user "${username}"?`)) return;
+  const res = activate
+    ? await API.patch(`/api/auth/users/${id}/`, { is_active: true })
+    : await API.del(`/api/auth/users/${id}/`);
+  if (res.success) { toast(`User ${label}d.`); loadUsers(); loadStats(); }
+  else toast(res.message, 'error');
+}
+
+function changePage(dir) { page += dir; loadUsers(); }
+
+let timer;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { search = e.target.value; page = 1; loadUsers(); }, 400);
+});
+document.getElementById('role-filter').addEventListener('change', e => {
+  roleFilter = e.target.value; page = 1; loadUsers();
+});
+</script>
+{% endblock %}

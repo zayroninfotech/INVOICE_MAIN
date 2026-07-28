@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Logging out…</title></head>
+<body>
+<script>
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_username');
+  localStorage.removeItem('user_role');
+  window.location = '/auth/login/';
+</script>
+</body>
+</html>

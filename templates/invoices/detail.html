@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Invoice Detail – Zayro ₹ Invoice{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+{% block page_title %}Invoice Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+  .inv-hero {
+    background: linear-gradient(135deg, #0F172A, #1E293B);
+    border-radius: 12px; padding: 24px 28px; color: #fff; margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  }
+  .inv-word { font-size: 2rem; font-weight: 900; letter-spacing: -.02em; color: #fff; }
+  .inv-number { font-size: 1rem; color: #FB923C; font-weight: 600; }
+  .inv-meta-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px 28px; }
+  .inv-meta-lbl { font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #64748B; margin-bottom: 3px; }
+  .inv-meta-val { font-size: .95rem; font-weight: 600; color: #fff; }
+
+  .detail-card { background:#fff; border:1.5px solid #E2E8F0; border-radius:12px; padding:24px; margin-bottom:16px; }
+  .detail-card-title {
+    font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8;
+    margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .detail-card-title::after { content:''; flex:1; height:1px; background:#F1F5F9; }
+
+  .totals-line { display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:.875rem; }
+  .totals-line:not(:last-child) { border-bottom:1px solid #F1F5F9; }
+  .grand-bar {
+    background: linear-gradient(135deg,#F97316,#EA580C); border-radius:10px;
+    padding:14px 20px; display:flex; justify-content:space-between; align-items:center; margin-top:10px;
+  }
+  .grand-bar .lbl { color:rgba(255,255,255,.8); font-weight:600; }
+  .grand-bar .val { color:#fff; font-weight:800; font-size:1.15rem; }
+
+  .pay-method-btn {
+    display:inline-block; padding:6px 14px; border:1.5px solid #E2E8F0; border-radius:20px;
+    font-size:.8rem; font-weight:600; cursor:pointer; transition:all .15s; color:#64748B;
+  }
+  .pay-method-btn.active { border-color:var(--primary); background:#FFF7ED; color:var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="loading" style="text-align:center;padding:60px;color:#94A3B8">
+  <div class="spinner-border text-primary mb-3"></div><br>Loading invoice…
+</div>
+
+<div id="invoice-content" class="d-none">
+
+  <!-- Hero band -->
+  <div class="inv-hero">
+    <div>
+      <div class="inv-word">INVOICE</div>
+      <div class="inv-number" id="inv-number"></div>
+      <div style="margin-top:10px" id="inv-status-badge"></div>
+    </div>
+    <div class="inv-meta-grid">
+      <div><div class="inv-meta-lbl">Invoice Date</div><div class="inv-meta-val" id="inv-date"></div></div>
+      <div><div class="inv-meta-lbl">Due Date</div><div class="inv-meta-val" id="inv-due"></div></div>
+      <div><div class="inv-meta-lbl">Currency</div><div class="inv-meta-val" id="inv-currency"></div></div>
+      <div><div class="inv-meta-lbl">Status</div>
+        <select class="form-select form-select-sm mt-1" id="status-select" onchange="updateStatus()"
+                style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;max-width:130px">
+          <option>Draft</option><option>Sent</option><option>Paid</option>
+          <option>Partial</option><option>Overdue</option><option>Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start">
+      <a id="edit-btn" href="#" class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </a>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="downloadPDF()">
+        <i class="bi bi-file-pdf me-1"></i>PDF
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="sendEmail()">
+        <i class="bi bi-envelope me-1"></i>Email
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <!-- Bill To -->
+    <div class="col-md-5">
+      <div class="detail-card">
+        <div class="detail-card-title"><i class="bi bi-person-vcard"></i> Bill To</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#0F172A;margin-bottom:4px" id="inv-customer-name"></div>
+        <div style="color:#64748B;font-size:.875rem" id="inv-customer-email"></div>
+        <div style="color:#94A3B8;font-size:.8rem;margin-top:4px" id="inv-customer-address"></div>
+        <div style="color:#94A3B8;font-size:.8rem" id="inv-customer-gst"></div>
+      </div>
+    </div>
+    <!-- Summary -->
+    <div class="col-md-7">
+      <div class="detail-card">
+        <div class="detail-card-title"><i class="bi bi-calculator"></i> Summary</div>
+        <div class="totals-line"><span style="color:#64748B">Subtotal</span><span style="font-weight:600" id="inv-subtotal"></span></div>
+        <div class="totals-line"><span style="color:#64748B">Tax Amount</span><span style="font-weight:600" id="inv-tax"></span></div>
+        <div class="grand-bar">
+          <span class="lbl">Grand Total</span><span class="val" id="inv-total"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items table -->
+  <div class="detail-card">
+    <div class="detail-card-title"><i class="bi bi-list-check"></i> Line Items</div>
+    <div style="overflow-x:auto">
+      <table class="ms-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Product</th><th>HSN</th><th>Unit</th>
+            <th style="text-align:right">Price</th><th style="text-align:right">Qty</th>
+            <th style="text-align:right">Disc%</th><th style="text-align:right">Tax%</th>
+            <th style="text-align:right">Total</th>
+          </tr>
+        </thead>
+        <tbody id="inv-items"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Notes + Terms -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6" id="notes-block"></div>
+    <div class="col-md-6" id="terms-block"></div>
+  </div>
+
+  <!-- Record Payment -->
+  <div class="detail-card">
+    <div class="detail-card-title"><i class="bi bi-cash-coin"></i> Record Payment</div>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Amount</label>
+        <div class="input-group">
+          <span class="input-group-text">₹</span>
+          <input type="number" class="form-control" id="pay-amount" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" id="pay-date">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Method</label>
+        <select class="form-select" id="pay-method">
+          <option>Bank Transfer</option><option>UPI</option><option>Cash</option>
+          <option>Cheque</option><option>Card</option><option>Other</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Reference #</label>
+        <input type="text" class="form-control" id="pay-ref" placeholder="UTR / Cheque no.">
+      </div>
+    </div>
+    <button class="btn btn-success mt-3" onclick="recordPayment()">
+      <i class="bi bi-check-lg me-1"></i>Record Payment
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const INVOICE_ID = '{{ invoice_id }}';
+let invoiceData = null;
+const fmt     = (n) => '₹' + Number(n).toLocaleString('en-IN',{minimumFractionDigits:2});
+const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+async function loadInvoice() {
+  const res = await API.get(`/api/invoices/${INVOICE_ID}/`);
+  if (!res.success) {
+    document.getElementById('loading').innerHTML = '<div style="color:#EF4444">Invoice not found.</div>';
+    return;
+  }
+  invoiceData = res.data;
+  render(invoiceData);
+}
+
+function render(inv) {
+  document.getElementById('loading').classList.add('d-none');
+  document.getElementById('invoice-content').classList.remove('d-none');
+
+  document.getElementById('inv-number').textContent = inv.invoice_number;
+  document.getElementById('inv-status-badge').innerHTML = `<span class="badge-ms badge-${inv.status}">${inv.status}</span>`;
+  document.getElementById('inv-date').textContent     = fmtDate(inv.invoice_date);
+  document.getElementById('inv-due').textContent      = fmtDate(inv.due_date);
+  document.getElementById('inv-currency').textContent = inv.currency;
+  document.getElementById('status-select').value      = inv.status;
+
+  document.getElementById('inv-customer-name').textContent    = inv.customer_name;
+  document.getElementById('inv-customer-email').textContent   = inv.customer_email;
+  document.getElementById('inv-customer-address').textContent = inv.customer_address || '';
+  document.getElementById('inv-customer-gst').textContent     = inv.customer_gst ? 'GST: ' + inv.customer_gst : '';
+
+  document.getElementById('inv-subtotal').textContent = fmt(inv.subtotal);
+  document.getElementById('inv-tax').textContent      = fmt(inv.tax_amount);
+  document.getElementById('inv-total').textContent    = fmt(inv.grand_total);
+  document.getElementById('edit-btn').href            = `/invoices/?edit=${inv.id}`;
+
+  document.getElementById('pay-date').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('pay-amount').value = parseFloat(inv.grand_total).toFixed(2);
+
+  if (inv.notes) document.getElementById('notes-block').innerHTML =
+    `<div class="detail-card"><div class="detail-card-title"><i class="bi bi-sticky"></i> Notes</div><p style="color:#64748B;margin:0">${inv.notes}</p></div>`;
+  if (inv.terms) document.getElementById('terms-block').innerHTML =
+    `<div class="detail-card"><div class="detail-card-title"><i class="bi bi-file-text"></i> Terms</div><p style="color:#64748B;margin:0">${inv.terms}</p></div>`;
+
+  document.getElementById('inv-items').innerHTML = inv.items.map((item, i) => `
+    <tr>
+      <td style="color:#94A3B8">${i+1}</td>
+      <td><span style="font-weight:600">${item.product_name}</span>${item.description ? `<br><small style="color:#94A3B8">${item.description}</small>` : ''}</td>
+      <td style="color:#64748B">${item.hsn_code||'—'}</td>
+      <td style="color:#64748B">${item.unit}</td>
+      <td style="text-align:right">${fmt(item.unit_price)}</td>
+      <td style="text-align:right">${item.quantity}</td>
+      <td style="text-align:right">${item.discount}%</td>
+      <td style="text-align:right">${item.tax_rate}%</td>
+      <td style="text-align:right;font-weight:700">${fmt(item.total)}</td>
+    </tr>`).join('');
+}
+
+async function updateStatus() {
+  const status = document.getElementById('status-select').value;
+  const res = await API.patch(`/api/invoices/${INVOICE_ID}/status/`, { status });
+  if (res.success) { toast('Status updated.'); invoiceData.status = status; render(invoiceData); }
+  else toast(res.message, 'error');
+}
+
+async function downloadPDF() {
+  const btn = event.currentTarget;
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Generating…';
+  try {
+    const res = await fetch(`/api/invoices/${INVOICE_ID}/pdf/`, {
+      headers: { 'Authorization': 'Bearer ' + API.token() }
+    });
+    if (!res.ok) { toast('PDF generation failed.', 'error'); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = (invoiceData?.invoice_number || INVOICE_ID) + '.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('PDF downloaded.');
+  } catch { toast('Download failed.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = orig; }
+}
+
+async function sendEmail() {
+  const res = await API.post(`/api/invoices/${INVOICE_ID}/email/`, {});
+  if (res.success) toast(res.message); else toast(res.message, 'error');
+}
+
+async function recordPayment() {
+  const payload = {
+    invoice_id:       INVOICE_ID,
+    amount:           document.getElementById('pay-amount').value,
+    payment_date:     document.getElementById('pay-date').value,
+    payment_method:   document.getElementById('pay-method').value,
+    reference_number: document.getElementById('pay-ref').value,
+  };
+  if (!payload.amount || !payload.payment_date) { toast('Amount and date are required.', 'error'); return; }
+  const res = await API.post('/api/payments/', payload);
+  if (res.success) { toast('Payment recorded successfully.'); loadInvoice(); }
+  else toast(res.message || JSON.stringify(res.errors), 'error');
+}
+
+loadInvoice();
+</script>
+{% endblock %}

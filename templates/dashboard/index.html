@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Zayro ₹ Invoice{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stat-card-accent { border-left: 4px solid; }
+  .quick-action-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; padding: 18px 12px; background: #fff; border: 1.5px solid #E2E8F0; border-radius: 10px;
+    text-decoration: none; color: #334155; font-size: .8rem; font-weight: 600; transition: all .15s;
+    text-align: center;
+  }
+  .quick-action-btn:hover { border-color: var(--primary); color: var(--primary); background: #FFF7ED; transform: translateY(-1px); }
+  .quick-action-btn i { font-size: 1.5rem; }
+  .recent-row { cursor: pointer; }
+  .trend-up   { color: #15803D; font-size: .75rem; font-weight: 600; }
+  .trend-down { color: #B91C1C; font-size: .75rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Superadmin: User stats row -->
+<div id="superadmin-cards" class="row g-3 mb-4" style="display:none">
+  <div class="col-sm-4">
+    <div class="stat-card stat-card-accent" style="border-left-color:#7C3AED">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED;font-size:1.2rem"></i></div>
+        <div>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="stat-total-users">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card stat-card-accent" style="border-left-color:#F97316">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#FFF7ED"><i class="bi bi-shield-check" style="color:#F97316;font-size:1.2rem"></i></div>
+        <div>
+          <div class="stat-label">Admins</div>
+          <div class="stat-value" id="stat-admins">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card stat-card-accent" style="border-left-color:#64748B">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#F1F5F9"><i class="bi bi-person" style="color:#64748B;font-size:1.2rem"></i></div>
+        <div>
+          <div class="stat-label">Regular Users</div>
+          <div class="stat-value" id="stat-reg-users">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value text-primary" id="stat-revenue">—</div>
+          <div class="stat-sub" id="stat-monthly-sub">This month: —</div>
+        </div>
+        <div class="stat-icon" style="background:#FFF7ED"><i class="bi bi-currency-rupee" style="color:#F97316;font-size:1.2rem"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="stat-label">Paid Invoices</div>
+          <div class="stat-value" style="color:#15803D" id="stat-paid">—</div>
+          <div class="stat-sub">Completed payments</div>
+        </div>
+        <div class="stat-icon" style="background:#DCFCE7"><i class="bi bi-check-circle-fill" style="color:#16A34A;font-size:1.2rem"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" style="color:#D97706" id="stat-pending">—</div>
+          <div class="stat-sub">Draft + Sent + Partial</div>
+        </div>
+        <div class="stat-icon" style="background:#FEF9C3"><i class="bi bi-clock-fill" style="color:#CA8A04;font-size:1.2rem"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="stat-label">Overdue</div>
+          <div class="stat-value" style="color:#DC2626" id="stat-overdue">—</div>
+          <div class="stat-sub">Needs attention</div>
+        </div>
+        <div class="stat-icon" style="background:#FEE2E2"><i class="bi bi-exclamation-triangle-fill" style="color:#DC2626;font-size:1.2rem"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary stats + Quick Actions -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="card-ms p-4">
+      <div class="section-header mb-3">
+        <span class="section-title">Quick Actions</span>
+      </div>
+      <div class="row g-3" id="quick-actions">
+        <div class="col-6 col-sm-3">
+          <a href="/invoices/create/" class="quick-action-btn" id="qa-create-invoice">
+            <i class="bi bi-plus-circle-fill text-primary"></i>
+            New Invoice
+          </a>
+        </div>
+        <div class="col-6 col-sm-3">
+          <a href="/customers/add/" class="quick-action-btn" id="qa-add-customer">
+            <i class="bi bi-person-plus-fill" style="color:#7C3AED"></i>
+            Add Customer
+          </a>
+        </div>
+        <div class="col-6 col-sm-3">
+          <a href="/products/add/" class="quick-action-btn" id="qa-add-product">
+            <i class="bi bi-box-fill" style="color:#0891B2"></i>
+            Add Product
+          </a>
+        </div>
+        <div class="col-6 col-sm-3">
+          <a href="/reports/" class="quick-action-btn">
+            <i class="bi bi-bar-chart-fill" style="color:#D97706"></i>
+            Reports
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="row g-3 h-100">
+      <div class="col-6 col-md-12">
+        <div class="stat-card" style="padding: 16px">
+          <div class="stat-label">Customers</div>
+          <div class="stat-value fs-3" id="stat-customers">—</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-12">
+        <div class="stat-card" style="padding: 16px">
+          <div class="stat-label">Products</div>
+          <div class="stat-value fs-3" id="stat-products">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Invoices -->
+<div class="card-ms">
+  <div class="d-flex align-items-center justify-content-between p-4 pb-0">
+    <span class="section-title">Recent Invoices</span>
+    <a href="/invoices/" class="btn btn-sm btn-outline-primary">View All <i class="bi bi-arrow-right ms-1"></i></a>
+  </div>
+  <div style="overflow-x:auto; margin-top: 16px;">
+    <table class="ms-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="recent-invoices">
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:#94A3B8">
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadDashboard() {
+  const res = await API.get('/api/dashboard/stats/');
+  if (!res.success) {
+    document.getElementById('recent-invoices').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:32px;color:#EF4444">Failed to load dashboard data. Please refresh.</td></tr>';
+    return;
+  }
+  const d = res.data;
+  const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+  document.getElementById('stat-revenue').textContent    = fmt(d.total_revenue);
+  document.getElementById('stat-monthly-sub').textContent = 'This month: ' + fmt(d.monthly_revenue);
+  document.getElementById('stat-paid').textContent      = d.paid_invoices;
+  document.getElementById('stat-pending').textContent   = d.pending_invoices;
+  document.getElementById('stat-overdue').textContent   = d.overdue_invoices;
+  document.getElementById('stat-customers').textContent = d.total_customers;
+  document.getElementById('stat-products').textContent  = d.total_products;
+
+  if (d.role === 'superadmin') {
+    const el = document.getElementById('superadmin-cards');
+    el.style.display = '';
+    document.getElementById('stat-total-users').textContent = d.total_users ?? 0;
+    document.getElementById('stat-admins').textContent      = d.total_admins ?? 0;
+    document.getElementById('stat-reg-users').textContent   = d.total_regular_users ?? 0;
+  }
+  const tbody = document.getElementById('recent-invoices');
+  if (!d.recent_invoices.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#94A3B8">
+      No invoices yet. <a href="/invoices/create/">Create your first invoice →</a>
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = d.recent_invoices.map(inv => `
+    <tr class="recent-row" onclick="window.location='/invoices/${inv.id}/'">
+      <td><a href="/invoices/${inv.id}/" class="fw-700 text-primary text-decoration-none" onclick="event.stopPropagation()">${inv.invoice_number}</a></td>
+      <td style="color:#334155">${inv.customer_name}</td>
+      <td class="fw-700">₹${Number(inv.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+      <td style="color:#64748B">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
+      <td>
+        <a href="/invoices/${inv.id}/" class="btn-icon btn-icon-primary" title="View" onclick="event.stopPropagation()"><i class="bi bi-eye"></i></a>
+      </td>
+    </tr>`).join('');
+}
+loadDashboard();
+</script>
+{% endblock %}

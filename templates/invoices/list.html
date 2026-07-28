@@ -1,0 +1,896 @@
+{% extends "base.html" %}
+{% block title %}Invoices – Zayro ₹ Invoice{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+
+{% block extra_css %}
+<style>
+  .back-btn {
+    display:inline-flex; align-items:center; gap:6px; color:#64748B; font-size:.875rem;
+    font-weight:600; background:none; border:none; cursor:pointer; padding:0;
+  }
+  .back-btn:hover { color:var(--primary); }
+
+  /* ── Free-form style cards ───────────────────────────── */
+  .fi-card {
+    background:#fff; border:1.5px solid #E2E8F0; border-radius:10px;
+    padding:18px 20px; margin-bottom:12px;
+  }
+  .fi-section-label {
+    font-size:.65rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:#94A3B8; margin-bottom:10px;
+  }
+  .fi-label {
+    display:block; font-size:.72rem; font-weight:700; color:#94A3B8;
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;
+  }
+  .fi-input {
+    width:100%; border:none; border-bottom:1.5px solid #E2E8F0; padding:4px 0;
+    font-size:.9rem; color:#0F172A; background:transparent; outline:none;
+    transition:border-color .15s;
+  }
+  .fi-input:focus { border-bottom-color:var(--primary); }
+  .fi-select {
+    width:100%; border:1.5px solid #E2E8F0; border-radius:7px; padding:6px 10px;
+    font-size:.85rem; color:#334155; background:#fff; outline:none;
+    transition:border-color .15s;
+  }
+  .fi-select:focus { border-color:var(--primary); }
+  .fi-textarea {
+    width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:10px 12px;
+    font-size:.875rem; color:#334155; resize:vertical; outline:none; transition:border-color .15s;
+  }
+  .fi-textarea:focus { border-color:var(--primary); }
+  .fi-readonly-row { font-size:.85rem; color:#334155; padding:2px 0; min-height:18px; }
+
+  /* ── Items ───────────────────────────────────────────── */
+  .fi-items-header {
+    display:flex; align-items:center; gap:8px;
+    font-size:.65rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:#94A3B8; padding-bottom:8px; border-bottom:1.5px solid var(--primary);
+    margin-bottom:4px;
+  }
+  .fi-item-wrap { border-bottom:1px solid #F1F5F9; padding:10px 0; }
+  .fi-item-wrap:last-child { border-bottom:none; }
+  .fi-item-row { display:flex; align-items:center; gap:8px; }
+  .fi-item-row .fi-prod-sel { flex:1; min-width:0; }
+  .fi-rate-inp { width:90px; text-align:right; }
+  .fi-qty-inp  { width:60px; text-align:center; }
+  .fi-disc-inp { width:60px; text-align:center; }
+  .fi-item-row .fi-amt { width:80px; text-align:right; font-weight:700; font-size:.875rem; color:#0F172A; flex-shrink:0; }
+  .fi-item-row .fi-del-btn { background:none; border:none; color:#CBD5E1; cursor:pointer; padding:0 4px; font-size:1rem; flex-shrink:0; }
+  .fi-item-row .fi-del-btn:hover { color:#EF4444; }
+  .fi-item-detail {
+    width:100%; border:none; border-bottom:1px dashed #E2E8F0; padding:4px 0;
+    font-size:.8rem; color:#64748B; background:transparent; outline:none;
+    margin-top:6px; resize:none; line-height:1.4; overflow:hidden;
+    transition:border-color .15s;
+  }
+  .fi-item-detail:focus { border-bottom-color:var(--primary); }
+  .fi-add-item-btn {
+    display:inline-flex; align-items:center; gap:5px; margin-top:12px;
+    background:none; border:1.5px dashed #E2E8F0; border-radius:8px;
+    padding:8px 16px; color:#64748B; font-size:.82rem; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .fi-add-item-btn:hover { border-color:var(--primary); color:var(--primary); }
+
+  /* ── Totals ──────────────────────────────────────────── */
+  .fi-total-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:6px 0; font-size:.875rem; color:#64748B; border-bottom:1px solid #F1F5F9;
+  }
+  .fi-total-row:last-child { border-bottom:none; }
+  .fi-total-bold { font-weight:700; color:#0F172A; }
+  .fi-balance-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 14px; margin-top:8px; border-radius:8px;
+    background:var(--primary); color:#fff; font-weight:800; font-size:1rem;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────── */
+  .fi-sidebar { width:160px; flex-shrink:0; }
+  .fi-sb-section { margin-bottom:18px; }
+  .fi-sb-label {
+    display:block; font-size:.62rem; font-weight:800; text-transform:uppercase;
+    letter-spacing:.1em; color:#94A3B8; margin-bottom:6px;
+  }
+  .fi-sb-sublabel { display:block; font-size:.72rem; color:#64748B; font-weight:600; margin-bottom:4px; }
+  .fi-sb-input {
+    width:100%; border:1.5px solid #E2E8F0; border-radius:7px; padding:6px 8px;
+    font-size:.8rem; color:#334155; outline:none; transition:border-color .15s; margin-bottom:6px;
+  }
+  .fi-sb-input:focus { border-color:var(--primary); }
+  .fi-sb-select {
+    width:100%; border:1.5px solid #E2E8F0; border-radius:7px; padding:5px 8px;
+    font-size:.8rem; color:#334155; background:#fff; outline:none;
+  }
+  .fi-sb-send-btn {
+    width:100%; background:var(--primary); color:#fff; border:none; border-radius:7px;
+    padding:7px; font-size:.82rem; font-weight:700; cursor:pointer; margin-bottom:6px;
+    transition:background .15s;
+  }
+  .fi-sb-send-btn:hover { opacity:.9; }
+  .fi-color-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+  .fi-swatch {
+    width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    transition:transform .15s, border-color .15s;
+  }
+  .fi-swatch:hover { transform:scale(1.15); }
+  .fi-swatch.active { border-color:#0F172A; transform:scale(1.1); }
+
+  /* ── Bottom CTA bar ──────────────────────────────────── */
+  .fi-bottom-bar {
+    background:#1E293B; border-radius:10px; padding:16px 20px; margin-bottom:12px;
+    display:flex; align-items:center; gap:16px;
+  }
+  .fi-cta-btn {
+    background:var(--primary); color:#fff; border:none; border-radius:8px;
+    padding:10px 22px; font-size:.9rem; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; gap:8px; transition:opacity .15s;
+  }
+  .fi-cta-btn:hover { opacity:.9; }
+  .fi-cta-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+  /* ── Signature / Photos ──────────────────────────────── */
+  .fi-sig-box {
+    width:40px; height:40px; border:1.5px solid #E2E8F0; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; background:#F8FAFC;
+    cursor:pointer; color:#64748B; font-size:1.2rem;
+  }
+  .fi-sig-box:hover { border-color:var(--primary); color:var(--primary); }
+  .fi-photo-box {
+    width:64px; height:64px; border:1.5px dashed #E2E8F0; border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; background:#F8FAFC; cursor:pointer; color:#94A3B8; font-size:.7rem; text-align:center;
+  }
+  .fi-photo-box:hover { border-color:var(--primary); color:var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════ LIST VIEW ═══════════════ -->
+<div id="list-view">
+  <div class="section-header mb-4">
+    <div class="d-flex gap-3 flex-wrap">
+      <div class="input-group" style="max-width:280px">
+        <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #E2E8F0;border-radius:8px 0 0 8px">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" class="form-control border-start-0" id="search" placeholder="Search invoices…"
+               style="border:1.5px solid #E2E8F0;border-left:none;border-radius:0 8px 8px 0" oninput="onSearch(this.value)">
+      </div>
+      <select class="form-select" id="status-filter" style="max-width:160px" onchange="onStatus(this.value)">
+        <option value="">All Status</option>
+        <option>Draft</option><option>Sent</option><option>Paid</option>
+        <option>Partial</option><option>Overdue</option><option>Cancelled</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="openForm()">
+      <i class="bi bi-plus-lg me-1"></i>New Invoice
+    </button>
+  </div>
+
+  <div class="card-ms">
+    <div style="overflow-x:auto">
+      <table class="ms-table">
+        <thead><tr>
+          <th>Invoice #</th><th>Customer</th><th>Date</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="invoice-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:#94A3B8">
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-top:1px solid #F1F5F9">
+      <small style="color:#94A3B8" id="page-info"></small>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" id="prev-btn" onclick="changePage(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="next-btn" onclick="changePage(1)">Next <i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ FORM VIEW ═══════════════ -->
+<div id="form-view" class="d-none">
+
+  <!-- Setup warnings (shown if no customers / products) -->
+  <div id="setup-warnings" class="d-none mb-3"></div>
+
+  <!-- Top bar -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <button class="back-btn" onclick="closeForm()"><i class="bi bi-arrow-left"></i> Back to Invoices</button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="closeForm()">Cancel</button>
+      <button id="f-submit-btn" class="btn btn-primary btn-sm" onclick="submitInvoice(false)">
+        <i class="bi bi-check-lg me-1"></i><span id="f-btn-text">Save Invoice</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="form-error" class="alert alert-danger d-none mb-3 rounded-3"></div>
+
+  <!-- Two-column: main + sidebar -->
+  <div class="d-flex gap-3 align-items-start">
+
+    <!-- ═══ MAIN ═══ -->
+    <div style="flex:1;min-width:0">
+
+      <!-- Invoice header card -->
+      <div class="fi-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div style="font-size:2rem;font-weight:900;letter-spacing:-.02em;color:var(--primary)">Invoice</div>
+            <div style="margin-top:6px;color:#94A3B8;font-size:.78rem;font-weight:600">
+              #&nbsp;<span id="fi-inv-num-display">Auto-generated on save</span>
+            </div>
+          </div>
+          <div>
+            <img id="fi-bp-logo" src="" style="max-width:90px;max-height:60px;object-fit:contain;display:none">
+            <div id="fi-bp-logo-ph" style="width:70px;height:50px;border:1.5px dashed #E2E8F0;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#CBD5E1">
+              <i class="bi bi-building" style="font-size:1.4rem"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FROM + BILL TO -->
+      <div class="d-flex gap-3">
+        <div class="fi-card" style="flex:1">
+          <div class="fi-section-label"><i class="bi bi-building me-1"></i>From</div>
+          <div class="fi-readonly-row" id="fi-from-name" style="font-weight:700;color:#0F172A"></div>
+          <div class="fi-readonly-row" id="fi-from-email" style="color:#64748B;font-size:.82rem"></div>
+          <div class="fi-readonly-row" id="fi-from-addr" style="color:#64748B;font-size:.82rem"></div>
+          <div class="fi-readonly-row" id="fi-from-phone" style="color:#64748B;font-size:.82rem"></div>
+          <div class="fi-readonly-row" id="fi-from-gst" style="color:#94A3B8;font-size:.78rem"></div>
+          <a href="/auth/profile/" style="font-size:.72rem;color:var(--primary);text-decoration:none;margin-top:8px;display:inline-block">
+            <i class="bi bi-pencil-square me-1"></i>Edit in Profile
+          </a>
+        </div>
+        <div class="fi-card" style="flex:1">
+          <div class="fi-section-label"><i class="bi bi-person-vcard me-1"></i>Bill To</div>
+          <select class="fi-select" id="f-customer_id" required onchange="onCustomerChange()">
+            <option value="">— Select Customer —</option>
+          </select>
+          <div class="fi-readonly-row mt-2" id="f-cust-name-disp" style="font-weight:700;color:#0F172A;display:none"></div>
+          <div class="fi-readonly-row" id="f-cust-email" style="color:#64748B;font-size:.82rem"></div>
+          <div class="fi-readonly-row" id="f-cust-addr" style="color:#64748B;font-size:.82rem"></div>
+          <div class="fi-readonly-row" id="f-cust-gst" style="color:#94A3B8;font-size:.78rem"></div>
+        </div>
+      </div>
+
+      <!-- Invoice meta: date, due, terms -->
+      <div class="fi-card">
+        <div class="row g-3">
+          <div class="col-sm-4">
+            <label class="fi-label">Invoice Date <span style="color:#EF4444">*</span></label>
+            <input type="date" class="fi-input" id="f-invoice_date" required>
+          </div>
+          <div class="col-sm-4">
+            <label class="fi-label">Due Date <span style="color:#EF4444">*</span></label>
+            <input type="date" class="fi-input" id="f-due_date" required>
+          </div>
+          <div class="col-sm-4">
+            <label class="fi-label">Terms</label>
+            <select class="fi-select" id="f-terms-preset" onchange="applyTermsPreset(this.value)">
+              <option value="On Receipt">On Receipt</option>
+              <option value="Net 15">Net 15</option>
+              <option value="Net 30" selected>Net 30</option>
+              <option value="Net 45">Net 45</option>
+              <option value="Net 60">Net 60</option>
+              <option value="">Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items card -->
+      <div class="fi-card">
+        <div class="fi-items-header" id="fi-items-thead">
+          <div style="flex:1">DESCRIPTION</div>
+          <div style="width:90px;text-align:right">RATE</div>
+          <div style="width:60px;text-align:center">QTY</div>
+          <div id="fi-disc-col-hdr" style="width:60px;text-align:center;display:none">DISC%</div>
+          <div style="width:80px;text-align:right">AMOUNT</div>
+          <div style="width:28px"></div>
+        </div>
+        <div id="f-items-tbody"></div>
+        <button type="button" class="fi-add-item-btn" onclick="addItem()">
+          <i class="bi bi-plus-circle"></i> Add Item
+        </button>
+      </div>
+
+      <!-- Totals -->
+      <div class="fi-card">
+        <div class="d-flex justify-content-end">
+          <div style="width:280px">
+            <div class="fi-total-row">
+              <span>Subtotal</span><span id="f-subtotal">₹0.00</span>
+            </div>
+            <div class="fi-total-row">
+              <span>Tax</span><span id="f-tax">₹0.00</span>
+            </div>
+            <div class="fi-total-row fi-total-bold">
+              <span>Total</span><span id="f-total">₹0.00</span>
+            </div>
+            <div class="fi-balance-row">
+              <span>Balance Due</span><span id="f-balance">₹0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="fi-card">
+        <label class="fi-label">Notes</label>
+        <textarea id="f-notes" class="fi-textarea" rows="4"
+          placeholder="Notes — any relevant information not covered, additional terms and conditions"
+          maxlength="5000" oninput="document.getElementById('fi-notes-ct').textContent=this.value.length+'/5000'"></textarea>
+        <div id="fi-notes-ct" style="text-align:right;font-size:.75rem;color:#94A3B8;margin-top:4px">0/5000</div>
+      </div>
+
+      <!-- Terms -->
+      <div class="fi-card">
+        <label class="fi-label">Terms &amp; Conditions</label>
+        <textarea id="f-terms" class="fi-textarea" rows="2">Payment due within 30 days.</textarea>
+      </div>
+
+      <!-- Signature -->
+      <div class="fi-card">
+        <label class="fi-label">Signature</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="fi-sig-box" onclick="toast('Signature upload coming soon.','info')">
+            <i class="bi bi-plus-lg"></i>
+          </div>
+          <span style="font-size:.8rem;color:#94A3B8">Click to add signature</span>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div class="fi-card">
+        <label class="fi-label">Photos</label>
+        <div class="fi-photo-box" onclick="toast('Photo upload coming soon.','info')">
+          <i class="bi bi-image" style="font-size:1.3rem"></i>
+          <span>Add Photos</span>
+        </div>
+      </div>
+
+      <!-- Bottom CTA bar -->
+      <div class="fi-bottom-bar">
+        <button class="fi-cta-btn" id="f-cta-btn" onclick="submitInvoice(true)">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span id="f-cta-text">Create &amp; Download PDF</span>
+          <span id="f-cta-spin" class="spinner-border spinner-border-sm d-none"></span>
+        </button>
+        <button class="btn btn-sm" style="color:#94A3B8;border:1px solid #334155;background:transparent;border-radius:8px;padding:8px 16px" onclick="closeForm()">Cancel</button>
+        <span style="margin-left:auto;font-size:.75rem;color:#64748B">
+          Want unlimited? <a href="/auth/register/" style="color:var(--primary);font-weight:600;text-decoration:none">Register free →</a>
+        </span>
+      </div>
+
+    </div><!-- /main -->
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <div class="fi-sidebar">
+
+      <!-- Send To -->
+      <div class="fi-sb-section">
+        <label class="fi-sb-label">Send To</label>
+        <input type="email" class="fi-sb-input" id="fi-send-email" placeholder="name@business.com">
+        <button class="fi-sb-send-btn" onclick="sendEmail()">Send <i class="bi bi-send-fill ms-1"></i></button>
+      </div>
+
+      <!-- Template -->
+      <div class="fi-sb-section">
+        <label class="fi-sb-label">TEMPLATE</label>
+        <div class="fi-color-grid" id="fi-color-grid"></div>
+        <div style="margin-top:8px">
+          <label class="fi-sb-sublabel">Custom Color</label>
+          <input type="color" id="fi-custom-color" value="#F97316"
+            style="width:100%;height:28px;border:1.5px solid #E2E8F0;border-radius:6px;padding:2px;cursor:pointer"
+            oninput="selectFiColor(null, this.value)">
+        </div>
+      </div>
+
+      <!-- Tax -->
+      <div class="fi-sb-section">
+        <label class="fi-sb-label">TAX</label>
+        <label class="fi-sb-sublabel">Type</label>
+        <select class="fi-sb-select" id="fi-tax-type" onchange="onTaxTypeChange()">
+          <option value="per_item">Per Item</option>
+          <option value="none">None</option>
+          <option value="flat">Flat %</option>
+        </select>
+        <div id="fi-flat-tax-wrap" style="display:none;margin-top:6px">
+          <input type="number" class="fi-sb-input" id="fi-flat-tax" value="18" min="0" max="100" step="0.01" oninput="recalc()" placeholder="Tax %">
+        </div>
+      </div>
+
+      <!-- Discount -->
+      <div class="fi-sb-section">
+        <label class="fi-sb-label">DISCOUNT</label>
+        <label class="fi-sb-sublabel">Type</label>
+        <select class="fi-sb-select" id="fi-disc-type" onchange="onDiscTypeChange()">
+          <option value="none">None</option>
+          <option value="per_item">Per Item %</option>
+        </select>
+      </div>
+
+      <!-- Currency -->
+      <div class="fi-sb-section">
+        <label class="fi-sb-label">CURRENCY</label>
+        <select class="fi-sb-select" id="f-currency" onchange="recalc()">
+          <option value="INR">&#8377; INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">&#8364; EUR</option>
+          <option value="GBP">&#163; GBP</option>
+        </select>
+      </div>
+
+    </div><!-- /sidebar -->
+
+  </div><!-- /two-col -->
+</div><!-- /form-view -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ── State ── */
+let page = 1, total = 0, search = '', statusFilter = '';
+let editingId = null, itemCount = 0;
+let products = [], customers = [];
+let bizProfile = {};
+let selectedColor = '#F97316';
+
+/* ══════════════════ TEMPLATE COLORS ══════════════════ */
+const FI_COLORS = [
+  '#F97316','#EF4444','#8B5CF6','#10B981','#3B82F6',
+  '#F59E0B','#EC4899','#14B8A6','#6366F1','#84CC16',
+];
+
+function initColorGrid() {
+  const grid = document.getElementById('fi-color-grid');
+  if (!grid) return;
+  grid.innerHTML = FI_COLORS.map(c =>
+    `<div class="fi-swatch${c===selectedColor?' active':''}" style="background:${c}" data-color="${c}" onclick="selectFiColor(this,'${c}')"></div>`
+  ).join('');
+}
+
+function selectFiColor(el, hex) {
+  selectedColor = hex;
+  document.querySelectorAll('.fi-swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('fi-custom-color').value = hex;
+  // Apply to form's --primary CSS variable so balance-due bar, items header etc. update live
+  document.getElementById('form-view').style.setProperty('--primary', hex);
+  const darker = '#' + hex.replace(/^#/,'').match(/../g)
+    .map(c => Math.max(0, parseInt(c,16)-32).toString(16).padStart(2,'0')).join('');
+  document.getElementById('form-view').style.setProperty('--primary-dark', darker);
+}
+
+/* ══════════════════ LIST LOGIC ══════════════════ */
+async function loadInvoices() {
+  const tbody = document.getElementById('invoice-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#94A3B8"><div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…</td></tr>';
+  const res = await API.get(`/api/invoices/?page=${page}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(statusFilter)}`);
+  if (!res.success) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#EF4444">Failed to load.</td></tr>';
+    return;
+  }
+  total = res.data.total;
+  const rows = res.data.results;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:#94A3B8">
+      <i class="bi bi-file-text" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+      No invoices yet. <a href="#" onclick="openForm();return false">Create your first invoice &rarr;</a>
+    </td></tr>`;
+    document.getElementById('page-info').textContent = '';
+    return;
+  }
+  tbody.innerHTML = rows.map(inv => `
+    <tr style="cursor:pointer" onclick="window.location='/invoices/${inv.id}/'">
+      <td onclick="event.stopPropagation()">
+        <a href="/invoices/${inv.id}/" class="fw-700 text-primary text-decoration-none">${inv.invoice_number}</a>
+      </td>
+      <td style="font-weight:500">${inv.customer_name}</td>
+      <td style="color:#64748B">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td style="color:#64748B">${new Date(inv.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td style="font-weight:700">&#8377;${Number(inv.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
+      <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <a href="/invoices/${inv.id}/" class="btn-icon btn-icon-primary me-1" title="View"><i class="bi bi-eye"></i></a>
+        <button class="btn-icon me-1" onclick="openEdit('${inv.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn-icon btn-icon-success me-1" onclick="downloadPDF('${inv.id}','${inv.invoice_number}')" title="PDF"><i class="bi bi-file-pdf"></i></button>
+        <button class="btn-icon btn-icon-danger" onclick="cancelInvoice('${inv.id}','${inv.invoice_number}')" title="Cancel"><i class="bi bi-x-circle"></i></button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('page-info').textContent = `Showing ${(page-1)*20+1}–${Math.min(page*20,total)} of ${total} invoices`;
+  document.getElementById('prev-btn').disabled = page === 1;
+  document.getElementById('next-btn').disabled = page * 20 >= total;
+}
+
+async function downloadPDF(id, num) {
+  const btn = event.currentTarget, orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  try {
+    const res = await fetch(`/api/invoices/${id}/pdf/`, { headers: { 'Authorization': 'Bearer ' + API.token() } });
+    if (!res.ok) { toast('PDF failed.', 'error'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${num}.pdf`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('PDF downloaded.');
+  } catch { toast('Download failed.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = orig; }
+}
+
+async function cancelInvoice(id, num) {
+  if (!confirm(`Cancel invoice ${num}?`)) return;
+  const res = await API.del(`/api/invoices/${id}/`);
+  if (res.success) { toast('Invoice cancelled.'); loadInvoices(); }
+  else toast(res.message, 'error');
+}
+
+function changePage(dir) { page += dir; loadInvoices(); }
+let searchTimer;
+function onSearch(v) { clearTimeout(searchTimer); searchTimer = setTimeout(() => { search = v; page = 1; loadInvoices(); }, 400); }
+function onStatus(v) { statusFilter = v; page = 1; loadInvoices(); }
+
+/* ══════════════════ FORM LOGIC ══════════════════ */
+async function loadFormData() {
+  const [cRes, pRes, bpRes] = await Promise.all([
+    API.get('/api/customers/?page_size=200'),
+    API.get('/api/products/?page_size=200'),
+    API.get('/api/auth/business-profile/'),
+  ]);
+  customers  = cRes.success  ? cRes.data.results  : [];
+  products   = pRes.success  ? pRes.data.results  : [];
+  bizProfile = bpRes.success ? bpRes.data         : {};
+
+  const sel = document.getElementById('f-customer_id');
+  sel.innerHTML = '<option value="">— Select Customer —</option>';
+  customers.forEach(c => sel.insertAdjacentHTML('beforeend',
+    `<option value="${c.id}"
+       data-name="${(c.customer_name||'').replace(/"/g,'&quot;')}"
+       data-email="${c.email||''}"
+       data-addr="${[c.address,c.city,c.state,c.pincode].filter(Boolean).join(', ')}"
+       data-gst="${c.gst_number||''}"
+     >${c.customer_name}${c.company?' – '+c.company:''}</option>`));
+
+  renderBizProfile(bizProfile);
+}
+
+function renderBizProfile(bp) {
+  document.getElementById('fi-from-name').textContent  = bp.company_name || '—';
+  document.getElementById('fi-from-email').textContent = bp.email || '';
+  const addr = [bp.address, bp.city, bp.state, bp.pincode].filter(Boolean).join(', ');
+  document.getElementById('fi-from-addr').textContent  = addr;
+  document.getElementById('fi-from-phone').textContent = bp.phone || '';
+  document.getElementById('fi-from-gst').textContent   = bp.gst ? 'GST: ' + bp.gst : '';
+  const logo = document.getElementById('fi-bp-logo');
+  const ph   = document.getElementById('fi-bp-logo-ph');
+  if (bp.logo_url) {
+    logo.src = bp.logo_url; logo.style.display = '';
+    ph.style.display = 'none';
+  } else {
+    logo.style.display = 'none'; ph.style.display = 'flex';
+  }
+}
+
+function onCustomerChange() {
+  const opt = document.getElementById('f-customer_id').selectedOptions[0];
+  if (!opt?.value) {
+    document.getElementById('f-cust-name-disp').style.display = 'none';
+    ['f-cust-email','f-cust-addr','f-cust-gst'].forEach(id => { document.getElementById(id).textContent = ''; });
+    document.getElementById('fi-send-email').value = '';
+    return;
+  }
+  document.getElementById('f-cust-name-disp').textContent = opt.dataset.name || '';
+  document.getElementById('f-cust-name-disp').style.display = 'block';
+  document.getElementById('f-cust-email').textContent = opt.dataset.email || '';
+  document.getElementById('f-cust-addr').textContent  = opt.dataset.addr  || '';
+  document.getElementById('f-cust-gst').textContent   = opt.dataset.gst ? 'GST: ' + opt.dataset.gst : '';
+  document.getElementById('fi-send-email').value      = opt.dataset.email || '';
+}
+
+function applyTermsPreset(val) {
+  if (!val) return;
+  document.getElementById('f-terms').value = val === 'On Receipt'
+    ? 'Payment due on receipt.'
+    : `Payment due within ${val.replace('Net ','')} days.`;
+}
+
+function onTaxTypeChange() {
+  const v = document.getElementById('fi-tax-type').value;
+  document.getElementById('fi-flat-tax-wrap').style.display = v === 'flat' ? '' : 'none';
+  recalc();
+}
+
+function onDiscTypeChange() {
+  const show = document.getElementById('fi-disc-type').value === 'per_item';
+  document.getElementById('fi-disc-col-hdr').style.display = show ? '' : 'none';
+  document.querySelectorAll('.fi-disc-inp').forEach(el => el.style.display = show ? '' : 'none');
+  recalc();
+}
+
+/* ── Items ── */
+function addItem(data = {}) {
+  itemCount++;
+  const idx = itemCount;
+  const opts = products.map(p =>
+    `<option value="${p.id}" data-price="${p.price}" data-tax="${p.tax_rate||0}" data-desc="${(p.description||'').replace(/"/g,"'")}" ${data.product_id===p.id?'selected':''}>${p.name}</option>`
+  ).join('');
+  const showDisc = document.getElementById('fi-disc-type').value === 'per_item';
+
+  document.getElementById('f-items-tbody').insertAdjacentHTML('beforeend', `
+    <div class="fi-item-wrap" id="irow-${idx}">
+      <div class="fi-item-row">
+        <div class="fi-prod-sel">
+          <select class="fi-select" id="ip-${idx}" onchange="onProdChange(${idx})" required>
+            <option value="">— Product / Service —</option>${opts}
+          </select>
+        </div>
+        <input type="number" class="fi-input fi-rate-inp" id="ipr-${idx}" value="${data.unit_price||''}" step="0.01" placeholder="0.00" oninput="recalc()">
+        <input type="number" class="fi-input fi-qty-inp"  id="iq-${idx}"  value="${data.quantity||1}"    min="0.01" step="0.01" oninput="recalc()">
+        <input type="number" class="fi-input fi-disc-inp" id="id-${idx}"  value="${data.discount||0}"   min="0" max="100" step="0.01" style="display:${showDisc?'':'none'}" oninput="recalc()" placeholder="0">
+        <div class="fi-amt" id="il-${idx}">&#8377;0.00</div>
+        <button type="button" class="fi-del-btn" onclick="removeItem(${idx})"><i class="bi bi-x"></i></button>
+      </div>
+      <textarea class="fi-item-detail" id="idet-${idx}" rows="1"
+        placeholder="Additional details (optional)"
+        oninput="autoResize(this)">${data.description||''}</textarea>
+    </div>`);
+  if (data.product_id) onProdChange(idx, true);
+  recalc();
+}
+
+function autoResize(ta) { ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
+
+function onProdChange(idx, skipDesc) {
+  const opt = document.getElementById(`ip-${idx}`)?.selectedOptions[0];
+  if (!opt?.value) return;
+  document.getElementById(`ipr-${idx}`).value = opt.dataset.price;
+  if (!skipDesc) {
+    const det = document.getElementById(`idet-${idx}`);
+    if (det && !det.value) { det.value = opt.dataset.desc || ''; autoResize(det); }
+  }
+  recalc();
+}
+
+function removeItem(idx) { document.getElementById(`irow-${idx}`)?.remove(); recalc(); }
+
+const CUR_SYM = { INR:'&#8377;', USD:'$', EUR:'&euro;', GBP:'&pound;' };
+function fmtAmt(n) {
+  const cur = document.getElementById('f-currency')?.value || 'INR';
+  const sym = cur === 'INR' ? '₹' : (cur === 'EUR' ? '€' : cur === 'GBP' ? '£' : '$');
+  return sym + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+}
+
+function recalc() {
+  const taxType = document.getElementById('fi-tax-type')?.value || 'per_item';
+  const flatTax = parseFloat(document.getElementById('fi-flat-tax')?.value || 18);
+  let sub = 0, tax = 0;
+  document.querySelectorAll('#f-items-tbody .fi-item-wrap').forEach(row => {
+    const idx  = row.id.replace('irow-','');
+    const pr   = parseFloat(document.getElementById(`ipr-${idx}`)?.value || 0);
+    const qty  = parseFloat(document.getElementById(`iq-${idx}`)?.value  || 0);
+    const disc = parseFloat(document.getElementById(`id-${idx}`)?.value  || 0);
+    const taxR = taxType === 'none' ? 0
+               : taxType === 'flat' ? flatTax
+               : parseFloat(document.getElementById(`ip-${idx}`)?.selectedOptions[0]?.dataset?.tax || 0);
+    const after = pr * qty * (1 - disc / 100);
+    const lt = after * taxR / 100;
+    sub += after; tax += lt;
+    const el = document.getElementById(`il-${idx}`);
+    if (el) el.textContent = fmtAmt(after + lt);
+  });
+  document.getElementById('f-subtotal').textContent = fmtAmt(sub);
+  document.getElementById('f-tax').textContent      = fmtAmt(tax);
+  document.getElementById('f-total').textContent    = fmtAmt(sub + tax);
+  document.getElementById('f-balance').textContent  = fmtAmt(sub + tax);
+}
+
+/* ── Open / Close ── */
+function resetForm() {
+  document.getElementById('f-items-tbody').innerHTML = '';
+  itemCount = 0;
+  document.getElementById('f-customer_id').value = '';
+  document.getElementById('f-cust-name-disp').style.display = 'none';
+  ['f-cust-email','f-cust-addr','f-cust-gst'].forEach(id => { document.getElementById(id).textContent = ''; });
+  document.getElementById('f-notes').value  = '';
+  document.getElementById('fi-notes-ct').textContent = '0/5000';
+  document.getElementById('f-terms').value  = 'Payment due within 30 days.';
+  document.getElementById('form-error').classList.add('d-none');
+  document.getElementById('fi-send-email').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-invoice_date').value = today;
+  document.getElementById('f-due_date').value     = new Date(Date.now()+30*86400000).toISOString().split('T')[0];
+  document.getElementById('f-currency').value     = 'INR';
+  document.getElementById('fi-inv-num-display').textContent = 'Auto-generated on save';
+  selectedColor = '#F97316';
+  document.getElementById('form-view').style.setProperty('--primary', '#F97316');
+  initColorGrid();
+  recalc();
+}
+
+function showFormPanel() {
+  document.getElementById('list-view').classList.add('d-none');
+  document.getElementById('form-view').classList.remove('d-none');
+  window.scrollTo(0, 0);
+}
+
+function showSetupWarnings() {
+  const warns = [];
+  if (!customers.length) warns.push(`<a href="/customers/" class="alert-link">Add customers →</a>`);
+  if (!products.length)  warns.push(`<a href="/products/" class="alert-link">Add products →</a>`);
+  const wDiv = document.getElementById('setup-warnings');
+  if (warns.length) {
+    wDiv.innerHTML = `<div class="alert alert-warning rounded-3 mb-0" style="font-size:.875rem">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>Setup needed:</strong> To create an invoice you need at least one customer and one product. &nbsp;
+      ${warns.join(' &nbsp; ')}
+    </div>`;
+    wDiv.classList.remove('d-none');
+  } else {
+    wDiv.classList.add('d-none');
+  }
+}
+
+function openForm() {
+  editingId = null;
+  resetForm();
+  renderBizProfile(bizProfile);
+  showSetupWarnings();
+  addItem();
+  document.getElementById('f-btn-text').textContent = 'Save Invoice';
+  document.getElementById('f-cta-text').textContent = 'Create & Download PDF';
+  showFormPanel();
+}
+
+async function openEdit(id) {
+  const res = await API.get(`/api/invoices/${id}/`);
+  if (!res.success) { toast('Failed to load invoice.', 'error'); return; }
+  editingId = id;
+  resetForm();
+  renderBizProfile(bizProfile);
+  const inv = res.data;
+  document.getElementById('f-customer_id').value    = inv.customer_id;
+  onCustomerChange();
+  document.getElementById('f-invoice_date').value   = inv.invoice_date.split('T')[0];
+  document.getElementById('f-due_date').value        = inv.due_date.split('T')[0];
+  document.getElementById('f-currency').value        = inv.currency;
+  document.getElementById('f-notes').value           = inv.notes || '';
+  document.getElementById('f-terms').value           = inv.terms || '';
+  document.getElementById('fi-notes-ct').textContent = (inv.notes||'').length + '/5000';
+  document.getElementById('fi-inv-num-display').textContent = inv.invoice_number;
+  if (inv.template_color) {
+    selectedColor = inv.template_color;
+    document.getElementById('form-view').style.setProperty('--primary', inv.template_color);
+    initColorGrid();
+  }
+  inv.items.forEach(item => addItem({
+    product_id: item.product_id,
+    unit_price: item.unit_price,
+    quantity:   item.quantity,
+    discount:   item.discount,
+    description:item.description,
+  }));
+  document.getElementById('f-btn-text').textContent = 'Update Invoice';
+  document.getElementById('f-cta-text').textContent = 'Save & Download PDF';
+  showFormPanel();
+}
+
+function closeForm() {
+  document.getElementById('form-view').classList.add('d-none');
+  document.getElementById('list-view').classList.remove('d-none');
+}
+
+/* ── Send email ── */
+async function sendEmail() {
+  if (!editingId) { toast('Save the invoice first, then send.', 'error'); return; }
+  const res = await API.post(`/api/invoices/${editingId}/email/`, {});
+  if (res.success) toast('Invoice emailed!');
+  else toast(res.message || 'Email failed.', 'error');
+}
+
+/* ── Submit ── */
+async function submitInvoice(andDownload) {
+  const items = [];
+  document.querySelectorAll('#f-items-tbody .fi-item-wrap').forEach(row => {
+    const idx = row.id.replace('irow-','');
+    const pid = document.getElementById(`ip-${idx}`)?.value;
+    if (!pid) return;
+    items.push({
+      product_id:  pid,
+      quantity:    parseFloat(document.getElementById(`iq-${idx}`).value  || 1),
+      discount:    parseFloat(document.getElementById(`id-${idx}`).value  || 0),
+      description: document.getElementById(`idet-${idx}`)?.value || '',
+    });
+  });
+
+  const errEl = document.getElementById('form-error');
+  errEl.classList.add('d-none');
+  if (!document.getElementById('f-customer_id').value) { toast('Please select a customer.', 'error'); return; }
+  if (!items.length) { toast('Add at least one line item.', 'error'); return; }
+
+  const topBtn  = document.getElementById('f-submit-btn');
+  const ctaBtn  = document.getElementById('f-cta-btn');
+  const ctaSpin = document.getElementById('f-cta-spin');
+  topBtn.disabled = ctaBtn.disabled = true;
+  if (andDownload) {
+    ctaSpin.classList.remove('d-none');
+    document.getElementById('f-cta-text').textContent = 'Saving…';
+  } else {
+    document.getElementById('f-btn-text').textContent = 'Saving…';
+  }
+
+  const payload = {
+    customer_id:    document.getElementById('f-customer_id').value,
+    invoice_date:   document.getElementById('f-invoice_date').value,
+    due_date:       document.getElementById('f-due_date').value,
+    currency:       document.getElementById('f-currency').value,
+    notes:          document.getElementById('f-notes').value,
+    terms:          document.getElementById('f-terms').value,
+    template_color: selectedColor,
+    items,
+  };
+
+  try {
+    const res = editingId
+      ? await API.put(`/api/invoices/${editingId}/`, payload)
+      : await API.post('/api/invoices/', payload);
+
+    if (res.success) {
+      const inv = res.data;
+      editingId = inv.id;
+      document.getElementById('fi-inv-num-display').textContent = inv.invoice_number;
+      toast(editingId ? 'Invoice updated!' : 'Invoice created!');
+      if (andDownload) {
+        await _doDownload(inv.id, inv.invoice_number);
+      } else {
+        closeForm(); loadInvoices();
+      }
+    } else {
+      const msg = res.errors ? Object.values(res.errors).flat().join(', ') : (res.message || 'Save failed.');
+      errEl.textContent = msg; errEl.classList.remove('d-none');
+    }
+  } finally {
+    topBtn.disabled = ctaBtn.disabled = false;
+    ctaSpin.classList.add('d-none');
+    const lbl = editingId ? 'Update Invoice' : 'Save Invoice';
+    const cta = editingId ? 'Save & Download PDF' : 'Create & Download PDF';
+    document.getElementById('f-btn-text').textContent = lbl;
+    document.getElementById('f-cta-text').textContent = cta;
+  }
+}
+
+async function _doDownload(id, num) {
+  document.getElementById('f-cta-text').textContent = 'Generating PDF…';
+  try {
+    const res = await fetch(`/api/invoices/${id}/pdf/`, { headers: { 'Authorization': 'Bearer ' + API.token() } });
+    if (!res.ok) { toast('PDF failed.', 'error'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${num}.pdf`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('PDF downloaded!');
+    loadInvoices();
+  } catch { toast('Download failed.', 'error'); }
+}
+
+/* ── Init ── */
+(async () => {
+  initColorGrid();
+  await loadFormData();
+  loadInvoices();
+  const p = new URLSearchParams(location.search);
+  if (p.get('new') === '1') openForm();
+  else if (p.get('edit')) openEdit(p.get('edit'));
+})();
+</script>
+{% endblock %}

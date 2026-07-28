@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %} – Zayro ₹ Invoice{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+{% block page_title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .invoice-header-card {
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px; color: #fff;
+  }
+  .invoice-header-card .form-label { color: #94A3B8; }
+  .invoice-header-card .form-control,
+  .invoice-header-card .form-select {
+    background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.12);
+    color: #fff; border-radius: 8px;
+  }
+  .invoice-header-card .form-control::placeholder { color: #64748B; }
+  .invoice-header-card .form-control:focus,
+  .invoice-header-card .form-select:focus {
+    background: rgba(255,255,255,.12); border-color: #F97316; box-shadow: 0 0 0 3px rgba(249,115,22,.2);
+  }
+  .invoice-header-card .form-select option { background: #1E293B; }
+
+  .section-card { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .section-card-title {
+    font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    color: #94A3B8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-card-title::after { content:''; flex:1; height:1px; background:#F1F5F9; }
+
+  /* Items table */
+  .items-head th {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: #94A3B8; padding: 8px 10px; border-bottom: 1.5px solid #E2E8F0; background: #F8FAFC;
+  }
+  .item-row td { padding: 8px 6px; vertical-align: middle; border-bottom: 1px solid #F1F5F9; }
+  .item-row:last-child td { border-bottom: none; }
+  .item-row .form-control, .item-row .form-select {
+    font-size: .85rem; padding: 7px 10px; border-radius: 7px;
+  }
+  .item-row .form-control:read-only { background: #F8FAFC; color: #64748B; }
+
+  /* Totals */
+  .totals-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .totals-row:not(:last-child) { border-bottom: 1px solid #F1F5F9; }
+  .totals-row .lbl { color: #64748B; font-size: .875rem; }
+  .totals-row .val { font-weight: 600; color: #0F172A; font-size: .875rem; }
+  .grand-total-row {
+    background: linear-gradient(135deg, #F97316, #EA580C);
+    border-radius: 10px; padding: 14px 20px; display: flex;
+    justify-content: space-between; align-items: center; margin-top: 12px;
+  }
+  .grand-total-row .lbl { color: rgba(255,255,255,.8); font-weight: 600; font-size: .95rem; }
+  .grand-total-row .val { color: #fff; font-weight: 800; font-size: 1.2rem; }
+
+  /* Submit bar */
+  .submit-bar {
+    background: #fff; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .submit-bar .totals-mini { color: #64748B; font-size: .875rem; }
+  .submit-bar .totals-mini strong { color: #0F172A; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="error-msg" class="alert alert-danger d-none mb-3 rounded-3"></div>
+
+<form id="invoice-form">
+  <!-- ── Header band: Invoice No / Dates / Currency ── -->
+  <div class="invoice-header-card">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <div class="mb-1" style="font-size:2rem;font-weight:800;letter-spacing:-.02em">INVOICE</div>
+        <div style="color:#64748B;font-size:.85rem">Auto-generated on save</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Invoice Date <span style="color:#EF4444">*</span></label>
+        <input type="date" class="form-control" id="invoice_date" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Due Date <span style="color:#EF4444">*</span></label>
+        <input type="date" class="form-control" id="due_date" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Currency</label>
+        <select class="form-select" id="currency">
+          <option value="INR">₹ INR – Indian Rupee</option>
+          <option value="USD">$ USD – US Dollar</option>
+          <option value="EUR">€ EUR – Euro</option>
+          <option value="GBP">£ GBP – British Pound</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bill To (Customer) ── -->
+  <div class="section-card">
+    <div class="section-card-title"><i class="bi bi-person-vcard"></i> Bill To — Customer Details</div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Select Customer <span class="text-danger">*</span></label>
+        <select class="form-select" id="customer_id" required onchange="onCustomerChange()">
+          <option value="">— Choose a customer —</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Customer Email</label>
+        <input type="text" class="form-control" id="cust-email-preview" readonly placeholder="Auto-filled from customer">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Address</label>
+        <input type="text" class="form-control" id="cust-addr-preview" readonly placeholder="Auto-filled from customer">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">GST Number</label>
+        <input type="text" class="form-control" id="cust-gst-preview" readonly placeholder="Auto-filled from customer">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Line Items ── -->
+  <div class="section-card">
+    <div class="section-card-title"><i class="bi bi-list-check"></i> Line Items</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr class="items-head">
+            <th style="min-width:220px">Product / Description</th>
+            <th style="width:70px">Qty</th>
+            <th style="width:90px">Unit Price</th>
+            <th style="width:70px">Disc %</th>
+            <th style="width:70px">Tax %</th>
+            <th style="width:100px;text-align:right">Total</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm mt-3" onclick="addItem()">
+      <i class="bi bi-plus-lg me-1"></i> Add Item
+    </button>
+  </div>
+
+  <!-- ── Totals + Notes + Submit ── -->
+  <div class="row g-3">
+    <div class="col-md-5">
+      <div class="section-card h-100">
+        <div class="section-card-title"><i class="bi bi-sticky"></i> Notes & Terms</div>
+        <div class="mb-3">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="notes" rows="3" placeholder="Thank you for your business…"></textarea>
+        </div>
+        <div>
+          <label class="form-label">Terms & Conditions</label>
+          <textarea class="form-control" id="terms" rows="3">Payment due within 30 days.</textarea>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="section-card">
+        <div class="section-card-title"><i class="bi bi-calculator"></i> Invoice Summary</div>
+        <div class="totals-row"><span class="lbl">Subtotal</span><span class="val" id="summary-subtotal">₹0.00</span></div>
+        <div class="totals-row"><span class="lbl">Tax Amount</span><span class="val" id="summary-tax">₹0.00</span></div>
+        <div class="grand-total-row">
+          <span class="lbl">Grand Total</span>
+          <span class="val" id="summary-total">₹0.00</span>
+        </div>
+
+        <div class="d-grid gap-2 mt-4">
+          <button type="submit" class="btn btn-primary btn-lg fw-700" id="submit-btn">
+            <span id="btn-text"><i class="bi bi-check-lg me-1"></i>Save Invoice</span>
+            <span id="btn-spinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
+          </button>
+          <a href="/invoices/" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ACTION = '{{ action }}';
+const INVOICE_ID = '{{ invoice_id }}';
+let products = [];
+let customers = [];
+let itemCount = 0;
+
+/* ── Load data ── */
+async function loadCustomers() {
+  const res = await API.get('/api/customers/?page_size=200');
+  if (!res.success) return;
+  customers = res.data.results;
+  const sel = document.getElementById('customer_id');
+  customers.forEach(c => {
+    sel.insertAdjacentHTML('beforeend',
+      `<option value="${c.id}" data-email="${c.email||''}" data-addr="${c.address||''}" data-gst="${c.gst_number||''}">${c.customer_name}${c.company?' – '+c.company:''}</option>`);
+  });
+}
+
+async function loadProducts() {
+  const res = await API.get('/api/products/?page_size=200');
+  if (!res.success) return;
+  products = res.data.results;
+}
+
+function onCustomerChange() {
+  const sel = document.getElementById('customer_id');
+  const opt = sel.selectedOptions[0];
+  document.getElementById('cust-email-preview').value = opt?.dataset.email || '';
+  document.getElementById('cust-addr-preview').value  = opt?.dataset.addr  || '';
+  document.getElementById('cust-gst-preview').value   = opt?.dataset.gst   || '';
+}
+
+/* ── Items ── */
+function addItem(data = {}) {
+  itemCount++;
+  const idx = itemCount;
+  const opts = products.map(p =>
+    `<option value="${p.id}" data-price="${p.price}" data-tax="${p.tax_rate||0}" ${data.product_id===p.id?'selected':''}>${p.name}</option>`
+  ).join('');
+  document.getElementById('items-tbody').insertAdjacentHTML('beforeend', `
+    <tr class="item-row" id="row-${idx}">
+      <td>
+        <select class="form-select" id="prod-${idx}" onchange="onProductChange(${idx})" required>
+          <option value="">— Select product —</option>${opts}
+        </select>
+        <input type="text" class="form-control mt-1" id="desc-${idx}" placeholder="Description (optional)" value="${data.description||''}">
+      </td>
+      <td><input type="number" class="form-control" id="qty-${idx}" value="${data.quantity||1}" min="0.01" step="0.01" oninput="recalc()"></td>
+      <td><input type="number" class="form-control" id="price-${idx}" value="${data.unit_price||''}" step="0.01" readonly></td>
+      <td><input type="number" class="form-control" id="disc-${idx}" value="${data.discount||0}" min="0" max="100" step="0.01" oninput="recalc()"></td>
+      <td><input type="number" class="form-control" id="tax-${idx}" value="${data.tax_rate||0}" step="0.01" readonly></td>
+      <td style="text-align:right;font-weight:600;white-space:nowrap;padding-right:10px" id="total-${idx}">₹0.00</td>
+      <td><button type="button" class="btn-icon btn-icon-danger" onclick="removeItem(${idx})" title="Remove"><i class="bi bi-trash"></i></button></td>
+    </tr>`);
+  if (data.product_id) onProductChange(idx);
+  recalc();
+}
+
+function onProductChange(idx) {
+  const sel = document.getElementById(`prod-${idx}`);
+  const opt = sel.selectedOptions[0];
+  if (!opt?.value) return;
+  document.getElementById(`price-${idx}`).value = opt.dataset.price;
+  document.getElementById(`tax-${idx}`).value   = opt.dataset.tax;
+  recalc();
+}
+
+function removeItem(idx) {
+  document.getElementById(`row-${idx}`)?.remove();
+  recalc();
+}
+
+const fmtRupee = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+
+function recalc() {
+  let subtotal = 0, tax = 0;
+  document.querySelectorAll('#items-tbody tr.item-row').forEach(row => {
+    const idx   = row.id.replace('row-','');
+    const price = parseFloat(document.getElementById(`price-${idx}`)?.value || 0);
+    const qty   = parseFloat(document.getElementById(`qty-${idx}`)?.value   || 0);
+    const disc  = parseFloat(document.getElementById(`disc-${idx}`)?.value  || 0);
+    const taxR  = parseFloat(document.getElementById(`tax-${idx}`)?.value   || 0);
+    const after = price * qty * (1 - disc/100);
+    const lineTax   = after * taxR / 100;
+    const lineTotal = after + lineTax;
+    subtotal += after;
+    tax      += lineTax;
+    const el = document.getElementById(`total-${idx}`);
+    if (el) el.textContent = fmtRupee(lineTotal);
+  });
+  document.getElementById('summary-subtotal').textContent = fmtRupee(subtotal);
+  document.getElementById('summary-tax').textContent      = fmtRupee(tax);
+  document.getElementById('summary-total').textContent    = fmtRupee(subtotal + tax);
+}
+
+/* ── Load existing invoice for edit ── */
+async function loadInvoice() {
+  if (ACTION !== 'edit' || !INVOICE_ID) return;
+  const res = await API.get(`/api/invoices/${INVOICE_ID}/`);
+  if (!res.success) return;
+  const inv = res.data;
+  document.getElementById('customer_id').value = inv.customer_id;
+  onCustomerChange();
+  document.getElementById('invoice_date').value = inv.invoice_date.split('T')[0];
+  document.getElementById('due_date').value      = inv.due_date.split('T')[0];
+  document.getElementById('currency').value      = inv.currency;
+  document.getElementById('notes').value         = inv.notes || '';
+  document.getElementById('terms').value         = inv.terms || '';
+  inv.items.forEach(item => addItem(item));
+}
+
+/* ── Default dates ── */
+const today = new Date().toISOString().split('T')[0];
+const due30 = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
+document.getElementById('invoice_date').value = today;
+document.getElementById('due_date').value      = due30;
+
+/* ── Submit ── */
+document.getElementById('invoice-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const items = [];
+  document.querySelectorAll('#items-tbody tr.item-row').forEach(row => {
+    const idx = row.id.replace('row-','');
+    const pid = document.getElementById(`prod-${idx}`)?.value;
+    if (!pid) return;
+    items.push({
+      product_id:  pid,
+      quantity:    document.getElementById(`qty-${idx}`).value,
+      discount:    document.getElementById(`disc-${idx}`).value,
+      description: document.getElementById(`desc-${idx}`).value,
+    });
+  });
+  if (!items.length) { toast('Add at least one line item.', 'error'); return; }
+  if (!document.getElementById('customer_id').value) { toast('Please select a customer.', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  const errEl = document.getElementById('error-msg');
+  errEl.classList.add('d-none');
+  btn.disabled = true;
+  document.getElementById('btn-spinner').classList.remove('d-none');
+  document.getElementById('btn-text').innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving…';
+
+  const payload = {
+    customer_id:  document.getElementById('customer_id').value,
+    invoice_date: document.getElementById('invoice_date').value,
+    due_date:     document.getElementById('due_date').value,
+    currency:     document.getElementById('currency').value,
+    notes:        document.getElementById('notes').value,
+    terms:        document.getElementById('terms').value,
+    items,
+  };
+
+  try {
+    const res = ACTION === 'edit'
+      ? await API.put(`/api/invoices/${INVOICE_ID}/`, payload)
+      : await API.post('/api/invoices/', payload);
+    if (res.success) {
+      toast(ACTION === 'edit' ? 'Invoice updated!' : 'Invoice created!');
+      setTimeout(() => window.location = `/invoices/${res.data.id}/`, 600);
+    } else {
+      const msg = res.errors ? Object.values(res.errors).flat().join(', ') : res.message;
+      errEl.textContent = msg;
+      errEl.classList.remove('d-none');
+    }
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btn-spinner').classList.add('d-none');
+    document.getElementById('btn-text').innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Invoice';
+  }
+});
+
+(async () => {
+  await loadCustomers();
+  await loadProducts();
+  await loadInvoice();
+  if (ACTION === 'create') addItem();
+})();
+</script>
+{% endblock %}
