@@ -6,7 +6,7 @@ class Payment(me.Document):
     invoice_id = me.StringField(required=True)
     invoice_number = me.StringField(required=True)
     customer_name = me.StringField(required=True)
-    amount = me.DecimalField(required=True, precision=2, min_value=0)
+    amount = me.DecimalField(required=True, precision=2, min_value=0.01)
     payment_date = me.DateTimeField(required=True)
     payment_method = me.StringField(
         choices=['Cash', 'Bank Transfer', 'UPI', 'Cheque', 'Card', 'Other'],

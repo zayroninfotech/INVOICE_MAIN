@@ -52,6 +52,8 @@ class Invoice(me.Document):
 
     def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()
+        if self.status in ['Draft', 'Sent'] and self.due_date and self.due_date < datetime.utcnow():
+            self.status = 'Overdue'
         return super().save(*args, **kwargs)
 
     def calculate_totals(self):

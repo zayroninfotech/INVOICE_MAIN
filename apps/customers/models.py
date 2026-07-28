@@ -5,7 +5,7 @@ from datetime import datetime
 class Customer(me.Document):
     customer_name = me.StringField(required=True, max_length=200)
     company = me.StringField(max_length=200, default='')
-    email = me.EmailField(required=True)
+    email = me.StringField(default='')
     phone = me.StringField(max_length=20, default='')
     address = me.StringField(default='')
     city = me.StringField(max_length=100, default='')

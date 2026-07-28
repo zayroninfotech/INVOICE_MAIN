@@ -6,7 +6,7 @@ class CustomerSerializer(serializers.Serializer):
     id = serializers.CharField(source='pk', read_only=True)
     customer_name = serializers.CharField(max_length=200)
     company = serializers.CharField(max_length=200, default='', allow_blank=True)
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=False, allow_blank=True, default='')
     phone = serializers.CharField(max_length=20, default='', allow_blank=True)
     address = serializers.CharField(default='', allow_blank=True)
     city = serializers.CharField(max_length=100, default='', allow_blank=True)
