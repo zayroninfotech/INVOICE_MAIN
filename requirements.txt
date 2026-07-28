@@ -9,3 +9,6 @@ celery==5.4.0
 redis==5.0.7
 reportlab==4.2.2
 Pillow==10.4.0
+whitenoise==6.7.0
+gunicorn==22.0.0
+python-dotenv==1.0.1
