@@ -231,67 +231,20 @@
   </div>
 
   <div style="flex:1; padding: 8px 0;">
-    <div class="sidebar-section-label">Main Menu</div>
+    <div class="sidebar-section-label">Invoice</div>
 
-    <!-- Dashboard -->
     <div class="nav-item-wrap">
-      <a href="/" class="nav-link-main {% block nav_dashboard %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
-        Dashboard
+      <a href="/invoices/create/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-plus-circle-fill"></i></span>
+        New Invoice
       </a>
     </div>
 
-    <!-- Invoices -->
     <div class="nav-item-wrap">
-      <a href="/invoices/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-file-text"></i></span>
-        Invoices
+      <a href="/invoices/" class="nav-link-main {% block nav_list %}{% endblock %}">
+        <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
+        My Invoices
       </a>
-    </div>
-
-    <!-- Customers -->
-    <div class="nav-item-wrap">
-      <a href="/customers/" class="nav-link-main {% block nav_customers %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-people"></i></span>
-        Customers
-      </a>
-    </div>
-
-    <!-- Products -->
-    <div class="nav-item-wrap">
-      <a href="/products/" class="nav-link-main {% block nav_products %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
-        Products
-      </a>
-    </div>
-
-    <!-- Payments -->
-    <div class="nav-item-wrap">
-      <a href="/payments/" class="nav-link-main {% block nav_payments %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-credit-card"></i></span>
-        Payments
-      </a>
-    </div>
-
-    <!-- Reports -->
-    <div class="nav-item-wrap">
-      <a href="/reports/" class="nav-link-main {% block nav_reports %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
-        Reports
-      </a>
-    </div>
-
-    <!-- Upgrade / Plan (non-superadmin) -->
-    <div id="plan-nav-section">
-      <div class="sidebar-divider"></div>
-      <div class="sidebar-section-label">Your Plan</div>
-      <div class="nav-item-wrap">
-        <a href="/pricing/upgrade/" class="nav-link-main {% block nav_upgrade %}{% endblock %}" id="plan-nav-link" style="color:#F97316">
-          <span class="nav-icon"><i class="bi bi-lightning-charge-fill"></i></span>
-          <span id="plan-nav-label">Upgrade Plan</span>
-          <span id="plan-nav-badge" style="margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;background:#FFF7ED;color:#F97316">FREE</span>
-        </a>
-      </div>
     </div>
 
     <!-- Admin section (superadmin only) -->
@@ -302,12 +255,6 @@
         <a href="/auth/users/" class="nav-link-main {% block nav_users %}{% endblock %}">
           <span class="nav-icon"><i class="bi bi-shield-person"></i></span>
           User Management
-        </a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="/pricing/manage/" class="nav-link-main {% block nav_subscriptions %}{% endblock %}">
-          <span class="nav-icon"><i class="bi bi-diagram-3"></i></span>
-          Subscriptions
         </a>
       </div>
     </div>
@@ -328,6 +275,14 @@
       </a>
     </div>
   </div>
+
+  {% block nav_dashboard %}{% endblock %}
+  {% block nav_customers %}{% endblock %}
+  {% block nav_products %}{% endblock %}
+  {% block nav_payments %}{% endblock %}
+  {% block nav_reports %}{% endblock %}
+  {% block nav_upgrade %}{% endblock %}
+  {% block nav_subscriptions %}{% endblock %}
 </div>
 
 <!-- ═══════════════════════ MAIN ═══════════════════════════ -->
@@ -493,45 +448,12 @@
   window.USER_ROLE = role;
 
   if (role === 'superadmin') {
-    document.getElementById('admin-section').style.display = 'block';
-    document.getElementById('plan-nav-section').style.display = 'none';
+    const adminSec = document.getElementById('admin-section');
+    if (adminSec) adminSec.style.display = 'block';
   }
 
-  /* ── Plan badge in sidebar ── */
   const _limitModal = new bootstrap.Modal(document.getElementById('limitModal'));
-
-  async function loadUserPlan() {
-    if (role === 'superadmin') return;
-    try {
-      const res = await API.get('/api/subscriptions/my/');
-      if (!res.success) return;
-      const s = res.data;
-      const planColors = { free:'background:#F1F5F9;color:#64748B', plus:'background:#FFF7ED;color:#F97316', premium:'background:#F5F3FF;color:#7C3AED' };
-      const badge = document.getElementById('plan-nav-badge');
-      if (badge) {
-        badge.textContent = s.plan.toUpperCase();
-        badge.style.cssText = `margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;${planColors[s.plan] || ''}`;
-      }
-      const label = document.getElementById('plan-nav-label');
-      if (label) label.textContent = s.plan === 'free' ? 'Upgrade Plan' : `${s.plan.charAt(0).toUpperCase()+s.plan.slice(1)} Plan`;
-
-      // Show daily usage progress for free plan
-      if (s.plan === 'free' && s.daily_limit) {
-        const used = s.invoices_used_today || 0;
-        const pct = Math.min(100, Math.round(used / s.daily_limit * 100));
-        const link = document.getElementById('plan-nav-link');
-        if (link) {
-          const bar = document.createElement('div');
-          bar.style.cssText = 'width:100%;margin-top:6px;padding:0 4px';
-          bar.innerHTML = `<div style="font-size:.7rem;color:#94A3B8;margin-bottom:3px">${used}/${s.daily_limit} invoices today</div>
-            <div style="height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${pct>=100?'#EF4444':'#F97316'};border-radius:4px;transition:width .3s"></div>
-            </div>`;
-          link.parentElement.appendChild(bar);
-        }
-      }
-    } catch(e) {}
-  }
+  async function loadUserPlan() { /* plan sidebar removed */ }
 
   /* Load pricing for limit modal */
   async function loadPricingForModal() {

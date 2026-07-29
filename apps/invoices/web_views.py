@@ -6,7 +6,7 @@ def invoice_list(request):
 
 
 def invoice_create(request):
-    return redirect('/invoices/?new=1')
+    return render(request, 'invoices/form.html', {'action': 'create'})
 
 
 def invoice_detail(request, pk):

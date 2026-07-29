@@ -94,11 +94,73 @@
     }
 
     /* ─── FREE INVOICE GENERATOR ─── */
-    .free-zone{max-width:1120px;margin:0 auto;padding:0 20px 80px;}
+    .free-zone{max-width:1400px;margin:0 auto;padding:0 20px 80px;}
     .gen-card{background:#fff;border-radius:16px;padding:0;margin-top:32px;box-shadow:0 8px 48px rgba(0,0,0,.35);overflow:hidden;}
-    .gen-layout{display:flex;align-items:flex-start;}
-    .gen-main{flex:1;min-width:0;}
-    .gen-sidebar{width:240px;flex-shrink:0;background:#F8FAFC;border-left:1px solid #E2E8F0;padding:20px 16px;min-height:100%;}
+    .gen-layout{display:grid;grid-template-columns:1fr 440px;align-items:stretch;min-height:600px;}
+    .gen-main{min-width:0;overflow:auto;}
+    /* Live preview panel */
+    .gen-preview{position:sticky;top:0;height:100vh;overflow-y:auto;background:#F1F5F9;border-left:1px solid #E2E8F0;display:flex;flex-direction:column;}
+    .gen-preview-header{padding:12px 16px;background:#1E293B;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .gen-preview-header span{font-size:.72rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;}
+    .gen-preview-header i{color:#10B981;font-size:.85rem;}
+    .preview-wrap{flex:1;padding:16px;overflow-y:auto;}
+    /* The invoice preview card */
+    .inv-preview{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.12);font-family:Arial,sans-serif;font-size:10px;color:#0F172A;}
+    .pvw-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;}
+    .pvw-logo{width:42px;height:42px;border-radius:50%;background:var(--primary,#F97316);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;flex-shrink:0;overflow:hidden;}
+    .pvw-logo img{width:100%;height:100%;object-fit:contain;}
+    .pvw-co{margin-left:8px;}
+    .pvw-co-name{font-size:11px;font-weight:800;color:#0F172A;}
+    .pvw-co-sub{font-size:8.5px;color:#64748B;margin-top:1px;}
+    .pvw-inv-title{font-size:22px;font-weight:900;color:var(--primary,#F97316);letter-spacing:-.02em;}
+    .pvw-divider{height:3px;background:var(--primary,#F97316);margin:0;}
+    .pvw-meta{display:flex;justify-content:space-between;padding:10px 16px 8px;}
+    .pvw-meta-l{font-size:8.5px;color:#64748B;line-height:1.7;}
+    .pvw-meta-r{text-align:right;}
+    .pvw-meta-row{display:flex;gap:6px;font-size:8.5px;justify-content:flex-end;}
+    .pvw-meta-lbl{color:#94A3B8;font-weight:600;}
+    .pvw-meta-val{color:#0F172A;font-weight:700;}
+    /* FROM / BILL TO */
+    .pvw-addr{display:grid;grid-template-columns:1fr 1fr;margin:0 10px 10px;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden;}
+    .pvw-addr-col{}
+    .pvw-addr-hdr{background:var(--primary,#F97316);color:#fff;font-weight:700;font-size:8px;padding:4px 8px;text-transform:uppercase;letter-spacing:.06em;}
+    .pvw-addr-body{padding:8px;font-size:8.5px;line-height:1.65;color:#374151;min-height:56px;}
+    .pvw-addr-name{font-weight:700;color:#0F172A;font-size:9px;margin-bottom:1px;}
+    .pvw-addr-muted{color:#64748B;}
+    /* Items table */
+    .pvw-items{margin:0 10px 6px;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden;}
+    .pvw-items-hdr{display:grid;grid-template-columns:18px 1fr 44px 28px 56px 32px 56px;background:#0F172A;color:#fff;font-size:7.5px;font-weight:700;gap:0;}
+    .pvw-items-hdr span{padding:5px 4px;text-align:right;}
+    .pvw-items-hdr span:nth-child(1){text-align:center;}
+    .pvw-items-hdr span:nth-child(2){text-align:left;}
+    .pvw-item-row{display:grid;grid-template-columns:18px 1fr 44px 28px 56px 32px 56px;border-top:1px solid #F1F5F9;font-size:8px;}
+    .pvw-item-row:nth-child(even){background:#FAFAFA;}
+    .pvw-item-row span{padding:5px 4px;text-align:right;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pvw-item-row span:nth-child(1){text-align:center;color:#94A3B8;}
+    .pvw-item-row span:nth-child(2){text-align:left;font-weight:600;color:#0F172A;}
+    .pvw-item-row span:nth-child(7){font-weight:700;}
+    /* Totals */
+    .pvw-totals{display:flex;justify-content:flex-end;padding:0 10px 8px;}
+    .pvw-totals-box{width:200px;}
+    .pvw-tot-row{display:flex;justify-content:space-between;font-size:8px;padding:3px 0;color:#374151;border-bottom:1px solid #F1F5F9;}
+    .pvw-tot-row.grand{background:var(--primary,#F97316);color:#fff;font-weight:700;font-size:8.5px;padding:5px 6px;border-radius:3px;margin-top:4px;border:none;}
+    .pvw-tot-row.gst-total{font-weight:700;color:#EA580C;}
+    .pvw-words{margin:0 10px 8px;padding:6px 10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;font-size:7.5px;color:#92400E;font-weight:600;}
+    .pvw-words-lbl{font-size:7px;text-transform:uppercase;color:#B45309;font-weight:700;letter-spacing:.05em;margin-bottom:1px;}
+    /* Footer */
+    .pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:8px 10px;border-top:1px solid #E2E8F0;align-items:center;}
+    .pvw-notes{font-size:7.5px;color:#64748B;line-height:1.5;}
+    .pvw-notes-lbl{font-weight:700;color:#0F172A;margin-bottom:2px;font-size:8px;}
+    .pvw-stamp{width:52px;height:52px;border-radius:50%;border:2.5px solid var(--primary,#F97316);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;}
+    .pvw-stamp span:first-child{font-size:7.5px;font-weight:700;color:var(--primary,#F97316);}
+    .pvw-stamp span:last-child{font-size:11px;font-weight:900;color:var(--primary,#F97316);}
+    .pvw-sig{text-align:center;font-size:7.5px;color:#374151;}
+    .pvw-sig-lbl{font-weight:700;color:var(--primary,#F97316);font-size:7px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+    .pvw-sig-line{border-top:1px solid #0F172A;width:80px;margin:0 auto 2px;}
+    .pvw-sig-img{max-width:80px;max-height:32px;object-fit:contain;display:block;margin:0 auto 3px;}
+    .pvw-bar{background:var(--primary,#F97316);color:#fff;font-size:7px;font-weight:700;text-align:center;padding:5px 8px;letter-spacing:.04em;}
+    @media(max-width:960px){.gen-layout{grid-template-columns:1fr;}.gen-preview{position:static;height:auto;}}
+    .gen-sidebar{display:none;}
     .gen-body{padding:28px 28px 16px;}
     /* Invoice Header */
     .gen-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
@@ -403,14 +465,6 @@
                   <span class="inv-meta-lbl">Invoice Date <span style="color:#EF4444">*</span></span>
                   <input class="inv-meta-input" id="fi-inv-date" type="date">
                 </div>
-                <div class="inv-meta-field">
-                  <span class="inv-meta-lbl">Due Date</span>
-                  <input class="inv-meta-input" id="fi-due-date" type="date">
-                </div>
-                <div class="inv-meta-field">
-                  <span class="inv-meta-lbl">Place of Supply</span>
-                  <input class="inv-meta-input" id="fi-place-of-supply" placeholder="e.g. Andhra Pradesh">
-                </div>
                 <div class="inv-err" id="inv-num-err" style="display:none"><i class="bi bi-exclamation-circle me-1"></i>Invoice number is required</div>
               </div>
             </div>
@@ -442,10 +496,6 @@
                   </div>
                 </div>
                 <div>
-                  <div class="gen-field">
-                    <span class="gen-field-lbl">CIN</span>
-                    <input class="gen-input" id="fi-cust-cin" placeholder="U12345AB2020PTC123456">
-                  </div>
                   <div class="gen-field">
                     <span class="gen-field-lbl">PAN</span>
                     <input class="gen-input" id="fi-cust-pan" placeholder="AABCP1234D">
@@ -509,14 +559,6 @@
               <span id="fi-words-text"></span>
             </div>
 
-            <!-- NOTES / TERMS -->
-            <div class="gen-notes">
-              <div class="gen-sec-title">Notes / Additional Terms</div>
-              <textarea class="gen-big-textarea" id="fi-notes" maxlength="2000"
-                placeholder="Any relevant information, additional terms and conditions..."
-                oninput="updateCharCount('fi-notes','notes-count',2000)"></textarea>
-              <div class="char-count"><span id="notes-count">0</span>/2000</div>
-            </div>
 
             <!-- THANK YOU / FOOTER -->
             <div class="gen-section-block">
@@ -600,68 +642,127 @@
           </div>
         </div><!-- /gen-main -->
 
-        <!-- ── SIDEBAR ── -->
-        <div class="gen-sidebar">
+        <!-- ── LIVE PREVIEW PANEL ── -->
+        <div class="gen-preview">
+          <div class="gen-preview-header">
+            <span><i class="bi bi-eye-fill me-1"></i> Live Preview</span>
+            <span style="color:#64748B;font-size:.68rem">Updates as you type</span>
+          </div>
+          <div class="preview-wrap">
+            <div class="inv-preview" id="inv-preview">
 
-
-          <!-- Template colors -->
-          <div class="sb-section">
-            <div class="sb-lbl">Template Color</div>
-            <div class="color-swatches" id="color-swatches">
-              <div class="color-swatch none active" data-color="#F97316" onclick="selectColor(this)" title="Orange (Default)">
-                <i class="bi bi-slash-circle" style="color:#CBD5E1;font-size:.75rem"></i>
+              <!-- Header -->
+              <div class="pvw-hdr">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="pvw-logo" id="pvw-logo-circle">Rs</div>
+                  <div class="pvw-co">
+                    <div class="pvw-co-name" id="pvw-co-name">YOUR COMPANY NAME</div>
+                    <div class="pvw-co-sub" id="pvw-co-gst"></div>
+                  </div>
+                </div>
+                <div class="pvw-inv-title">INVOICE</div>
               </div>
-              <div class="color-swatch" style="background:#1E293B" data-color="#1E293B" onclick="selectColor(this)" title="Slate"></div>
-              <div class="color-swatch" style="background:#475569" data-color="#475569" onclick="selectColor(this)" title="Gray"></div>
-              <div class="color-swatch" style="background:#0F5132" data-color="#0F5132" onclick="selectColor(this)" title="Dark Green"></div>
-              <div class="color-swatch" style="background:#B91C1C" data-color="#B91C1C" onclick="selectColor(this)" title="Red"></div>
-              <div class="color-swatch" style="background:#DB2777" data-color="#DB2777" onclick="selectColor(this)" title="Pink"></div>
-              <div class="color-swatch" style="background:#7C3AED" data-color="#7C3AED" onclick="selectColor(this)" title="Purple"></div>
-              <div class="color-swatch" style="background:#5B21B6" data-color="#5B21B6" onclick="selectColor(this)" title="Violet"></div>
-              <div class="color-swatch" style="background:#DC2626" data-color="#DC2626" onclick="selectColor(this)" title="Crimson"></div>
-              <div class="color-swatch" style="background:#0284C7" data-color="#0284C7" onclick="selectColor(this)" title="Blue"></div>
-              <div class="color-swatch" style="background:#0F766E" data-color="#0F766E" onclick="selectColor(this)" title="Teal"></div>
-              <div class="color-swatch" style="background:#15803D" data-color="#15803D" onclick="selectColor(this)" title="Green"></div>
-              <div class="color-swatch" style="background:#4D7C0F" data-color="#4D7C0F" onclick="selectColor(this)" title="Lime"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;cursor:pointer;margin-bottom:8px" onclick="document.getElementById('custom-color-pick').click()">
-              <input type="color" id="custom-color-pick" style="display:none" onchange="applyCustomColor(this.value)">
-              <div style="width:20px;height:20px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);flex-shrink:0"></div>
-              <span style="font-size:.82rem;color:#374151;font-weight:500">Custom Color</span>
-              <i class="bi bi-chevron-down" style="margin-left:auto;color:#94A3B8;font-size:.75rem"></i>
-            </div>
-          </div>
+              <div class="pvw-divider"></div>
 
-          <!-- GST Info -->
-          <div class="sb-section">
-            <div class="sb-lbl">GST Settings</div>
-            <div style="font-size:.75rem;color:#64748B;line-height:1.6">
-              CGST &amp; SGST rates are editable in the totals section.<br>
-              <span style="color:#F97316;font-weight:600">Default: 9% + 9% = 18% GST</span>
-            </div>
-          </div>
+              <!-- Meta row -->
+              <div class="pvw-meta">
+                <div class="pvw-meta-l" id="pvw-co-addr"></div>
+                <div class="pvw-meta-r">
+                  <div class="pvw-meta-row">
+                    <span class="pvw-meta-lbl">Invoice No.</span>
+                    <span class="pvw-meta-val" id="pvw-inv-no">—</span>
+                  </div>
+                  <div class="pvw-meta-row" style="margin-top:2px">
+                    <span class="pvw-meta-lbl">Date</span>
+                    <span class="pvw-meta-val" id="pvw-inv-date">—</span>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Currency -->
-          <div class="sb-section">
-            <div class="sb-lbl">Currency</div>
-            <div class="currency-row">
-              <span style="font-size:.85rem;font-weight:700;color:#0F172A">INR</span>
-              <span style="font-size:.9rem;color:#374151">₹</span>
-              <span style="font-size:1.2rem">🇮🇳</span>
-            </div>
-          </div>
+              <!-- FROM / BILL TO -->
+              <div class="pvw-addr">
+                <div class="pvw-addr-col" style="border-right:1px solid #fff;">
+                  <div class="pvw-addr-hdr">FROM</div>
+                  <div class="pvw-addr-body">
+                    <div class="pvw-addr-name" id="pvw-from-name">—</div>
+                    <div class="pvw-addr-muted" id="pvw-from-addr"></div>
+                    <div class="pvw-addr-muted" id="pvw-from-email"></div>
+                    <div class="pvw-addr-muted" id="pvw-from-phone"></div>
+                    <div class="pvw-addr-muted" id="pvw-from-gst"></div>
+                    <div class="pvw-addr-muted" id="pvw-from-cin"></div>
+                    <div class="pvw-addr-muted" id="pvw-from-pan"></div>
+                  </div>
+                </div>
+                <div class="pvw-addr-col">
+                  <div class="pvw-addr-hdr">BILL TO</div>
+                  <div class="pvw-addr-body">
+                    <div class="pvw-addr-name" id="pvw-to-name">—</div>
+                    <div class="pvw-addr-muted" id="pvw-to-addr"></div>
+                    <div class="pvw-addr-muted" id="pvw-to-email"></div>
+                    <div class="pvw-addr-muted" id="pvw-to-phone"></div>
+                    <div class="pvw-addr-muted" id="pvw-to-gst"></div>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Tips -->
-          <div class="sb-section">
-            <div class="sb-lbl">Tips</div>
-            <div style="font-size:.72rem;color:#64748B;line-height:1.65">
-              <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Fill <strong>Invoice No.</strong>, <strong>Customer</strong> &amp; <strong>Email</strong> — required fields.</div>
-              <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Add at least <strong>one item row</strong> with a description and rate.</div>
-              <div><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Register free to save, manage &amp; email invoices anytime.</div>
-            </div>
-          </div>
+              <!-- Items table -->
+              <div class="pvw-items">
+                <div class="pvw-items-hdr">
+                  <span>#</span>
+                  <span>DESCRIPTION</span>
+                  <span>HSN</span>
+                  <span style="text-align:right">QTY</span>
+                  <span>RATE</span>
+                  <span>GST%</span>
+                  <span>AMOUNT</span>
+                </div>
+                <div id="pvw-items-body"></div>
+              </div>
 
-        </div><!-- /sidebar -->
+              <!-- Amount in words -->
+              <div class="pvw-words" id="pvw-words-wrap">
+                <div class="pvw-words-lbl">Amount in Words</div>
+                <div id="pvw-words-text">—</div>
+              </div>
+
+              <!-- Totals -->
+              <div class="pvw-totals">
+                <div class="pvw-totals-box">
+                  <div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">Rs. 0.00</span></div>
+                  <div class="pvw-tot-row"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">Rs. 0.00</span></div>
+                  <div class="pvw-tot-row"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">Rs. 0.00</span></div>
+                  <div class="pvw-tot-row gst-total"><span id="pvw-gst-total-lbl">Total GST @ 18%</span><span id="pvw-gst-total">Rs. 0.00</span></div>
+                  <div class="pvw-tot-row grand"><span>GRAND TOTAL</span><span id="pvw-grand">Rs. 0.00</span></div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="pvw-footer">
+                <div class="pvw-notes">
+                  <div class="pvw-notes-lbl">Notes</div>
+                  <div id="pvw-note-1">• Thank you for your business.</div>
+                  <div>• Please make payment on or before the due date.</div>
+                </div>
+                <div class="pvw-stamp">
+                  <span>Thank</span>
+                  <span>YOU!</span>
+                </div>
+                <div class="pvw-sig">
+                  <div class="pvw-sig-lbl">Authorized Signatory</div>
+                  <img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none">
+                  <div style="height:24px;" id="pvw-sig-spacer"></div>
+                  <div class="pvw-sig-line"></div>
+                  <div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div>
+                  <div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div>
+                </div>
+              </div>
+
+              <!-- Bottom bar -->
+              <div class="pvw-bar" id="pvw-bar">www.zayron.in</div>
+
+            </div><!-- /inv-preview -->
+          </div>
+        </div><!-- /gen-preview -->
       </div><!-- /gen-layout -->
     </div><!-- /gen-card -->
 
@@ -929,6 +1030,7 @@ function previewLogo(input) {
   img.style.display = 'block';
   document.getElementById('fi-logo-placeholder').style.display = 'none';
   document.getElementById('logo-remove-wrap').style.display = 'block';
+  img.onload = updatePreview;
 }
 function removeLogo() {
   document.getElementById('fi-logo-file').value = '';
@@ -936,6 +1038,7 @@ function removeLogo() {
   img.src = ''; img.style.display = 'none';
   document.getElementById('fi-logo-placeholder').style.display = 'flex';
   document.getElementById('logo-remove-wrap').style.display = 'none';
+  updatePreview();
 }
 
 /* ── Signature widget ── */
@@ -976,7 +1079,7 @@ function switchSigTab(tab, btn) {
       ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
       [lastX, lastY] = [x, y];
     }
-    function stop() { drawing = false; }
+    function stop() { drawing = false; if(typeof updatePreview==='function') updatePreview(); }
 
     canvas.addEventListener('mousedown', start);
     canvas.addEventListener('mousemove', move);
@@ -1028,6 +1131,7 @@ function previewSignature(input) {
   img.style.display = 'block';
   document.getElementById('fi-sig-ph').style.display = 'none';
   document.getElementById('sig-remove-wrap').style.display = 'block';
+  img.onload = updatePreview;
 }
 function removeSignature() {
   document.getElementById('fi-sig-file').value = '';
@@ -1038,6 +1142,7 @@ function removeSignature() {
   clearCanvas();
   const typed = document.getElementById('fi-sig-typed');
   if (typed) { typed.value = ''; document.getElementById('sig-type-preview').textContent = 'Signature Preview'; }
+  updatePreview();
 }
 
 function updateCharCount(textareaId, countId, max) {
@@ -1168,7 +1273,166 @@ function recalcFreeTotal() {
   } else {
     wordsBox.style.display = 'none';
   }
+
+  updatePreview();
 }
+
+/* ── Live preview ── */
+function _v(id){ const el=document.getElementById(id); return el?el.value.trim():''; }
+function _t(id,val){ const el=document.getElementById(id); if(el) el.textContent=val||''; }
+function _Rs(n){ return 'Rs. '+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+function updatePreview() {
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#F97316';
+
+  // apply color to preview CSS vars
+  const pvw = document.getElementById('inv-preview');
+  if(pvw) pvw.style.setProperty('--primary', color);
+
+  // Header
+  _t('pvw-co-name', _v('fi-from-name') || 'YOUR COMPANY NAME');
+  const gstVal = _v('fi-from-gst');
+  _t('pvw-co-gst', gstVal ? 'GSTIN: '+gstVal : '');
+
+  // Company address block (meta left)
+  const addrParts = [_v('fi-from-address'), _v('fi-from-email'), _v('fi-from-phone')].filter(Boolean);
+  document.getElementById('pvw-co-addr').innerHTML = addrParts.map(p=>`<div>${p}</div>`).join('');
+
+  // Invoice meta
+  _t('pvw-inv-no', _v('fi-inv-number') || '—');
+  const rawDate = _v('fi-inv-date');
+  if(rawDate){ const d=new Date(rawDate); _t('pvw-inv-date', d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})); }
+  else _t('pvw-inv-date','—');
+
+  // FROM block
+  _t('pvw-from-name', _v('fi-from-name') || '—');
+  _t('pvw-from-addr',  _v('fi-from-address'));
+  _t('pvw-from-email', _v('fi-from-email'));
+  _t('pvw-from-phone', _v('fi-from-phone'));
+  _t('pvw-from-gst',   gstVal ? 'GSTIN: '+gstVal : '');
+  const cinVal = _v('fi-from-cin');
+  _t('pvw-from-cin', cinVal ? 'CIN: '+cinVal : '');
+  const panVal = _v('fi-from-pan');
+  _t('pvw-from-pan', panVal ? 'PAN: '+panVal : '');
+
+  // BILL TO block
+  _t('pvw-to-name',  _v('fi-name') || '—');
+  _t('pvw-to-addr',  _v('fi-cust-address'));
+  _t('pvw-to-email', _v('fi-email'));
+  _t('pvw-to-phone', _v('fi-cust-phone'));
+  const toGst = _v('fi-cust-gst');
+  _t('pvw-to-gst', toGst ? 'GSTIN: '+toGst : '');
+
+  // Logo in preview circle
+  const logoCircle = document.getElementById('pvw-logo-circle');
+  const logoSrc = document.getElementById('fi-logo-img') && document.getElementById('fi-logo-img').src;
+  if(logoSrc && document.getElementById('fi-logo-img').style.display!=='none'){
+    logoCircle.innerHTML = `<img src="${logoSrc}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">`;
+  } else {
+    logoCircle.textContent = 'Rs';
+    logoCircle.style.background = color;
+  }
+
+  // Items
+  const cgstRate = parseFloat(_v('fi-cgst-rate'))||9;
+  const sgstRate = parseFloat(_v('fi-sgst-rate'))||9;
+  let sub = 0;
+  const tbody = document.getElementById('pvw-items-body');
+  tbody.innerHTML = '';
+  freeItems.forEach((it,i)=>{
+    const amt = (parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);
+    sub += amt;
+    const row = document.createElement('div');
+    row.className='pvw-item-row';
+    row.innerHTML=`<span>${i+1}</span><span>${it.desc||'—'}</span><span style="text-align:center">${it.hsn||''}</span><span>${parseFloat(it.qty)||''}</span><span>${it.rate?_Rs(parseFloat(it.rate)):''}</span><span style="text-align:center">${cgstRate+sgstRate}%</span><span>${amt>0?_Rs(amt):''}</span>`;
+    tbody.appendChild(row);
+  });
+
+  // Totals
+  const cgstAmt  = sub * cgstRate / 100;
+  const sgstAmt  = sub * sgstRate / 100;
+  const gstTotal = cgstAmt + sgstAmt;
+  const grand    = sub + gstTotal;
+  _t('pvw-sub',       _Rs(sub));
+  _t('pvw-cgst',      _Rs(cgstAmt));
+  _t('pvw-sgst',      _Rs(sgstAmt));
+  _t('pvw-gst-total', _Rs(gstTotal));
+  _t('pvw-grand',     _Rs(grand));
+  _t('pvw-cgst-lbl',  `CGST @ ${cgstRate}%`);
+  _t('pvw-sgst-lbl',  `SGST @ ${sgstRate}%`);
+  _t('pvw-gst-total-lbl', `Total GST @ ${cgstRate+sgstRate}%`);
+
+  // Amount in words
+  _t('pvw-words-text', grand>0 ? amountToWords(grand) : '—');
+
+  // Thank you msg
+  const ty = _v('fi-thankyou');
+  _t('pvw-note-1', ty ? '• '+ty : '• Thank you for your business.');
+
+  // Signature
+  const sigName = _v('fi-sig-name');
+  const sigCo   = _v('fi-sig-company');
+  _t('pvw-sig-name', sigName);
+  _t('pvw-sig-co',   sigCo);
+  // Try preview image
+  const pvwSigImg    = document.getElementById('pvw-sig-img');
+  const pvwSigSpacer = document.getElementById('pvw-sig-spacer');
+  // Try uploaded image first (fi-sig-img in upload panel)
+  const upSigImg = document.getElementById('fi-sig-img');
+  // Try canvas draw
+  const canvas   = document.getElementById('fi-sig-canvas');
+  let sigSrc = '';
+  if(upSigImg && upSigImg.src && upSigImg.style.display!=='none'){
+    sigSrc = upSigImg.src;
+  } else if(_sigTab==='draw' && canvas){
+    // check canvas has content
+    try{
+      const ctx=canvas.getContext('2d');
+      const pd=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      const hasContent=pd.some((_,i)=>i%4===3&&pd[i]>10);
+      if(hasContent) sigSrc=canvas.toDataURL();
+    }catch(e){}
+  } else if(_sigTab==='type'){
+    const typed=document.getElementById('fi-sig-typed');
+    if(typed&&typed.value.trim()){
+      // render typed name to tiny offscreen canvas for preview
+      const oc=document.createElement('canvas'); oc.width=200;oc.height=50;
+      const octx=oc.getContext('2d');
+      octx.font="32px 'Segoe Script','Brush Script MT',cursive";
+      octx.fillStyle='#1E293B'; octx.fillText(typed.value.trim(),8,38);
+      sigSrc=oc.toDataURL();
+    }
+  }
+  if(sigSrc){
+    pvwSigImg.src=sigSrc; pvwSigImg.style.display='block'; pvwSigSpacer.style.display='none';
+  } else {
+    pvwSigImg.style.display='none'; pvwSigSpacer.style.display='block';
+  }
+
+  // Bottom bar
+  const website=_v('fi-from-website')||'www.zayron.in';
+  const email  =_v('fi-from-email');
+  const phone  =_v('fi-from-phone');
+  const barParts=[website,email,phone].filter(Boolean);
+  _t('pvw-bar', barParts.join('   |   '));
+}
+
+/* ── Wire all form inputs to updatePreview ── */
+function wirePreview(){
+  ['fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone',
+   'fi-from-cin','fi-from-pan','fi-from-website',
+   'fi-name','fi-cust-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan',
+   'fi-recipient','fi-inv-number','fi-inv-date',
+   'fi-cgst-rate','fi-sgst-rate','fi-thankyou','fi-dept',
+   'fi-sig-name','fi-sig-company'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', updatePreview);
+  });
+  updatePreview();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wirePreview);
+else wirePreview();
 
 /* ── Validation helpers ── */
 function validateFreeForm() {
@@ -1229,14 +1493,11 @@ async function createFreeInvoice() {
     customer_address:  document.getElementById('fi-cust-address').value.trim(),
     customer_phone:    document.getElementById('fi-cust-phone').value.trim(),
     customer_gst:      document.getElementById('fi-cust-gst').value.trim(),
-    customer_cin:      document.getElementById('fi-cust-cin').value.trim(),
     customer_pan:      document.getElementById('fi-cust-pan').value.trim(),
     recipient:         document.getElementById('fi-recipient').value.trim(),
     invoice_number:    document.getElementById('fi-inv-number').value.trim(),
-    terms:             document.getElementById('fi-payment-terms').value,
-    due_date:          document.getElementById('fi-due-date').value,
-    place_of_supply:   document.getElementById('fi-place-of-supply').value.trim(),
-    notes:             document.getElementById('fi-notes').value.trim(),
+    terms:             'Due on Receipt',
+    notes:             '',
     cgst_rate:         cgstRate,
     sgst_rate:         sgstRate,
     thankyou_msg:      document.getElementById('fi-thankyou').value.trim(),
@@ -1276,6 +1537,16 @@ async function createFreeInvoice() {
     } else {
       if (r.status === 429) {
         errEl.innerHTML = `${d.message} <a onclick="openModal('reg-modal')" style="color:#F97316;cursor:pointer;font-weight:700">Register free →</a>`;
+      } else if (r.status === 409) {
+        errEl.textContent = d.message || 'Duplicate invoice number.';
+        errEl.style.display = 'block';
+        const invNumEl = document.getElementById('fi-inv-number');
+        if (invNumEl) {
+          invNumEl.style.borderColor = '#EF4444';
+          invNumEl.focus();
+          invNumEl.scrollIntoView({behavior:'smooth', block:'center'});
+          invNumEl.addEventListener('input', () => { invNumEl.style.borderColor = ''; }, {once:true});
+        }
       } else {
         errEl.textContent = d.message || 'Failed to create invoice.';
       }
@@ -1316,11 +1587,9 @@ function createAnotherFree() {
   document.getElementById('free-form-card').classList.remove('d-none');
   document.getElementById('free-result-card').classList.add('d-none');
   freeItems = []; addFreeItem();
-  ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-cin','fi-cust-pan',
-   'fi-recipient','fi-inv-number','fi-notes','fi-from-name','fi-from-email',
-   'fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website',
-   'fi-bill-from-company','fi-bill-from-address','fi-bill-from-mobile','fi-bill-from-email',
-   'fi-due-date','fi-place-of-supply'].forEach(id => {
+  ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-pan',
+   'fi-recipient','fi-inv-number','fi-from-name','fi-from-email',
+   'fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
   removeLogo();
@@ -1328,8 +1597,6 @@ function createAnotherFree() {
   document.getElementById('fi-sig-name').value = '';
   document.getElementById('fi-sig-company').value = 'Zayron Infotech Pvt. Ltd.';
   document.getElementById('fi-inv-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('fi-payment-terms').value = 'Due on Receipt';
-  document.getElementById('notes-count').textContent = '0';
   document.getElementById('fi-cgst-rate').value = '9';
   document.getElementById('fi-sgst-rate').value = '9';
   document.getElementById('fi-thankyou').value = 'Thank you for your business!';
