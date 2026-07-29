@@ -96,14 +96,12 @@
     /* ─── FREE INVOICE GENERATOR ─── */
     .free-zone{max-width:1120px;margin:0 auto;padding:0 20px 80px;}
     .gen-card{background:#fff;border-radius:16px;padding:0;margin-top:32px;box-shadow:0 8px 48px rgba(0,0,0,.35);overflow:hidden;}
-    /* Layout: main + sidebar */
     .gen-layout{display:flex;align-items:flex-start;}
     .gen-main{flex:1;min-width:0;}
     .gen-sidebar{width:240px;flex-shrink:0;background:#F8FAFC;border-left:1px solid #E2E8F0;padding:20px 16px;min-height:100%;}
-    /* Form body */
     .gen-body{padding:28px 28px 16px;}
-    /* TOP: Invoice label + Logo */
-    .gen-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+    /* Invoice Header */
+    .gen-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
     .inv-label-box{flex:1;}
     .inv-label-input{font-size:1.5rem;font-weight:900;color:#0F172A;border:1.5px solid #E2E8F0;border-radius:8px;outline:none;padding:10px 16px;width:100%;max-width:240px;background:#fff;transition:border-color .15s;}
     .inv-label-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
@@ -112,66 +110,103 @@
     .logo-upload-box img{width:100%;height:100%;object-fit:contain;display:none;}
     .logo-placeholder-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
     .logo-upload-box span{font-size:.7rem;color:#94A3B8;font-weight:600;}
+    /* Seller header block */
+    .seller-header-block{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
+    .seller-company-input{font-size:1.1rem;font-weight:800;color:#0F172A;border:none;outline:none;background:transparent;width:100%;margin-bottom:4px;}
+    .seller-company-input::placeholder{color:#CBD5E1;}
+    .seller-meta-row{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:6px;}
+    .seller-meta-item{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#64748B;}
+    .seller-meta-item span{font-weight:700;color:#374151;}
+    .seller-meta-input{border:none;border-bottom:1px solid #E2E8F0;outline:none;font-size:.75rem;color:#374151;font-weight:700;background:transparent;min-width:60px;max-width:180px;padding:1px 2px;}
+    .seller-meta-input::placeholder{color:#CBD5E1;font-weight:400;}
+    .seller-meta-input:focus{border-bottom-color:var(--primary);}
     /* From/To */
-    .from-to-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:24px;}
-    .gen-section-title{font-size:1rem;font-weight:700;color:#0F172A;margin-bottom:14px;}
-    .gen-field{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;}
-    .gen-field-lbl{font-size:.82rem;font-weight:700;color:#374151;min-width:80px;flex-shrink:0;}
-    .gen-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;outline:none;font-size:.875rem;color:#0F172A;padding:7px 10px;background:#fff;transition:border-color .15s;width:100%;}
+    .from-to-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px;}
+    .gen-section-title{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748B;margin-bottom:12px;padding-bottom:6px;border-bottom:1.5px solid #E2E8F0;}
+    .gen-field{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .gen-field-lbl{font-size:.78rem;font-weight:700;color:#64748B;min-width:88px;flex-shrink:0;}
+    .gen-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;outline:none;font-size:.82rem;color:#0F172A;padding:6px 9px;background:#fff;transition:border-color .15s;width:100%;}
     .gen-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(249,115,22,.1);}
     .gen-input::placeholder{color:#CBD5E1;}
-    .gen-input-icon{position:relative;flex:1;}
-    .gen-input-icon input{width:100%;}
-    .gen-input-icon .icon{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#94A3B8;font-size:.85rem;}
-    .show-more-link{color:#F97316;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:4px;display:inline-block;}
-    .additional-from{display:none;margin-top:2px;}
+    .gen-input.required-field{border-color:#FCA5A5;}
+    .gen-input.required-field:focus{border-color:#EF4444;}
     /* Invoice meta */
-    .inv-meta-section{border-top:1px solid #E2E8F0;padding-top:20px;margin-bottom:20px;}
-    .inv-meta-field{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-    .inv-meta-lbl{font-size:.85rem;font-weight:700;color:#374151;width:90px;flex-shrink:0;}
-    .inv-meta-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:.875rem;color:#0F172A;outline:none;max-width:260px;background:#fff;transition:border-color .15s;}
+    .inv-meta-section{border-top:1px solid #E2E8F0;padding-top:18px;margin-bottom:18px;}
+    .inv-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+    .inv-meta-field{display:flex;align-items:center;gap:10px;}
+    .inv-meta-lbl{font-size:.78rem;font-weight:700;color:#64748B;width:96px;flex-shrink:0;}
+    .inv-meta-input{flex:1;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
     .inv-meta-input:focus{border-color:var(--primary);}
     .inv-meta-input.error{border-color:#EF4444;}
-    .inv-err{color:#EF4444;font-size:.75rem;margin-left:102px;margin-top:-8px;margin-bottom:8px;}
-    /* Items */
-    .items-section{border-top:1px solid #E2E8F0;padding-top:20px;}
-    .items-thead{display:grid;grid-template-columns:32px 1fr 90px 70px 80px;gap:8px;padding:6px 0;border-bottom:2px solid #0F172A;margin-bottom:4px;}
-    .items-thead span{font-size:.72rem;font-weight:800;color:#0F172A;letter-spacing:.06em;text-transform:uppercase;}
+    .inv-err{color:#EF4444;font-size:.72rem;grid-column:1/-1;margin-top:-6px;}
+    .billing-period-row{display:flex;align-items:center;gap:10px;grid-column:1/-1;margin-top:4px;}
+    .billing-period-row .inv-meta-lbl{width:96px;}
+    .billing-period-dates{display:flex;align-items:center;gap:8px;flex:1;}
+    .billing-period-dates input{flex:1;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;}
+    .billing-period-dates input:focus{border-color:var(--primary);}
+    .billing-sep{font-size:.78rem;color:#94A3B8;white-space:nowrap;}
+    /* Items — standard invoice table */
+    .items-section{border-top:1px solid #E2E8F0;padding-top:18px;}
+    .items-thead{display:grid;grid-template-columns:28px 1fr 82px 52px 86px 52px 90px 28px;gap:5px;padding:8px 6px;border-bottom:2px solid #0F172A;margin-bottom:2px;}
+    .items-thead span{font-size:.65rem;font-weight:800;color:#0F172A;letter-spacing:.06em;text-transform:uppercase;}
     .items-thead span.right{text-align:right;}
-    .item-block{border-bottom:1px solid #F1F5F9;padding:8px 0 12px;}
-    .item-main-row{display:grid;grid-template-columns:32px 1fr 90px 70px 80px;gap:8px;align-items:center;}
+    .item-block{border-bottom:1px solid #F1F5F9;padding:6px 0;}
+    .item-main-row{display:grid;grid-template-columns:28px 1fr 82px 52px 86px 52px 90px 28px;gap:5px;align-items:center;}
+    .item-amt-cell{font-size:.82rem;font-weight:700;color:#0F172A;text-align:right;white-space:nowrap;padding-right:2px;}
     .item-x-btn{width:28px;height:28px;border:1px solid #E2E8F0;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748B;font-size:.8rem;flex-shrink:0;transition:all .15s;}
     .item-x-btn:hover{border-color:#EF4444;color:#EF4444;}
-    .item-desc-input{width:100%;border:1px solid transparent;border-radius:4px;padding:6px 6px;font-size:.875rem;color:#0F172A;outline:none;background:transparent;transition:border-color .15s;}
-    .item-desc-input:focus{border-color:#E2E8F0;background:#fff;}
+    .item-sno{font-size:.78rem;font-weight:700;color:#64748B;text-align:center;}
+    .item-desc-input{width:100%;border:1px solid #E2E8F0;border-radius:4px;padding:6px 7px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
+    .item-desc-input:focus{border-color:var(--primary);}
     .item-desc-input::placeholder{color:#CBD5E1;}
-    .item-num-input{width:100%;border:1px solid #E2E8F0;border-radius:4px;padding:6px 6px;font-size:.875rem;color:#0F172A;outline:none;text-align:right;background:#fff;}
+    .item-num-input{width:100%;border:1px solid #E2E8F0;border-radius:4px;padding:6px 7px;font-size:.82rem;color:#0F172A;outline:none;text-align:right;background:#fff;}
     .item-num-input:focus{border-color:var(--primary);}
-    .item-amount{font-size:.875rem;font-weight:600;color:#0F172A;text-align:right;padding-right:4px;}
-    .item-detail-row{padding-left:40px;margin-top:6px;}
-    .item-detail-textarea{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px;font-size:.82rem;color:#475569;outline:none;resize:vertical;min-height:56px;font-family:inherit;background:#FAFAFA;}
-    .item-detail-textarea:focus{border-color:var(--primary);}
-    .item-detail-textarea::placeholder{color:#CBD5E1;}
-    .item-amt{font-size:.875rem;font-weight:600;color:#0F172A;text-align:right;white-space:nowrap;}
+    .item-amt{font-size:.82rem;font-weight:700;color:#0F172A;text-align:right;white-space:nowrap;padding-right:4px;}
     .char-count{font-size:.7rem;color:#94A3B8;text-align:right;margin-top:2px;}
-    .btn-add-item-round{width:36px;height:36px;border-radius:50%;background:#1E293B;border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:14px;transition:background .15s;}
+    .btn-add-item-round{width:36px;height:36px;border-radius:50%;background:#1E293B;border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:12px;transition:background .15s;}
     .btn-add-item-round:hover{background:#F97316;}
     /* Totals */
     .gen-totals{margin-top:16px;display:flex;justify-content:flex-end;}
-    .totals-box{width:260px;}
-    .tot-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.875rem;color:#374151;}
-    .tot-row.bal{font-weight:800;font-size:1rem;color:#0F172A;border-top:2px solid #0F172A;padding-top:8px;margin-top:4px;}
+    .totals-box{width:320px;}
+    .tot-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;color:#374151;}
+    .tot-row.gst-row{color:#475569;background:#F8FAFC;padding:5px 8px;border-radius:4px;margin:2px 0;}
+    .tot-row.total-gst-row{font-weight:700;color:#0F172A;border-top:1px solid #E2E8F0;padding-top:7px;margin-top:4px;}
+    .tot-row.bal{font-weight:900;font-size:1rem;color:#fff;background:var(--primary);padding:10px 12px;border-radius:8px;margin-top:8px;}
+    .gst-rate-input{width:44px;border:1px solid #E2E8F0;border-radius:4px;padding:2px 5px;font-size:.78rem;text-align:right;outline:none;background:#fff;}
+    .gst-rate-input:focus{border-color:var(--primary);}
+    /* Amount in words */
+    .amount-words{margin-top:12px;padding:10px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;font-size:.78rem;color:#92400E;font-weight:600;line-height:1.5;}
+    .amount-words strong{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:2px;}
     /* Notes */
-    .gen-notes{border-top:1px solid #E2E8F0;padding-top:20px;margin-top:20px;}
-    .gen-sec-title{font-size:.95rem;font-weight:700;color:#0F172A;margin-bottom:10px;}
-    .gen-big-textarea{width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:12px;font-size:.85rem;color:#0F172A;outline:none;resize:vertical;min-height:100px;font-family:inherit;background:#fff;}
+    .gen-notes{border-top:1px solid #E2E8F0;padding-top:18px;margin-top:18px;}
+    .gen-sec-title{font-size:.85rem;font-weight:700;color:#0F172A;margin-bottom:8px;}
+    .gen-big-textarea{width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#0F172A;outline:none;resize:vertical;min-height:80px;font-family:inherit;background:#fff;}
     .gen-big-textarea:focus{border-color:var(--primary);}
     .gen-big-textarea::placeholder{color:#CBD5E1;}
-    /* Signature / Photos */
-    .gen-section-block{border-top:1px solid #E2E8F0;padding-top:16px;margin-top:16px;}
+    /* Signature / Footer */
+    .gen-section-block{border-top:1px solid #E2E8F0;padding-top:14px;margin-top:14px;}
     .btn-plus-dark{width:32px;height:32px;background:#1E293B;border:none;border-radius:4px;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-    .photo-box{width:100px;height:70px;border:1.5px solid #E2E8F0;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;color:#94A3B8;font-size:.78rem;gap:4px;flex-direction:column;transition:border-color .15s;}
-    .photo-box:hover{border-color:var(--primary);}
+    .thankyou-input{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;margin-bottom:6px;}
+    .thankyou-input:focus{border-color:var(--primary);}
+    .dept-input{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#374151;font-weight:600;outline:none;background:#fff;}
+    .dept-input:focus{border-color:var(--primary);}
+    /* ── Signature widget ── */
+    .sig-tabs{display:flex;gap:0;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:12px;width:fit-content;}
+    .sig-tab{padding:7px 16px;font-size:.78rem;font-weight:700;color:#64748B;background:#F8FAFC;border:none;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+    .sig-tab:not(:last-child){border-right:1px solid #E2E8F0;}
+    .sig-tab.active{background:var(--primary);color:#fff;}
+    .sig-panel{display:none;}
+    .sig-panel.active{display:block;}
+    .sig-canvas-wrap{position:relative;border:2px dashed #CBD5E1;border-radius:8px;background:#FAFAFA;overflow:hidden;width:100%;max-width:420px;}
+    #fi-sig-canvas{display:block;width:100%;height:120px;cursor:crosshair;touch-action:none;}
+    .sig-canvas-actions{display:flex;gap:8px;margin-top:8px;}
+    .sig-clear-btn{padding:6px 14px;border:1.5px solid #E2E8F0;border-radius:6px;background:#fff;font-size:.75rem;font-weight:700;color:#64748B;cursor:pointer;transition:all .15s;}
+    .sig-clear-btn:hover{border-color:#EF4444;color:#EF4444;}
+    .sig-upload-box{width:100%;max-width:420px;height:100px;border:2px dashed #CBD5E1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;overflow:hidden;transition:all .15s;}
+    .sig-upload-box:hover{border-color:var(--primary);background:#FFF7ED;}
+    .sig-type-inp{width:100%;max-width:420px;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;font-size:1.6rem;font-family:'Segoe Script','Brush Script MT',cursive;color:#1E293B;outline:none;background:#fff;transition:border-color .15s;}
+    .sig-type-inp:focus{border-color:var(--primary);}
+    .sig-type-preview{margin-top:8px;padding:8px 14px;background:#F8FAFC;border-radius:6px;font-size:1.4rem;font-family:'Segoe Script','Brush Script MT',cursive;color:#1E293B;min-height:48px;border:1px solid #E2E8F0;}
     /* Action bar */
     .gen-actions{display:flex;gap:12px;padding:16px 28px;background:#F8FAFC;border-top:1px solid #E2E8F0;flex-wrap:wrap;}
     .btn-gen-primary{padding:10px 28px;background:var(--primary);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;}
@@ -190,9 +225,7 @@
     .color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;position:relative;}
     .color-swatch:hover,.color-swatch.active{border-color:#0F172A;transform:scale(1.15);}
     .color-swatch.none{background:#fff;border:1.5px solid #E2E8F0;display:flex;align-items:center;justify-content:center;}
-    .sb-select{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:.82rem;background:#fff;outline:none;color:#0F172A;}
     .currency-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;}
-    .currency-flag{font-size:1.2rem;}
     /* Result */
     .result-card{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:28px;margin-top:24px;}
     .result-inv-number{font-size:1.3rem;font-weight:900;color:#FB923C;}
@@ -326,11 +359,8 @@
         <div class="gen-main">
           <div class="gen-body">
 
-            <!-- TOP: Invoice label + Logo -->
+            <!-- TOP: Logo + Company Header -->
             <div class="gen-top">
-              <div class="inv-label-box">
-                <input class="inv-label-input" id="fi-inv-label" value="Invoice" maxlength="30">
-              </div>
               <div>
                 <div class="logo-upload-box" onclick="document.getElementById('fi-logo-file').click()">
                   <img id="fi-logo-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain">
@@ -344,151 +374,214 @@
                   <button onclick="removeLogo()" style="background:none;border:none;color:#EF4444;font-size:.7rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove</button>
                 </div>
               </div>
-            </div>
-
-            <!-- FROM / BILL TO -->
-            <div class="from-to-grid">
-              <!-- FROM -->
-              <div>
-                <div class="gen-section-title">From</div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Name</span>
-                  <input class="gen-input" id="fi-from-name" placeholder="Business Name">
+              <div style="flex:1;padding-left:20px;">
+                <input class="seller-company-input" id="fi-from-name" placeholder="YOUR COMPANY NAME" maxlength="100">
+                <div class="seller-meta-row">
+                  <div class="seller-meta-item"><span>CIN:</span> <input class="seller-meta-input" id="fi-from-cin" placeholder="CIN Number"></div>
+                  <div class="seller-meta-item"><span>GSTIN:</span> <input class="seller-meta-input" id="fi-from-gst" placeholder="GSTIN Number"></div>
+                  <div class="seller-meta-item"><span>PAN:</span> <input class="seller-meta-input" id="fi-from-pan" placeholder="PAN Number"></div>
                 </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Email</span>
-                  <div class="gen-input-icon">
-                    <input class="gen-input" id="fi-from-email" type="email" placeholder="name@business.com" style="padding-right:28px">
-                    <i class="bi bi-check-circle-fill icon" style="color:#10B981;display:none" id="from-email-ok"></i>
-                  </div>
+                <div class="seller-meta-row" style="margin-top:4px">
+                  <div class="seller-meta-item"><i class="bi bi-geo-alt" style="color:#94A3B8"></i> <input class="seller-meta-input" id="fi-from-address" placeholder="Address, City, State - Pincode" style="min-width:200px;max-width:280px"></div>
                 </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Address</span>
-                  <div style="flex:1">
-                    <input class="gen-input" id="fi-from-street" placeholder="Street" style="margin-bottom:6px">
-                    <input class="gen-input" id="fi-from-city" placeholder="City, State" style="margin-bottom:6px">
-                    <input class="gen-input" id="fi-from-zip" placeholder="Zip code">
-                  </div>
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Phone</span>
-                  <input class="gen-input" id="fi-from-phone" placeholder="(123) 456 789">
-                </div>
-                <div class="gen-field" id="from-biz-num-row">
-                  <span class="gen-field-lbl">Business<br>Number</span>
-                  <input class="gen-input" id="fi-from-gst" placeholder="GST / Business Number">
-                </div>
-                <a class="show-more-link" onclick="toggleAdditionalFrom()"><i class="bi bi-chevron-down me-1" id="from-chevron"></i>Show additional business details</a>
-                <div class="additional-from" id="additional-from">
-                  <div class="gen-field" style="margin-top:8px">
-                    <span class="gen-field-lbl">Website</span>
-                    <input class="gen-input" id="fi-from-website" placeholder="www.business.com">
-                  </div>
-                </div>
-              </div>
-              <!-- BILL TO -->
-              <div>
-                <div class="gen-section-title">Bill To</div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Name</span>
-                  <input class="gen-input" id="fi-name" placeholder="Client Name" required>
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Email</span>
-                  <div class="gen-input-icon">
-                    <input class="gen-input" id="fi-email" type="email" placeholder="name@client.com" style="padding-right:28px" required>
-                    <i class="bi bi-check-circle-fill icon" style="color:#10B981;display:none" id="to-email-ok"></i>
-                  </div>
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Address</span>
-                  <input class="gen-input" id="fi-cust-address" placeholder="Street">
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Phone</span>
-                  <input class="gen-input" id="fi-cust-phone" placeholder="(123) 456 789">
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Mobile</span>
-                  <input class="gen-input" id="fi-cust-mobile" placeholder="(123) 456 789">
-                </div>
-                <div class="gen-field">
-                  <span class="gen-field-lbl">Fax</span>
-                  <input class="gen-input" id="fi-cust-fax" placeholder="(123) 456 789">
+                <div class="seller-meta-row" style="margin-top:4px">
+                  <div class="seller-meta-item"><i class="bi bi-telephone" style="color:#94A3B8"></i> <input class="seller-meta-input" id="fi-from-phone" placeholder="Phone"></div>
+                  <div class="seller-meta-item"><i class="bi bi-envelope" style="color:#94A3B8"></i> <input class="seller-meta-input" id="fi-from-email" type="email" placeholder="email@company.com"></div>
+                  <div class="seller-meta-item"><i class="bi bi-globe" style="color:#94A3B8"></i> <input class="seller-meta-input" id="fi-from-website" placeholder="www.company.com"></div>
                 </div>
               </div>
             </div>
 
             <!-- INVOICE META -->
             <div class="inv-meta-section">
-              <div class="inv-meta-field">
-                <span class="inv-meta-lbl">Number</span>
-                <input class="inv-meta-input" id="fi-inv-number" placeholder="INV000">
-                <i class="bi bi-exclamation-circle-fill" style="color:#EF4444;margin-left:8px;display:none" id="inv-num-err-icon"></i>
-              </div>
-              <div class="inv-err" id="inv-num-err" style="display:none">Number is required</div>
-              <div class="inv-meta-field">
-                <span class="inv-meta-lbl">Date</span>
-                <input class="inv-meta-input" id="fi-inv-date" type="date">
-              </div>
-              <div class="inv-meta-field">
-                <span class="inv-meta-lbl">Terms</span>
-                <select class="inv-meta-input" id="fi-terms">
-                  <option value="On Receipt">On Receipt</option>
-                  <option value="Net 7">Net 7</option>
-                  <option value="Net 15">Net 15</option>
-                  <option value="Net 30">Net 30</option>
-                  <option value="Net 60">Net 60</option>
-                </select>
+              <div class="inv-meta-grid">
+                <div class="inv-meta-field">
+                  <span class="inv-meta-lbl">Invoice No. <span style="color:#EF4444">*</span></span>
+                  <input class="inv-meta-input" id="fi-inv-number" placeholder="INV-2026-0001">
+                </div>
+                <div class="inv-meta-field">
+                  <span class="inv-meta-lbl">Invoice Date <span style="color:#EF4444">*</span></span>
+                  <input class="inv-meta-input" id="fi-inv-date" type="date">
+                </div>
+                <div class="inv-meta-field">
+                  <span class="inv-meta-lbl">Due Date</span>
+                  <input class="inv-meta-input" id="fi-due-date" type="date">
+                </div>
+                <div class="inv-meta-field">
+                  <span class="inv-meta-lbl">Place of Supply</span>
+                  <input class="inv-meta-input" id="fi-place-of-supply" placeholder="e.g. Andhra Pradesh">
+                </div>
+                <div class="inv-err" id="inv-num-err" style="display:none"><i class="bi bi-exclamation-circle me-1"></i>Invoice number is required</div>
               </div>
             </div>
 
-            <!-- ITEMS -->
+            <!-- BILL TO -->
+            <div style="border-top:1px solid #E2E8F0;padding-top:16px;margin-bottom:18px;">
+              <div class="gen-section-title" style="margin-bottom:12px">Bill To <span style="color:#EF4444;font-size:.7rem;font-weight:700">* Required fields</span></div>
+              <div class="from-to-grid">
+                <div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">Customer <span style="color:#EF4444">*</span></span>
+                    <input class="gen-input required-field" id="fi-name" placeholder="Client Company Name" required>
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">Recipient</span>
+                    <input class="gen-input" id="fi-recipient" placeholder="Contact Person Name">
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">Address <span style="color:#EF4444">*</span></span>
+                    <input class="gen-input required-field" id="fi-cust-address" placeholder="Street, City, State - PIN" required>
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">Email <span style="color:#EF4444">*</span></span>
+                    <input class="gen-input required-field" id="fi-email" type="email" placeholder="client@company.com" required>
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">Phone</span>
+                    <input class="gen-input" id="fi-cust-phone" placeholder="+91 XXXXX XXXXX">
+                  </div>
+                </div>
+                <div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">CIN</span>
+                    <input class="gen-input" id="fi-cust-cin" placeholder="U12345AB2020PTC123456">
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">PAN</span>
+                    <input class="gen-input" id="fi-cust-pan" placeholder="AABCP1234D">
+                  </div>
+                  <div class="gen-field">
+                    <span class="gen-field-lbl">GST Number</span>
+                    <input class="gen-input" id="fi-cust-gst" placeholder="29AABCP1234D1Z5">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ITEMS — Standard Invoice Table -->
             <div class="items-section">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <span style="font-size:.85rem;font-weight:700;color:#0F172A">Items / Services</span>
+                <span style="font-size:.72rem;color:#94A3B8">Description <span style="color:#EF4444">*</span> and Rate <span style="color:#EF4444">*</span> required</span>
+              </div>
               <div class="items-thead">
+                <span style="text-align:center">#</span>
+                <span>Description <span style="color:#EF4444">*</span></span>
+                <span style="text-align:center">HSN/SAC</span>
+                <span class="right">QTY</span>
+                <span class="right">Rate (₹) <span style="color:#EF4444">*</span></span>
+                <span class="right">GST %</span>
+                <span class="right">Amount (₹)</span>
                 <span></span>
-                <span>Description</span>
-                <span style="text-align:right">Rate</span>
-                <span style="text-align:right">Qty</span>
-                <span style="text-align:right">Amount</span>
               </div>
               <div id="fi-items"></div>
-              <div style="margin-top:14px">
-                <button class="btn-add-item-round" onclick="addFreeItem()" title="Add item"><i class="bi bi-plus"></i></button>
+              <div style="margin-top:10px">
+                <button class="btn-add-item-round" onclick="addFreeItem()" title="Add row"><i class="bi bi-plus"></i></button>
               </div>
             </div>
 
             <!-- TOTALS -->
             <div class="gen-totals">
               <div class="totals-box">
-                <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">Rs.0.00</span></div>
-                <div class="tot-row"><span>Total</span><span id="fi-tax-total">Rs.0.00</span></div>
-                <div class="tot-row bal"><span>Balance Due</span><span id="fi-total">Rs.0.00</span></div>
+                <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">₹0.00</span></div>
+                <div class="tot-row gst-row">
+                  <span style="display:flex;align-items:center;gap:6px">
+                    CGST @
+                    <input class="gst-rate-input" type="number" id="fi-cgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%
+                  </span>
+                  <span id="fi-cgst-amt">₹0.00</span>
+                </div>
+                <div class="tot-row gst-row">
+                  <span style="display:flex;align-items:center;gap:6px">
+                    SGST @
+                    <input class="gst-rate-input" type="number" id="fi-sgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%
+                  </span>
+                  <span id="fi-sgst-amt">₹0.00</span>
+                </div>
+                <div class="tot-row total-gst-row"><span>Total GST (@ 18%)</span><span id="fi-gst-total">₹0.00</span></div>
+                <div class="tot-row bal"><span>Grand Total (incl. GST)</span><span id="fi-total">₹0.00</span></div>
               </div>
             </div>
 
-            <!-- NOTES -->
+            <!-- AMOUNT IN WORDS -->
+            <div class="amount-words" id="fi-words-box" style="display:none">
+              <strong>Amount in Words</strong>
+              <span id="fi-words-text"></span>
+            </div>
+
+            <!-- NOTES / TERMS -->
             <div class="gen-notes">
-              <div class="gen-sec-title">Notes</div>
-              <textarea class="gen-big-textarea" id="fi-notes" maxlength="5000"
-                placeholder="Notes - any relevant information not covered, additional terms and conditions"
-                oninput="updateCharCount('fi-notes','notes-count',5000)"></textarea>
-              <div class="char-count"><span id="notes-count">0</span>/5000</div>
+              <div class="gen-sec-title">Notes / Additional Terms</div>
+              <textarea class="gen-big-textarea" id="fi-notes" maxlength="2000"
+                placeholder="Any relevant information, additional terms and conditions..."
+                oninput="updateCharCount('fi-notes','notes-count',2000)"></textarea>
+              <div class="char-count"><span id="notes-count">0</span>/2000</div>
             </div>
 
-            <!-- SIGNATURE -->
+            <!-- THANK YOU / FOOTER -->
             <div class="gen-section-block">
-              <div class="gen-sec-title" style="margin-bottom:10px">Signature</div>
-              <button class="btn-plus-dark" title="Add signature (available after registration)" onclick="openModal('reg-modal')"><i class="bi bi-plus"></i></button>
+              <div class="gen-sec-title" style="margin-bottom:8px">Invoice Footer</div>
+              <input class="thankyou-input" id="fi-thankyou" placeholder="Thank you for your business!" value="Thank you for your business!">
+              <input class="dept-input" id="fi-dept" placeholder="Department (e.g. Sales &amp; Procurement Department)" value="Sales &amp; Procurement Department">
             </div>
 
-            <!-- PHOTOS -->
+            <!-- AUTHORIZED SIGNATORY -->
             <div class="gen-section-block" style="margin-bottom:20px">
-              <div class="gen-sec-title" style="margin-bottom:10px">Photos</div>
-              <div class="photo-box" onclick="openModal('reg-modal')" title="Add photos (available after registration)">
-                <i class="bi bi-image" style="font-size:1.2rem"></i>
-                <span>Add Photo</span>
+              <div class="gen-sec-title" style="margin-bottom:12px">Authorized Signatory</div>
+
+              <!-- Tabs -->
+              <div class="sig-tabs">
+                <button class="sig-tab active" onclick="switchSigTab('draw',this)"><i class="bi bi-pencil-fill"></i> Draw</button>
+                <button class="sig-tab" onclick="switchSigTab('upload',this)"><i class="bi bi-upload"></i> Upload</button>
+                <button class="sig-tab" onclick="switchSigTab('type',this)"><i class="bi bi-fonts"></i> Type Name</button>
               </div>
+
+              <!-- Draw pad -->
+              <div class="sig-panel active" id="sig-panel-draw">
+                <div class="sig-canvas-wrap">
+                  <canvas id="fi-sig-canvas" width="800" height="160"></canvas>
+                </div>
+                <div class="sig-canvas-actions">
+                  <button class="sig-clear-btn" onclick="clearCanvas()"><i class="bi bi-arrow-counterclockwise me-1"></i>Clear</button>
+                  <span style="font-size:.72rem;color:#94A3B8;align-self:center">Draw your signature above using mouse or touch</span>
+                </div>
+              </div>
+
+              <!-- Upload -->
+              <div class="sig-panel" id="sig-panel-upload">
+                <div class="sig-upload-box" id="sig-upload-box" onclick="document.getElementById('fi-sig-file').click()">
+                  <img id="fi-sig-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;padding:8px;">
+                  <div id="fi-sig-ph" style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+                    <i class="bi bi-cloud-upload" style="font-size:1.4rem;color:#CBD5E1"></i>
+                    <span style="font-size:.75rem;color:#94A3B8;font-weight:600">Click to upload signature image</span>
+                    <span style="font-size:.68rem;color:#CBD5E1">PNG with transparent background recommended</span>
+                  </div>
+                </div>
+                <input type="file" id="fi-sig-file" accept="image/*" style="display:none" onchange="previewSignature(this)">
+                <div id="sig-remove-wrap" style="display:none;margin-top:6px">
+                  <button onclick="removeSignature()" style="background:none;border:none;color:#EF4444;font-size:.75rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove image</button>
+                </div>
+              </div>
+
+              <!-- Type name -->
+              <div class="sig-panel" id="sig-panel-type">
+                <div style="font-size:.75rem;font-weight:700;color:#64748B;margin-bottom:6px">Type your name — it will appear in signature style on the invoice</div>
+                <input class="sig-type-inp" id="fi-sig-typed" placeholder="e.g. Vamsi Krishna" oninput="document.getElementById('sig-type-preview').textContent=this.value||'Signature Preview'">
+                <div class="sig-type-preview" id="sig-type-preview" style="color:#CBD5E1">Signature Preview</div>
+              </div>
+
+              <!-- Signatory company -->
+              <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+                <div>
+                  <div style="font-size:.75rem;font-weight:700;color:#64748B;margin-bottom:5px">Signatory Name</div>
+                  <input class="thankyou-input" id="fi-sig-name" placeholder="e.g. Vamsi Krishna" style="margin-bottom:0">
+                </div>
+                <div>
+                  <div style="font-size:.75rem;font-weight:700;color:#64748B;margin-bottom:5px">Company (on signature block)</div>
+                  <input class="thankyou-input" id="fi-sig-company" placeholder="e.g. Zayron Infotech Pvt. Ltd." value="Zayron Infotech Pvt. Ltd." style="margin-bottom:0">
+                </div>
+              </div>
+              <div style="margin-top:8px;font-size:.72rem;color:#94A3B8"><i class="bi bi-info-circle me-1" style="color:#F97316"></i>This block appears at the bottom-right of the invoice PDF.</div>
             </div>
 
             <div id="fi-error" style="color:#EF4444;font-size:.82rem;margin:12px 0;display:none;background:#FEF2F2;border-radius:8px;padding:10px 14px;border:1px solid #FCA5A5"></div>
@@ -510,31 +603,26 @@
         <!-- ── SIDEBAR ── -->
         <div class="gen-sidebar">
 
-          <!-- Email -->
-          <div class="sb-section">
-            <input class="sb-input" id="sb-email" type="email" placeholder="name@business.com">
-            <button class="sb-btn" style="margin-top:6px" onclick="openModal('reg-modal')">Send</button>
-          </div>
 
           <!-- Template colors -->
           <div class="sb-section">
-            <div class="sb-lbl">Template</div>
+            <div class="sb-lbl">Template Color</div>
             <div class="color-swatches" id="color-swatches">
-              <div class="color-swatch none active" data-color="#F97316" onclick="selectColor(this)" title="Default">
+              <div class="color-swatch none active" data-color="#F97316" onclick="selectColor(this)" title="Orange (Default)">
                 <i class="bi bi-slash-circle" style="color:#CBD5E1;font-size:.75rem"></i>
               </div>
-              <div class="color-swatch" style="background:#1E293B" data-color="#1E293B" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#475569" data-color="#475569" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#0F5132" data-color="#0F5132" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#B91C1C" data-color="#B91C1C" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#DB2777" data-color="#DB2777" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#7C3AED" data-color="#7C3AED" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#5B21B6" data-color="#5B21B6" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#DC2626" data-color="#DC2626" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#0284C7" data-color="#0284C7" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#0F766E" data-color="#0F766E" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#15803D" data-color="#15803D" onclick="selectColor(this)"></div>
-              <div class="color-swatch" style="background:#4D7C0F" data-color="#4D7C0F" onclick="selectColor(this)"></div>
+              <div class="color-swatch" style="background:#1E293B" data-color="#1E293B" onclick="selectColor(this)" title="Slate"></div>
+              <div class="color-swatch" style="background:#475569" data-color="#475569" onclick="selectColor(this)" title="Gray"></div>
+              <div class="color-swatch" style="background:#0F5132" data-color="#0F5132" onclick="selectColor(this)" title="Dark Green"></div>
+              <div class="color-swatch" style="background:#B91C1C" data-color="#B91C1C" onclick="selectColor(this)" title="Red"></div>
+              <div class="color-swatch" style="background:#DB2777" data-color="#DB2777" onclick="selectColor(this)" title="Pink"></div>
+              <div class="color-swatch" style="background:#7C3AED" data-color="#7C3AED" onclick="selectColor(this)" title="Purple"></div>
+              <div class="color-swatch" style="background:#5B21B6" data-color="#5B21B6" onclick="selectColor(this)" title="Violet"></div>
+              <div class="color-swatch" style="background:#DC2626" data-color="#DC2626" onclick="selectColor(this)" title="Crimson"></div>
+              <div class="color-swatch" style="background:#0284C7" data-color="#0284C7" onclick="selectColor(this)" title="Blue"></div>
+              <div class="color-swatch" style="background:#0F766E" data-color="#0F766E" onclick="selectColor(this)" title="Teal"></div>
+              <div class="color-swatch" style="background:#15803D" data-color="#15803D" onclick="selectColor(this)" title="Green"></div>
+              <div class="color-swatch" style="background:#4D7C0F" data-color="#4D7C0F" onclick="selectColor(this)" title="Lime"></div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;padding:7px 10px;cursor:pointer;margin-bottom:8px" onclick="document.getElementById('custom-color-pick').click()">
               <input type="color" id="custom-color-pick" style="display:none" onchange="applyCustomColor(this.value)">
@@ -544,31 +632,12 @@
             </div>
           </div>
 
-          <!-- Tax -->
+          <!-- GST Info -->
           <div class="sb-section">
-            <div class="sb-lbl">Tax</div>
-            <div style="font-size:.75rem;color:#94A3B8;margin-bottom:6px">Type</div>
-            <select class="sb-select" id="sb-tax-type" onchange="recalcFreeTotal()">
-              <option value="none">None</option>
-              <option value="percent">Percent (%)</option>
-              <option value="fixed">Fixed (Rs.)</option>
-            </select>
-            <div id="sb-tax-val-wrap" style="display:none;margin-top:6px">
-              <input class="sb-input" type="number" id="sb-tax-val" placeholder="0" min="0" step="0.01" oninput="recalcFreeTotal()">
-            </div>
-          </div>
-
-          <!-- Discount -->
-          <div class="sb-section">
-            <div class="sb-lbl">Discount</div>
-            <div style="font-size:.75rem;color:#94A3B8;margin-bottom:6px">Type</div>
-            <select class="sb-select" id="sb-disc-type" onchange="recalcFreeTotal()">
-              <option value="none">None</option>
-              <option value="percent">Percent (%)</option>
-              <option value="fixed">Fixed (Rs.)</option>
-            </select>
-            <div id="sb-disc-val-wrap" style="display:none;margin-top:6px">
-              <input class="sb-input" type="number" id="sb-disc-val" placeholder="0" min="0" step="0.01" oninput="recalcFreeTotal()">
+            <div class="sb-lbl">GST Settings</div>
+            <div style="font-size:.75rem;color:#64748B;line-height:1.6">
+              CGST &amp; SGST rates are editable in the totals section.<br>
+              <span style="color:#F97316;font-weight:600">Default: 9% + 9% = 18% GST</span>
             </div>
           </div>
 
@@ -577,8 +646,18 @@
             <div class="sb-lbl">Currency</div>
             <div class="currency-row">
               <span style="font-size:.85rem;font-weight:700;color:#0F172A">INR</span>
-              <span style="font-size:.9rem;color:#374151">Rs.</span>
-              <span class="currency-flag">🇮🇳</span>
+              <span style="font-size:.9rem;color:#374151">₹</span>
+              <span style="font-size:1.2rem">🇮🇳</span>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="sb-section">
+            <div class="sb-lbl">Tips</div>
+            <div style="font-size:.72rem;color:#64748B;line-height:1.65">
+              <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Fill <strong>Invoice No.</strong>, <strong>Customer</strong> &amp; <strong>Email</strong> — required fields.</div>
+              <div style="margin-bottom:6px"><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Add at least <strong>one item row</strong> with a description and rate.</div>
+              <div><i class="bi bi-check-circle-fill" style="color:#10B981;margin-right:4px"></i>Register free to save, manage &amp; email invoices anytime.</div>
             </div>
           </div>
 
@@ -600,7 +679,7 @@
         </div>
       </div>
       <table class="result-table">
-        <thead><tr><th>Item</th><th style="text-align:right">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
+        <thead><tr><th>Description</th><th style="text-align:right">QTY</th><th style="text-align:right">Rate (₹)</th><th style="text-align:right">Amount (₹)</th></tr></thead>
         <tbody id="res-items"></tbody>
       </table>
       <div class="result-total-bar">
@@ -834,7 +913,6 @@ function showFreeForm() {
   sec.style.display = 'block';
   sec.scrollIntoView({behavior:'smooth'});
   if (freeItems.length === 0) addFreeItem();
-  // Set today's date
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('fi-inv-date').value = today;
 }
@@ -860,12 +938,106 @@ function removeLogo() {
   document.getElementById('logo-remove-wrap').style.display = 'none';
 }
 
-function toggleAdditionalFrom() {
-  const el = document.getElementById('additional-from');
-  const ch = document.getElementById('from-chevron');
-  const open = el.style.display !== 'block';
-  el.style.display = open ? 'block' : 'none';
-  ch.className = open ? 'bi bi-chevron-up me-1' : 'bi bi-chevron-down me-1';
+/* ── Signature widget ── */
+let _sigTab = 'draw';
+
+function switchSigTab(tab, btn) {
+  _sigTab = tab;
+  document.querySelectorAll('.sig-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sig-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sig-panel-' + tab).classList.add('active');
+}
+
+/* ── Draw pad ── */
+(function() {
+  let canvas, ctx, drawing = false, lastX, lastY;
+  function init() {
+    canvas = document.getElementById('fi-sig-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#1E293B';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function pos(e) {
+      const r = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / r.width;
+      const scaleY = canvas.height / r.height;
+      const src = e.touches ? e.touches[0] : e;
+      return [(src.clientX - r.left) * scaleX, (src.clientY - r.top) * scaleY];
+    }
+    function start(e) { e.preventDefault(); drawing = true; [lastX, lastY] = pos(e); }
+    function move(e)  {
+      e.preventDefault();
+      if (!drawing) return;
+      const [x, y] = pos(e);
+      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+      [lastX, lastY] = [x, y];
+    }
+    function stop() { drawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseleave', stop);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move,  {passive:false});
+    canvas.addEventListener('touchend', stop);
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  /* init after short delay in case DOM is already ready */
+  setTimeout(init, 400);
+})();
+
+function clearCanvas() {
+  const c = document.getElementById('fi-sig-canvas');
+  if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+}
+
+function getSignatureDataURL() {
+  if (_sigTab === 'draw') {
+    const c = document.getElementById('fi-sig-canvas');
+    /* check if canvas has any drawing */
+    const px = c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+    const hasContent = px.some(v => v !== 0);
+    return hasContent ? c.toDataURL('image/png') : null;
+  }
+  if (_sigTab === 'type') {
+    const name = (document.getElementById('fi-sig-typed').value || '').trim();
+    if (!name) return null;
+    /* render typed name to an offscreen canvas */
+    const oc = document.createElement('canvas');
+    oc.width = 420; oc.height = 100;
+    const octx = oc.getContext('2d');
+    octx.font = "58px 'Segoe Script','Brush Script MT',cursive";
+    octx.fillStyle = '#1E293B';
+    octx.textBaseline = 'middle';
+    octx.fillText(name, 16, 54);
+    return oc.toDataURL('image/png');
+  }
+  return null; /* upload handled via file input */
+}
+
+function previewSignature(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const img = document.getElementById('fi-sig-img');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+  document.getElementById('fi-sig-ph').style.display = 'none';
+  document.getElementById('sig-remove-wrap').style.display = 'block';
+}
+function removeSignature() {
+  document.getElementById('fi-sig-file').value = '';
+  const img = document.getElementById('fi-sig-img');
+  img.src = ''; img.style.display = 'none';
+  document.getElementById('fi-sig-ph').style.display = 'flex';
+  document.getElementById('sig-remove-wrap').style.display = 'none';
+  clearCanvas();
+  const typed = document.getElementById('fi-sig-typed');
+  if (typed) { typed.value = ''; document.getElementById('sig-type-preview').textContent = 'Signature Preview'; }
 }
 
 function updateCharCount(textareaId, countId, max) {
@@ -876,45 +1048,26 @@ function updateCharCount(textareaId, countId, max) {
 function _applyTemplateColor(hex) {
   const card = document.getElementById('free-form-card');
   card.style.setProperty('--primary', hex);
-  // Derive a darker shade (~20% darker) for hover states
   const darker = '#' + hex.replace(/^#/, '').match(/../g)
     .map(c => Math.max(0, parseInt(c,16) - 40).toString(16).padStart(2,'0')).join('');
   card.style.setProperty('--primary-d', darker);
-  // Update items thead border color
   const thead = card.querySelector('.items-thead');
   if (thead) thead.style.borderBottomColor = hex;
-  // Update Balance Due row color
-  const bal = card.querySelector('.tot-row.bal');
-  if (bal) { bal.style.borderTopColor = hex; bal.style.color = hex; }
 }
 
 function selectColor(el) {
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
-  const hex = el.dataset.color || '#F97316';
-  _applyTemplateColor(hex);
+  _applyTemplateColor(el.dataset.color || '#F97316');
 }
-
 function applyCustomColor(val) {
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
   _applyTemplateColor(val);
 }
 
-// Show/hide sidebar tax & discount value inputs
-document.addEventListener('DOMContentLoaded', () => {
-  ['sb-tax-type','sb-disc-type'].forEach(id=>{
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const wrapId = id === 'sb-tax-type' ? 'sb-tax-val-wrap' : 'sb-disc-val-wrap';
-    sel.addEventListener('change', () => {
-      document.getElementById(wrapId).style.display = sel.value === 'none' ? 'none' : 'block';
-      recalcFreeTotal();
-    });
-  });
-});
-
+/* ── Items ── */
 function addFreeItem() {
-  freeItems.push({name:'', detail:'', rate:0, qty:1});
+  freeItems.push({desc:'', hsn:'', qty:1, rate:0, gst_pct:18});
   renderFreeItems();
 }
 function removeFreeItem(i) {
@@ -929,99 +1082,173 @@ function updateFreeItem(i, field, val) {
 
 function renderFreeItems() {
   const wrap = document.getElementById('fi-items');
-  wrap.innerHTML = freeItems.map((it,i)=>{
-    const amt = ((parseFloat(it.rate)||0)*(parseFloat(it.qty)||1)).toFixed(2);
-    const detLen = (it.detail||'').length;
+  wrap.innerHTML = freeItems.map((it,i) => {
+    const amt = (parseFloat(it.qty)||0) * (parseFloat(it.rate)||0);
     return `
     <div class="item-block">
       <div class="item-main-row">
-        <button class="item-x-btn" onclick="removeFreeItem(${i})" title="Remove"><i class="bi bi-x"></i></button>
-        <input class="item-desc-input" placeholder="Description of service or product…" value="${(it.name||'').replace(/"/g,'&quot;')}"
-               oninput="updateFreeItem(${i},'name',this.value)">
-        <input class="item-num-input" type="number" placeholder="0.00" value="${it.rate||''}"
-               min="0" step="0.01" oninput="updateFreeItem(${i},'rate',parseFloat(this.value)||0)">
+        <span class="item-sno">${i+1}</span>
+        <input class="item-desc-input" placeholder="Description *" value="${(it.desc||'').replace(/"/g,'&quot;')}"
+               oninput="updateFreeItem(${i},'desc',this.value)"
+               style="border-color:${it.desc?'#E2E8F0':'#FCA5A5'}">
+        <input class="item-desc-input" placeholder="HSN/SAC" value="${(it.hsn||'').replace(/"/g,'&quot;')}"
+               style="text-align:center"
+               oninput="updateFreeItem(${i},'hsn',this.value)">
         <input class="item-num-input" type="number" placeholder="1" value="${it.qty||1}"
-               min="0.01" step="any" oninput="updateFreeItem(${i},'qty',parseFloat(this.value)||1)">
-        <span class="item-amt">Rs.${amt}</span>
-      </div>
-      <div class="item-detail-row">
-        <textarea class="item-detail-textarea" maxlength="5000"
-          placeholder="Additional details (optional)"
-          oninput="updateFreeItem(${i},'detail',this.value);document.getElementById('det-cnt-${i}').textContent=this.value.length"
-        >${it.detail||''}</textarea>
-        <div class="char-count" style="margin-top:3px"><span id="det-cnt-${i}">${detLen}</span>/5000</div>
+               min="0" step="0.01" title="Quantity"
+               oninput="updateFreeItem(${i},'qty',parseFloat(this.value)||0)">
+        <input class="item-num-input" type="number" placeholder="0.00" value="${it.rate||''}"
+               min="0" step="0.01" title="Rate (₹) *"
+               style="border-color:${(parseFloat(it.rate)||0)>0?'#E2E8F0':'#FCA5A5'}"
+               oninput="updateFreeItem(${i},'rate',parseFloat(this.value)||0)">
+        <input class="item-num-input" type="number" placeholder="18" value="${it.gst_pct??18}"
+               min="0" max="28" step="0.5" title="GST %"
+               oninput="updateFreeItem(${i},'gst_pct',parseFloat(this.value)||0)">
+        <span class="item-amt-cell">₹${amt.toFixed(2)}</span>
+        <button class="item-x-btn" onclick="removeFreeItem(${i})" title="Remove row"><i class="bi bi-x"></i></button>
       </div>
     </div>`;
   }).join('');
   recalcFreeTotal();
 }
 
+/* ── Amount in words ── */
+function amountToWords(n) {
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+    'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function tw(n) {
+    if(n<20) return ones[n];
+    return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');
+  }
+  function convert(n) {
+    if(n===0) return '';
+    if(n<100) return tw(n);
+    if(n<1000) return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+tw(n%100):'');
+    if(n<100000) return convert(Math.floor(n/1000))+' Thousand'+(n%1000?' '+convert(n%1000):'');
+    if(n<10000000) return convert(Math.floor(n/100000))+' Lakh'+(n%100000?' '+convert(n%100000):'');
+    return convert(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+convert(n%10000000):'');
+  }
+  const rupees = Math.floor(n);
+  const paise  = Math.round((n - rupees) * 100);
+  let words = convert(rupees) || 'Zero';
+  words += ' Rupee' + (rupees!==1?'s':'');
+  if (paise > 0) words += ' and '+tw(paise)+' Paise';
+  return words + ' Only.';
+}
+
 function recalcFreeTotal() {
   let sub = 0;
-  freeItems.forEach(it=>{
-    sub += (parseFloat(it.rate)||0) * (parseFloat(it.qty)||1);
-  });
+  freeItems.forEach(it => { sub += (parseFloat(it.qty)||0) * (parseFloat(it.rate)||0); });
 
-  // Discount
-  const discType = (document.getElementById('sb-disc-type')||{}).value || 'none';
-  const discVal  = parseFloat((document.getElementById('sb-disc-val')||{}).value) || 0;
-  let discount = 0;
-  if (discType === 'percent') discount = sub * discVal / 100;
-  else if (discType === 'fixed') discount = discVal;
-  const afterDisc = Math.max(0, sub - discount);
+  const cgstRate = parseFloat(document.getElementById('fi-cgst-rate').value)||0;
+  const sgstRate = parseFloat(document.getElementById('fi-sgst-rate').value)||0;
+  const cgstAmt  = sub * cgstRate / 100;
+  const sgstAmt  = sub * sgstRate / 100;
+  const gstTotal = cgstAmt + sgstAmt;
+  const grand    = sub + gstTotal;
 
-  // Tax
-  const taxType = (document.getElementById('sb-tax-type')||{}).value || 'none';
-  const taxVal  = parseFloat((document.getElementById('sb-tax-val')||{}).value) || 0;
-  let taxAmt = 0;
-  if (taxType === 'percent') taxAmt = afterDisc * taxVal / 100;
-  else if (taxType === 'fixed') taxAmt = taxVal;
-
-  const total = afterDisc + taxAmt;
-  const fmt = n => 'Rs.'+n.toFixed(2);
+  const fmt = n => '₹' + n.toFixed(2);
   document.getElementById('fi-subtotal').textContent  = fmt(sub);
-  document.getElementById('fi-tax-total').textContent = fmt(total);
-  document.getElementById('fi-total').textContent     = fmt(total);
+  document.getElementById('fi-cgst-amt').textContent  = fmt(cgstAmt);
+  document.getElementById('fi-sgst-amt').textContent  = fmt(sgstAmt);
+  document.getElementById('fi-gst-total').textContent = fmt(gstTotal);
+  document.getElementById('fi-total').textContent     = fmt(grand);
+
+  // Update GST label
+  const totalRate = cgstRate + sgstRate;
+  document.querySelector('.total-gst-row span:first-child').textContent = `Total GST (@ ${totalRate}%)`;
+
+  // Amount in words
+  const wordsBox = document.getElementById('fi-words-box');
+  const wordsEl  = document.getElementById('fi-words-text');
+  if (grand > 0) {
+    wordsEl.textContent = amountToWords(grand);
+    wordsBox.style.display = 'block';
+  } else {
+    wordsBox.style.display = 'none';
+  }
+}
+
+/* ── Validation helpers ── */
+function validateFreeForm() {
+  const errEl = document.getElementById('fi-error');
+  errEl.style.display = 'none';
+
+  const invNum = document.getElementById('fi-inv-number').value.trim();
+  const name   = document.getElementById('fi-name').value.trim();
+  const email  = document.getElementById('fi-email').value.trim();
+  const addr   = document.getElementById('fi-cust-address').value.trim();
+
+  if (!invNum) {
+    document.getElementById('inv-num-err').style.display = 'block';
+    document.getElementById('fi-inv-number').classList.add('error');
+    document.getElementById('fi-inv-number').focus();
+    return false;
+  }
+  document.getElementById('inv-num-err').style.display = 'none';
+  document.getElementById('fi-inv-number').classList.remove('error');
+
+  if (!name)  { errEl.textContent='Customer name is required.'; errEl.style.display='block'; document.getElementById('fi-name').focus(); return false; }
+  if (!email) { errEl.textContent='Customer email is required.'; errEl.style.display='block'; document.getElementById('fi-email').focus(); return false; }
+  if (!addr)  { errEl.textContent='Customer address is required.'; errEl.style.display='block'; document.getElementById('fi-cust-address').focus(); return false; }
+
+  const validItems = freeItems.filter(it => it.desc && (parseFloat(it.rate)||0) > 0);
+  if (!validItems.length) {
+    errEl.textContent = 'Add at least one item with a description and rate.';
+    errEl.style.display = 'block';
+    return false;
+  }
+  return true;
 }
 
 async function createFreeInvoice() {
-  const name  = document.getElementById('fi-name').value.trim();
-  const email = document.getElementById('fi-email').value.trim();
+  if (!validateFreeForm()) return;
+
+  const btn   = document.getElementById('fi-btn');
   const errEl = document.getElementById('fi-error');
-  errEl.style.display='none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
 
-  if (!name || !email) { errEl.textContent='Client name and email are required.'; errEl.style.display='block'; return; }
-  const validItems = freeItems.filter(it=>it.name && (parseFloat(it.rate)||0)>0);
-  if (!validItems.length) { errEl.textContent='Add at least one item with a description and rate.'; errEl.style.display='block'; return; }
+  const validItems = freeItems.filter(it => it.desc && (parseFloat(it.rate)||0) > 0);
 
-  const btn = document.getElementById('fi-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Creating…';
-
-  const fromStreet = document.getElementById('fi-from-street').value.trim();
-  const fromCity   = document.getElementById('fi-from-city').value.trim();
-  const fromZip    = document.getElementById('fi-from-zip').value.trim();
-  const fromAddr   = [fromStreet, fromCity, fromZip].filter(Boolean).join(', ');
+  const cgstRate = parseFloat(document.getElementById('fi-cgst-rate').value)||0;
+  const sgstRate = parseFloat(document.getElementById('fi-sgst-rate').value)||0;
 
   const payload = {
-    from_name:    document.getElementById('fi-from-name').value.trim(),
-    from_email:   document.getElementById('fi-from-email').value.trim(),
-    from_address: fromAddr,
-    from_phone:   document.getElementById('fi-from-phone').value.trim(),
-    from_gst:     document.getElementById('fi-from-gst').value.trim(),
-    customer_name:    name,
-    customer_email:   email,
-    customer_address: document.getElementById('fi-cust-address').value.trim(),
-    customer_phone:   document.getElementById('fi-cust-phone').value.trim(),
-    customer_mobile:  document.getElementById('fi-cust-mobile').value.trim(),
-    customer_fax:     document.getElementById('fi-cust-fax').value.trim(),
-    invoice_number:   document.getElementById('fi-inv-number').value.trim(),
-    terms:            document.getElementById('fi-terms').value,
-    notes:            document.getElementById('fi-notes').value.trim(),
-    items: validItems.map(it=>({
-      name: it.name,
-      price: parseFloat(it.rate)||0,
-      qty: parseFloat(it.qty)||1,
-      tax: 0,
+    from_name:         document.getElementById('fi-from-name').value.trim(),
+    from_email:        document.getElementById('fi-from-email').value.trim(),
+    from_address:      document.getElementById('fi-from-address').value.trim(),
+    from_phone:        document.getElementById('fi-from-phone').value.trim(),
+    from_gst:          document.getElementById('fi-from-gst').value.trim(),
+    from_cin:          document.getElementById('fi-from-cin').value.trim(),
+    from_pan:          document.getElementById('fi-from-pan').value.trim(),
+    from_website:      document.getElementById('fi-from-website').value.trim(),
+    customer_name:     document.getElementById('fi-name').value.trim(),
+    customer_email:    document.getElementById('fi-email').value.trim(),
+    customer_address:  document.getElementById('fi-cust-address').value.trim(),
+    customer_phone:    document.getElementById('fi-cust-phone').value.trim(),
+    customer_gst:      document.getElementById('fi-cust-gst').value.trim(),
+    customer_cin:      document.getElementById('fi-cust-cin').value.trim(),
+    customer_pan:      document.getElementById('fi-cust-pan').value.trim(),
+    recipient:         document.getElementById('fi-recipient').value.trim(),
+    invoice_number:    document.getElementById('fi-inv-number').value.trim(),
+    terms:             document.getElementById('fi-payment-terms').value,
+    due_date:          document.getElementById('fi-due-date').value,
+    place_of_supply:   document.getElementById('fi-place-of-supply').value.trim(),
+    notes:             document.getElementById('fi-notes').value.trim(),
+    cgst_rate:         cgstRate,
+    sgst_rate:         sgstRate,
+    thankyou_msg:      document.getElementById('fi-thankyou').value.trim(),
+    department:        document.getElementById('fi-dept').value.trim(),
+    sig_name:          document.getElementById('fi-sig-name').value.trim(),
+    sig_company:       document.getElementById('fi-sig-company').value.trim(),
+    items: validItems.map(it => ({
+      name:    it.desc,
+      hsn:     it.hsn||'',
+      qty:     parseFloat(it.qty)||1,
+      price:   parseFloat(it.rate)||0,
+      tax:     parseFloat(it.gst_pct)||0,
     })),
   };
 
@@ -1032,6 +1259,14 @@ async function createFreeInvoice() {
   });
   const logoFile = document.getElementById('fi-logo-file').files[0];
   if (logoFile) fd.append('logo', logoFile);
+  /* signature: upload file takes priority; else use draw/type data URL */
+  const sigFile = document.getElementById('fi-sig-file').files[0];
+  if (sigFile) {
+    fd.append('signature', sigFile);
+  } else {
+    const sigDataUrl = getSignatureDataURL();
+    if (sigDataUrl) fd.append('signature_data', sigDataUrl);
+  }
 
   try {
     const r = await fetch('/api/invoices/free/', {method:'POST', body:fd});
@@ -1039,17 +1274,17 @@ async function createFreeInvoice() {
     if (d.success) {
       showFreeResult(d.data);
     } else {
-      if (r.status===429) {
-        errEl.innerHTML=`${d.message} <a onclick="openModal('reg-modal')" style="color:#F97316;cursor:pointer;font-weight:700">Register free →</a>`;
+      if (r.status === 429) {
+        errEl.innerHTML = `${d.message} <a onclick="openModal('reg-modal')" style="color:#F97316;cursor:pointer;font-weight:700">Register free →</a>`;
       } else {
         errEl.textContent = d.message || 'Failed to create invoice.';
       }
-      errEl.style.display='block';
+      errEl.style.display = 'block';
     }
-  } catch { errEl.textContent='Network error. Please try again.'; errEl.style.display='block'; }
+  } catch { errEl.textContent = 'Network error. Please try again.'; errEl.style.display='block'; }
 
-  btn.disabled=false;
-  btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';
 }
 
 function showFreeResult(data) {
@@ -1057,38 +1292,49 @@ function showFreeResult(data) {
   const rc = document.getElementById('free-result-card');
   rc.classList.remove('d-none');
   rc.scrollIntoView({behavior:'smooth'});
-  const fmt = n => 'Rs.'+Number(n).toFixed(2);
+  const fmt = n => '₹' + Number(n).toFixed(2);
   document.getElementById('res-number').textContent   = data.invoice_number;
-  document.getElementById('res-customer').textContent = data.customer_name+' · '+data.customer_email;
+  document.getElementById('res-customer').textContent = data.customer_name + ' · ' + data.customer_email;
   document.getElementById('res-total').textContent    = fmt(data.grand_total);
   document.getElementById('res-total2').textContent   = fmt(data.grand_total);
-  document.getElementById('res-pdf-btn').href         = '/api/invoices/free/'+data.id+'/pdf/';
-  document.getElementById('res-items').innerHTML = data.items.map(it=>`
+  document.getElementById('res-pdf-btn').href         = '/api/invoices/free/' + data.id + '/pdf/';
+  document.getElementById('res-items').innerHTML = data.items.map(it => `
     <tr>
-      <td style="font-weight:600">${it.name}</td>
-      <td style="text-align:right">${it.qty}</td>
+      <td style="font-weight:600">${it.name}${it.hsn?' <span style="color:#94A3B8;font-weight:400">('+it.hsn+')</span>':''}</td>
+      <td style="text-align:right">${it.qty||1}</td>
       <td style="text-align:right">${fmt(it.price)}</td>
-      <td style="text-align:right;font-weight:700;color:#fff">${fmt(it.total)}</td>
+      <td style="text-align:right;font-weight:700;color:#fff">${fmt(it.total||(it.price*(it.qty||1)))}</td>
     </tr>`).join('');
   if (data.remaining_today === 0) {
     const btn = document.getElementById('try-again-btn');
-    btn.innerHTML='<i class="bi bi-clock me-1"></i> Come back tomorrow';
-    btn.disabled=true; btn.style.opacity='.5';
+    btn.innerHTML = '<i class="bi bi-clock me-1"></i> Come back tomorrow';
+    btn.disabled = true; btn.style.opacity = '.5';
   }
 }
 
 function createAnotherFree() {
   document.getElementById('free-form-card').classList.remove('d-none');
   document.getElementById('free-result-card').classList.add('d-none');
-  freeItems=[]; addFreeItem();
-  ['fi-name','fi-email','fi-notes','fi-from-name','fi-from-email',
-   'fi-from-street','fi-from-city','fi-from-zip','fi-from-phone','fi-from-gst','fi-from-website',
-   'fi-cust-address','fi-cust-phone','fi-cust-mobile','fi-cust-fax','fi-inv-number'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
+  freeItems = []; addFreeItem();
+  ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-cin','fi-cust-pan',
+   'fi-recipient','fi-inv-number','fi-notes','fi-from-name','fi-from-email',
+   'fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website',
+   'fi-bill-from-company','fi-bill-from-address','fi-bill-from-mobile','fi-bill-from-email',
+   'fi-due-date','fi-place-of-supply'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
   });
   removeLogo();
-  document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('notes-count').textContent='0';
+  removeSignature();
+  document.getElementById('fi-sig-name').value = '';
+  document.getElementById('fi-sig-company').value = 'Zayron Infotech Pvt. Ltd.';
+  document.getElementById('fi-inv-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fi-payment-terms').value = 'Due on Receipt';
+  document.getElementById('notes-count').textContent = '0';
+  document.getElementById('fi-cgst-rate').value = '9';
+  document.getElementById('fi-sgst-rate').value = '9';
+  document.getElementById('fi-thankyou').value = 'Thank you for your business!';
+  document.getElementById('fi-dept').value = 'Sales & Procurement Department';
+  recalcFreeTotal();
 }
 </script>
 </body>
