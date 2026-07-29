@@ -158,42 +158,36 @@ canvas#sig-canvas{touch-action:none;}
 
       <!-- Bill To -->
       <div class="fi-sec">
-        <div class="fi-sec-lbl">Bill To <span style="color:#94A3B8;font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">— Required fields</span></div>
-        <!-- Customer quick-select -->
-        <div class="fi-row" style="margin-bottom:10px">
-          <label class="fi-lbl">Quick-fill from existing customer</label>
-          <select class="fi" id="customer_id" onchange="onCustomerChange()">
-            <option value="">— Choose customer to auto-fill —</option>
-          </select>
-        </div>
+        <div class="fi-sec-lbl">Bill To <span style="color:#EF4444">*</span> <span style="color:#94A3B8;font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Required Fields</span></div>
+        <select class="fi" id="customer_id" onchange="onCustomerChange()" style="display:none"></select>
         <div class="fi-grid">
           <div class="fi-row">
-            <label class="fi-lbl">Customer Name <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="cust-name" placeholder="Client Name" oninput="updatePvw()">
+            <label class="fi-lbl">Customer <span style="color:#EF4444">*</span></label>
+            <input class="fi" id="cust-name" placeholder="Client Company Name" oninput="updatePvw()" style="border-color:#FCA5A5">
           </div>
           <div class="fi-row">
             <label class="fi-lbl">PAN</label>
-            <input class="fi" id="cust-pan" placeholder="ABCDE1234F" oninput="updatePvw()">
+            <input class="fi" id="cust-pan" placeholder="AABCP1234D" oninput="updatePvw()">
           </div>
           <div class="fi-row">
-            <label class="fi-lbl">Contact Person Name</label>
+            <label class="fi-lbl">Recipient</label>
             <input class="fi" id="cust-contact" placeholder="Contact Person Name" oninput="updatePvw()">
           </div>
           <div class="fi-row">
             <label class="fi-lbl">GST Number</label>
-            <input class="fi" id="cust-gst" placeholder="29ABCDE1234F1Z5" oninput="updatePvw()">
+            <input class="fi" id="cust-gst" placeholder="29AABCP1234D1Z5" oninput="updatePvw()">
           </div>
           <div class="fi-row" style="grid-column:1/-1">
             <label class="fi-lbl">Address <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="cust-addr" placeholder="Street, City, State – PIN" oninput="updatePvw()">
+            <input class="fi" id="cust-addr" placeholder="Street, City, State - PIN" oninput="updatePvw()" style="border-color:#FCA5A5">
           </div>
-          <div class="fi-row">
-            <label class="fi-lbl">Email</label>
-            <input class="fi" id="cust-email" type="email" placeholder="client@company.com" oninput="updatePvw()">
+          <div class="fi-row" style="grid-column:1/-1">
+            <label class="fi-lbl">Email <span style="color:#EF4444">*</span></label>
+            <input class="fi" id="cust-email" type="email" placeholder="client@company.com" oninput="updatePvw()" style="border-color:#FCA5A5">
           </div>
-          <div class="fi-row">
+          <div class="fi-row" style="grid-column:1/-1">
             <label class="fi-lbl">Phone</label>
-            <input class="fi" id="cust-phone" placeholder="+91 00000 00000" oninput="updatePvw()">
+            <input class="fi" id="cust-phone" placeholder="+91 XXXXX XXXXX" oninput="updatePvw()">
           </div>
         </div>
       </div>
