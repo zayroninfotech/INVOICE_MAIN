@@ -649,21 +649,24 @@ function updateTypedSig() {
 /* ── Profile (FROM block) ── */
 async function loadProfile() {
   try {
-    const res = await API.get('/api/auth/profile/');
+    const res = await API.get('/api/auth/business-profile/');
     if (!res.success) return;
     const u = res.data;
-    window._profileName = u.company_name || u.username || '';
-    localStorage.setItem('co_name', window._profileName);
-    document.getElementById('from-gst').value     = u.gst_number  || '';
-    document.getElementById('from-email').value   = u.email       || '';
-    document.getElementById('from-address').value = u.address     || '';
-    document.getElementById('from-phone').value   = u.phone       || '';
+    const uname = localStorage.getItem('user_username') || '';
+    window._profileName = u.company_name || uname || 'Your Company';
+    document.getElementById('from-gst').value     = u.gst     || '';
+    document.getElementById('from-email').value   = u.email   || '';
+    document.getElementById('from-address').value = [u.address, u.city, u.state, u.pincode].filter(Boolean).join(', ');
+    document.getElementById('from-phone').value   = u.phone   || '';
+    document.getElementById('from-website').value = u.website || '';
     document.getElementById('sig-company').value  = u.company_name || '';
-    _t('pvw-co-name',   window._profileName.toUpperCase() || 'YOUR COMPANY');
-    _t('pvw-from-name', window._profileName || '—');
-    _t('pvw-bar',       u.company_name || 'Zayron Infotech Pvt. Ltd.');
+    _t('pvw-co-name',   window._profileName.toUpperCase());
+    _t('pvw-from-name', window._profileName);
+    _t('pvw-from-addr', document.getElementById('from-address').value);
+    _t('pvw-from-gst',  u.gst ? 'GSTIN: ' + u.gst : '');
+    _t('pvw-bar',       u.company_name || uname || 'Zayron Infotech Pvt. Ltd.');
     updatePvw();
-  } catch(e) {}
+  } catch(e) { console.error('profile load failed', e); }
 }
 
 /* ── Load existing invoice for edit ── */
