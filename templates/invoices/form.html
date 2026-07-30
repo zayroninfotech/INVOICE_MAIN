@@ -734,26 +734,35 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     customer_email:   document.getElementById('cust-email').value || 'noemail@example.com',
     customer_address: document.getElementById('cust-addr').value,
     customer_gst:     document.getElementById('cust-gst').value,
-    invoice_date:     invDate + 'T00:00:00',
-    due_date:         invDate + 'T00:00:00',
+    invoice_date:     invDate + 'T00:00:00Z',
+    due_date:         invDate + 'T00:00:00Z',
     currency:         'INR',
     notes:            document.getElementById('thankyou-msg').value,
     terms:            document.getElementById('department').value,
     items,
   };
+  console.log('Submitting payload:', JSON.stringify(payload));
 
   try {
     const res = ACTION === 'edit'
       ? await API.put(`/api/invoices/${INVOICE_ID}/`, payload)
       : await API.post('/api/invoices/', payload);
+    console.log('API response:', res);
     if (res.success) {
       toast(ACTION === 'edit' ? 'Invoice updated!' : 'Invoice created!');
-      setTimeout(() => window.location = `/invoices/${res.data.id}/`, 600);
+      setTimeout(() => window.location = `/invoices/${res.data.id}/`, 800);
     } else {
-      const msg = res.errors ? Object.values(res.errors).flat().join(', ') : res.message;
+      let msg = 'Save failed.';
+      if (res.errors) msg = Object.values(res.errors).flat().join(' | ');
+      else if (res.message) msg = res.message;
       const errEl = document.getElementById('error-msg');
       errEl.textContent = msg; errEl.classList.remove('d-none');
+      errEl.scrollIntoView({behavior:'smooth', block:'center'});
+      toast(msg, 'error');
     }
+  } catch(err) {
+    console.error('Submit error:', err);
+    toast('Network error: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
     document.getElementById('btn-spin').classList.add('d-none');
