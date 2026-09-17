@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environment
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Playwright / Testing
+test-results/
+playwright-report/
+tests/
+*.spec.ts
+playwright.config.ts
+
+# Scratch / temp files
+scratch_*.py
+scratch_invoices/
+
+# IDE / Tools
+.claude/
+.claude-flow/
+.impeccable/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

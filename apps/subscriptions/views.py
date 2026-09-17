@@ -56,7 +56,8 @@ class PricingConfigView(APIView):
         ps = PlanSettings.get()
         return success({
             'plus_price': ps.plus_price,
-            'premium_price': ps.premium_price,
+            'pro_price': ps.pro_price,
+            'unlimited_price': ps.unlimited_price,
             'razorpay_key_id': ps.razorpay_key_id if ps.is_payments_enabled else '',
             'is_payments_enabled': ps.is_payments_enabled,
             'plans': settings.PLAN_LIMITS,
@@ -64,13 +65,13 @@ class PricingConfigView(APIView):
 
 
 class CreateOrderView(APIView):
-    """Create Razorpay order for Plus/Premium upgrade."""
+    """Create Razorpay order for Plus/Pro/Unlimited upgrade."""
     authentication_classes = [MongoJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         plan = request.data.get('plan', '')
-        if plan not in ('plus', 'premium'):
+        if plan not in settings.PAID_PLANS:
             return error("Invalid plan.")
         ps = PlanSettings.get()
         if not ps.is_payments_enabled or not ps.razorpay_key_id or not ps.razorpay_key_secret:
@@ -78,7 +79,8 @@ class CreateOrderView(APIView):
         try:
             import razorpay
             client = razorpay.Client(auth=(ps.razorpay_key_id, ps.razorpay_key_secret))
-            amount = ps.plus_price if plan == 'plus' else ps.premium_price
+            price_map = {'plus': ps.plus_price, 'pro': ps.pro_price, 'unlimited': ps.unlimited_price}
+            amount = price_map[plan]
             order = client.order.create({
                 'amount': amount,
                 'currency': 'INR',
@@ -129,9 +131,10 @@ class VerifyPaymentView(APIView):
         sub.razorpay_order_id = order_id
         sub.start_date = datetime.utcnow()
         sub.end_date = datetime.utcnow() + timedelta(days=30)
-        ps_prices = {'plus': ps.plus_price, 'premium': ps.premium_price}
+        ps_prices = {'plus': ps.plus_price, 'pro': ps.pro_price, 'unlimited': ps.unlimited_price}
         sub.amount_paid = ps_prices.get(plan, 0) / 100
         sub.save()
+        sub.reset_usage_counters()
         return success(_sub_data(sub), f"Upgraded to {plan.capitalize()} successfully!")
 
 
@@ -201,7 +204,7 @@ class SuperadminChangePlanView(APIView):
         if not user:
             return error("User not found.", status=404)
         plan = request.data.get('plan', 'free')
-        if plan not in ('free', 'plus', 'premium'):
+        if plan not in ('free',) + settings.PAID_PLANS:
             return error("Invalid plan.")
         sub = _get_or_create_sub(pk)
         sub.plan = plan
@@ -213,6 +216,7 @@ class SuperadminChangePlanView(APIView):
         else:
             sub.end_date = datetime.utcnow() + timedelta(days=30)
         sub.save()
+        sub.reset_usage_counters()
         return success(_sub_data(sub), f"Plan changed to {plan.capitalize()}.")
 
 
@@ -227,7 +231,8 @@ class SuperadminPlanSettingsView(APIView):
             'razorpay_key_id': ps.razorpay_key_id,
             'razorpay_key_secret': ps.razorpay_key_secret,
             'plus_price': ps.plus_price,
-            'premium_price': ps.premium_price,
+            'pro_price': ps.pro_price,
+            'unlimited_price': ps.unlimited_price,
             'is_payments_enabled': ps.is_payments_enabled,
             'bank_name': ps.bank_name,
             'bank_account': ps.bank_account,
@@ -242,17 +247,17 @@ class SuperadminPlanSettingsView(APIView):
         for f in fields:
             if f in request.data:
                 setattr(ps, f, str(request.data[f]).strip())
-        if 'plus_price' in request.data:
-            ps.plus_price = int(request.data['plus_price'])
-        if 'premium_price' in request.data:
-            ps.premium_price = int(request.data['premium_price'])
+        for price_field in ['plus_price', 'pro_price', 'unlimited_price']:
+            if price_field in request.data:
+                setattr(ps, price_field, int(request.data[price_field]))
         if 'is_payments_enabled' in request.data:
             ps.is_payments_enabled = bool(request.data['is_payments_enabled'])
         ps.save()
         return success({
             'razorpay_key_id': ps.razorpay_key_id,
             'plus_price': ps.plus_price,
-            'premium_price': ps.premium_price,
+            'pro_price': ps.pro_price,
+            'unlimited_price': ps.unlimited_price,
             'is_payments_enabled': ps.is_payments_enabled,
             'bank_name': ps.bank_name,
         }, "Settings saved.")

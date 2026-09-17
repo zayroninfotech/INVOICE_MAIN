@@ -1,82 +1,262 @@
 {% extends "base.html" %}
-{% block title %}Reports – Zayro ₹ Invoice{% endblock %}
+{% block title %}Reports — Zayro ₹ Invoice{% endblock %}
 {% block nav_reports %}active{% endblock %}
 {% block page_title %}Reports{% endblock %}
 
+{% block extra_css %}
+<style>
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 768px) { .report-grid { grid-template-columns: 1fr; } }
+
+  .chart-outer {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+  }
+  .chart-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 140px;
+    padding-bottom: 0;
+    flex-shrink: 0;
+    width: 56px;
+    text-align: right;
+  }
+  .chart-y-label {
+    font-size: .58rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 140px;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    flex: 1;
+    margin-bottom: 0;
+  }
+  .chart-bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    background: var(--ember);
+    opacity: .75;
+    cursor: pointer;
+    transition: opacity .15s, transform .15s;
+    position: relative;
+  }
+  .chart-bar:hover { opacity: 1; transform: scaleY(1.02); transform-origin: bottom; }
+  .chart-bar.active { opacity: 1; }
+
+  .chart-tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark-surface);
+    color: #EDEBE8;
+    font-size: .65rem;
+    font-weight: 600;
+    padding: 4px 7px;
+    border-radius: 5px;
+    white-space: nowrap;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+  }
+  .chart-bar:hover .chart-tooltip { display: block; }
+
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  .chart-labels span {
+    flex: 1;
+    text-align: center;
+    font-size: .6rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .rpt-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .rpt-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .rpt-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+  }
+  .rpt-stat-label {
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+  .rpt-stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rpt-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .rpt-table-wrap .ms-table th:last-child,
+  .rpt-table-wrap .ms-table td:last-child { text-align: right; }
+  .rpt-table-wrap .ms-table th:nth-child(5),
+  .rpt-table-wrap .ms-table th:nth-child(6),
+  .rpt-table-wrap .ms-table th:nth-child(7),
+  .rpt-table-wrap .ms-table td:nth-child(5),
+  .rpt-table-wrap .ms-table td:nth-child(6),
+  .rpt-table-wrap .ms-table td:nth-child(7) { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header-title {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -.01em;
+  }
+  .card-body-pad { padding: 20px; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row g-3 mb-4">
-  <div class="col-md-6">
-    <div class="bg-white rounded-3 border p-4">
-      <h6 class="fw-bold mb-3">Sales Report</h6>
+
+<!-- ── Top controls grid ── -->
+<div class="report-grid">
+
+  <!-- Sales Report card -->
+  <div class="card-ms">
+    <div class="card-header-row">
+      <div class="card-header-title"><i class="bi bi-search me-2" style="color:var(--ember)"></i>Sales Report</div>
+    </div>
+    <div class="card-body-pad">
       <div class="row g-2 mb-3">
         <div class="col-6">
-          <label class="form-label fw-semibold small">From</label>
+          <label class="form-label">From</label>
           <input type="date" class="form-control form-control-sm" id="from-date">
         </div>
         <div class="col-6">
-          <label class="form-label fw-semibold small">To</label>
+          <label class="form-label">To</label>
           <input type="date" class="form-control form-control-sm" id="to-date">
         </div>
       </div>
       <div class="d-flex gap-2">
-        <button class="btn btn-primary btn-sm" onclick="loadSalesReport()"><i class="bi bi-search me-1"></i>Generate</button>
-        <button class="btn btn-outline-success btn-sm" onclick="exportCSV()"><i class="bi bi-download me-1"></i>Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="loadSalesReport()">
+          <i class="bi bi-bar-chart me-1"></i>Generate Report
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="exportCSV()">
+          <i class="bi bi-download me-1"></i>Export CSV
+        </button>
       </div>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="bg-white rounded-3 border p-4">
-      <h6 class="fw-bold mb-3">Monthly Revenue</h6>
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <select class="form-select form-select-sm" id="year-select" style="width:120px">
-        </select>
-        <button class="btn btn-primary btn-sm" onclick="loadMonthly()"><i class="bi bi-bar-chart me-1"></i>Load</button>
+
+  <!-- Monthly Revenue chart card -->
+  <div class="card-ms">
+    <div class="card-header-row">
+      <div class="card-header-title"><i class="bi bi-bar-chart me-2" style="color:var(--ember)"></i>Monthly Revenue</div>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm" id="year-select" style="width:90px;font-size:.8rem"></select>
+        <button class="btn btn-primary btn-sm" onclick="loadMonthly()">Load</button>
       </div>
-      <div id="monthly-chart" style="height:120px; display:flex; align-items:flex-end; gap:4px;"></div>
-      <div id="monthly-labels" style="display:flex; justify-content:space-between;" class="mt-1">
-        <span class="text-muted" style="font-size:9px">Jan</span><span class="text-muted" style="font-size:9px">Feb</span>
-        <span class="text-muted" style="font-size:9px">Mar</span><span class="text-muted" style="font-size:9px">Apr</span>
-        <span class="text-muted" style="font-size:9px">May</span><span class="text-muted" style="font-size:9px">Jun</span>
-        <span class="text-muted" style="font-size:9px">Jul</span><span class="text-muted" style="font-size:9px">Aug</span>
-        <span class="text-muted" style="font-size:9px">Sep</span><span class="text-muted" style="font-size:9px">Oct</span>
-        <span class="text-muted" style="font-size:9px">Nov</span><span class="text-muted" style="font-size:9px">Dec</span>
+    </div>
+    <div class="card-body-pad">
+      <div class="chart-outer">
+        <div class="chart-y-axis" id="chart-y-axis">
+          <span class="chart-y-label" id="y-100">—</span>
+          <span class="chart-y-label" id="y-75">—</span>
+          <span class="chart-y-label" id="y-50">—</span>
+          <span class="chart-y-label" id="y-25">—</span>
+          <span class="chart-y-label" id="y-0">₹0</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div class="chart-wrap" id="monthly-chart"></div>
+          <div class="chart-labels">
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+            <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+            <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
 </div>
 
-<div id="summary-cards" class="row g-3 mb-3 d-none">
-  <div class="col-sm-3"><div class="stat-card text-center">
-    <div class="text-muted small">Total Invoices</div><div class="fs-4 fw-bold" id="r-total">—</div>
-  </div></div>
-  <div class="col-sm-3"><div class="stat-card text-center">
-    <div class="text-muted small">Paid</div><div class="fs-4 fw-bold text-success" id="r-paid">—</div>
-  </div></div>
-  <div class="col-sm-3"><div class="stat-card text-center">
-    <div class="text-muted small">Total Amount</div><div class="fs-4 fw-bold text-primary" id="r-amount">—</div>
-  </div></div>
-  <div class="col-sm-3"><div class="stat-card text-center">
-    <div class="text-muted small">Total Tax</div><div class="fs-4 fw-bold" id="r-tax">—</div>
-  </div></div>
+<!-- ── Summary stat cards (hidden until report loads) ── -->
+<div id="summary-cards" class="rpt-summary-grid" style="display:none;opacity:0;transition:opacity .25s">
+  <div class="rpt-stat">
+    <div class="rpt-stat-label">Total Invoices</div>
+    <div class="rpt-stat-value" id="r-total">—</div>
+  </div>
+  <div class="rpt-stat">
+    <div class="rpt-stat-label">Paid</div>
+    <div class="rpt-stat-value" style="color:var(--color-success)" id="r-paid">—</div>
+  </div>
+  <div class="rpt-stat">
+    <div class="rpt-stat-label">Total Revenue</div>
+    <div class="rpt-stat-value" style="color:var(--ember)" id="r-amount">—</div>
+  </div>
+  <div class="rpt-stat">
+    <div class="rpt-stat-label">Total Tax</div>
+    <div class="rpt-stat-value" id="r-tax">—</div>
+  </div>
 </div>
 
-<div class="bg-white rounded-3 border d-none" id="sales-table-wrap">
-  <div class="table-responsive">
-    <table class="table table-hover mb-0">
-      <thead><tr>
-        <th>Invoice #</th><th>Customer</th><th>Date</th><th>Due</th>
-        <th class="text-end">Subtotal</th><th class="text-end">Tax</th><th class="text-end">Total</th><th>Status</th>
-      </tr></thead>
+<!-- ── Sales table (hidden until report loads) ── -->
+<div class="rpt-table-wrap" id="sales-table-wrap" style="display:none;opacity:0;transition:opacity .25s">
+  <div style="overflow-x:auto">
+    <table class="ms-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Due Date</th>
+          <th>Subtotal</th>
+          <th>Tax</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
       <tbody id="sales-tbody"></tbody>
     </table>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const fmt = n => '₹' + Number(n).toLocaleString('en-IN',{minimumFractionDigits:2});
-const fmtDate = d => new Date(d).toLocaleDateString('en-IN');
+const fmtDate = d => new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 // Populate year select
 const yearSel = document.getElementById('year-select');
@@ -92,61 +272,83 @@ document.getElementById('to-date').value = now.toISOString().split('T')[0];
 
 async function loadSalesReport() {
   const from = document.getElementById('from-date').value;
-  const to = document.getElementById('to-date').value;
-  const res = await API.get(`/api/reports/sales/?from=${from}&to=${to}`);
+  const to   = document.getElementById('to-date').value;
+  const res  = await API.get(`/api/reports/sales/?from=${from}&to=${to}`);
   if (!res.success) { toast('Failed to load report.', 'error'); return; }
   const d = res.data;
-  document.getElementById('r-total').textContent = d.summary.total_invoices;
-  document.getElementById('r-paid').textContent = d.summary.paid_invoices;
+
+  document.getElementById('r-total').textContent  = d.summary.total_invoices;
+  document.getElementById('r-paid').textContent   = d.summary.paid_invoices;
   document.getElementById('r-amount').textContent = fmt(d.summary.total_amount);
-  document.getElementById('r-tax').textContent = fmt(d.summary.total_tax);
-  document.getElementById('summary-cards').classList.remove('d-none');
+  document.getElementById('r-tax').textContent    = fmt(d.summary.total_tax);
+  const sc = document.getElementById('summary-cards');
+  sc.style.display = 'grid'; requestAnimationFrame(() => { sc.style.opacity = '1'; });
 
   const tbody = document.getElementById('sales-tbody');
   if (!d.invoices.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">No invoices in this period.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">
+      <i class="bi bi-file-earmark-text" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.4"></i>
+      No invoices in this period.</td></tr>`;
   } else {
     tbody.innerHTML = d.invoices.map(inv => `
-      <tr>
-        <td><a href="/invoices/" class="text-primary fw-semibold text-decoration-none">${inv.invoice_number}</a></td>
-        <td>${inv.customer_name}</td>
-        <td>${fmtDate(inv.invoice_date)}</td>
-        <td>${fmtDate(inv.due_date)}</td>
-        <td class="text-end">${fmt(inv.subtotal)}</td>
-        <td class="text-end">${fmt(inv.tax_amount)}</td>
-        <td class="text-end fw-semibold">${fmt(inv.grand_total)}</td>
-        <td><span class="badge badge-${inv.status}">${inv.status}</span></td>
+      <tr onclick="location.href='/invoices/${inv.id}/'" style="cursor:pointer">
+        <td><a href="/invoices/${inv.id}/" class="fw-700" style="color:var(--ember);text-decoration:none" onclick="event.stopPropagation()">${inv.invoice_number}</a></td>
+        <td style="font-weight:500">${inv.customer_name}</td>
+        <td style="color:var(--text-muted)">${fmtDate(inv.invoice_date)}</td>
+        <td style="color:var(--text-muted)">${fmtDate(inv.due_date)}</td>
+        <td>${fmt(inv.subtotal)}</td>
+        <td style="color:var(--text-muted)">${fmt(inv.tax_amount)}</td>
+        <td style="font-weight:700">${fmt(inv.grand_total)}</td>
+        <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
       </tr>`).join('');
   }
-  document.getElementById('sales-table-wrap').classList.remove('d-none');
+  const sw = document.getElementById('sales-table-wrap');
+  sw.style.display = 'block'; requestAnimationFrame(() => { sw.style.opacity = '1'; });
 }
 
 function exportCSV() {
-  const from = document.getElementById('from-date').value;
-  const to = document.getElementById('to-date').value;
+  const from  = document.getElementById('from-date').value;
+  const to    = document.getElementById('to-date').value;
   const token = localStorage.getItem('access_token');
-  const url = `/api/reports/sales/csv/?from=${from}&to=${to}`;
-  fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
+  fetch(`/api/reports/sales/csv/?from=${from}&to=${to}`, { headers: { 'Authorization': 'Bearer ' + token } })
     .then(r => r.blob())
     .then(blob => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'sales_report.csv';
+      a.download = `sales_report_${from}_${to}.csv`;
       a.click();
-    });
+    })
+    .catch(() => toast('Export failed.', 'error'));
+}
+
+function fmtShort(n) {
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+  if (n >= 1000)   return '₹' + (n/1000).toFixed(0) + 'K';
+  return '₹' + Math.round(n);
 }
 
 async function loadMonthly() {
   const year = document.getElementById('year-select').value;
-  const res = await API.get(`/api/reports/monthly-revenue/?year=${year}`);
+  const res  = await API.get(`/api/reports/monthly-revenue/?year=${year}`);
   if (!res.success) return;
+
   const months = res.data.monthly_revenue;
-  const max = Math.max(...months.map(m => m.amount), 1);
-  const chart = document.getElementById('monthly-chart');
+  const max    = Math.max(...months.map(m => m.amount), 1);
+  const chart  = document.getElementById('monthly-chart');
+
+  // Update Y-axis labels
+  document.getElementById('y-100').textContent = fmtShort(max);
+  document.getElementById('y-75').textContent  = fmtShort(max * 0.75);
+  document.getElementById('y-50').textContent  = fmtShort(max * 0.5);
+  document.getElementById('y-25').textContent  = fmtShort(max * 0.25);
+
   chart.innerHTML = months.map(m => {
-    const h = Math.max(4, Math.round((m.amount / max) * 110));
-    return `<div title="${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m.month-1]}: ${fmt(m.amount)}"
-      style="flex:1; height:${h}px; background:#F97316; border-radius:4px 4px 0 0; opacity:0.85; cursor:pointer;"></div>`;
+    const h       = Math.max(4, Math.round((m.amount / max) * 130));
+    const label   = MONTHS[m.month - 1];
+    const isEmpty = m.amount === 0;
+    return `<div class="chart-bar" style="height:${h}px;${isEmpty ? 'opacity:.2' : ''}" tabindex="0" role="img" aria-label="${label}: ${fmt(m.amount)}">
+      <div class="chart-tooltip">${label}: ${fmt(m.amount)}</div>
+    </div>`;
   }).join('');
 }
 

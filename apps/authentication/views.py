@@ -6,7 +6,12 @@ from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, Ch
 from .jwt_utils import generate_tokens, decode_token
 from .authentication import MongoJWTAuthentication
 from .permissions import IsSuperAdmin
-from .models import User, BusinessProfile
+from .models import User, BusinessProfile, AuditLog
+
+
+def _ip(request):
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '')
 from utils.response import success, error
 import jwt
 import os
@@ -30,6 +35,10 @@ class RegisterView(APIView):
         except Exception:
             pass
         tokens = generate_tokens(user)
+        try:
+            AuditLog.log(user, 'user_register', f'New account: {user.email}', _ip(request))
+        except Exception:
+            pass
         return success({'user': UserSerializer(user).data, 'tokens': tokens}, "Registration successful.", 201)
 
 
@@ -47,6 +56,10 @@ class LoginView(APIView):
         if not user or not check_password(password, user.password):
             return error("Invalid credentials.", status=401)
         tokens = generate_tokens(user)
+        try:
+            AuditLog.log(user, 'user_login', f'{user.email} signed in', _ip(request))
+        except Exception:
+            pass
         return success({'user': UserSerializer(user).data, 'tokens': tokens}, "Login successful.")
 
 
@@ -256,6 +269,8 @@ def _bp_data(bp):
         'phone':        bp.phone,
         'email':        bp.email,
         'gst':          bp.gst,
+        'cin':          bp.cin,
+        'pan':          bp.pan,
         'website':      bp.website,
     }
 
@@ -277,7 +292,7 @@ class BusinessProfileView(APIView):
     def put(self, request):
         bp = self._get_or_create(request.user)
         fields = ['company_name', 'address', 'city', 'state', 'pincode',
-                  'phone', 'email', 'gst', 'website']
+                  'phone', 'email', 'gst', 'cin', 'pan', 'website']
         for f in fields:
             if f in request.data:
                 setattr(bp, f, str(request.data[f]).strip())
@@ -300,6 +315,17 @@ class BusinessProfileLogoView(APIView):
             return error("Only PNG/JPG/GIF/WEBP images are allowed.")
         if logo.size > self.MAX_SIZE:
             return error("File too large. Max 2 MB.")
+
+        # content_type is client-supplied and says nothing about whether the
+        # bytes actually decode. Without this a truncated/corrupt file is stored
+        # happily, reports "Logo uploaded.", and then silently renders nothing on
+        # every PDF — the failure surfaces nowhere. Verify it really is an image.
+        try:
+            from PIL import Image as _PILImage
+            _PILImage.open(logo).verify()
+        except Exception:
+            return error("That file isn't a readable image. Please try another.")
+        logo.seek(0)   # verify() consumes the stream
 
         bp = BusinessProfile.objects(user_id=str(request.user.pk)).first()
         if not bp:

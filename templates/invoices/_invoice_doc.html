@@ -1,0 +1,167 @@
+{% comment %}
+SINGLE SOURCE OF TRUTH for invoice document markup.
+
+Two consumers, one file:
+  1. The live preview (form.html / edit.html / detail.html) includes this with NO
+     context. Every field falls back to its placeholder and the existing
+     updatePvw() JS populates the ids exactly as before.
+  2. invoices/print.html includes it WITH context, server-rendered from the
+     Invoice document. Chrome headless prints that page to produce the PDF.
+
+So the PDF is a print of the same markup + the same CSS
+(_invoice_doc_css.html) the preview shows, not a second design.
+
+Every id here is a JS target for the live preview - do not rename them.
+{% endcomment %}
+{% comment %}
+The skin class + --tpl-* vars are applied by applyPreviewSkin() in the live
+preview; the print page has no JS, so they are rendered here instead. With no
+context both collapse to nothing and the preview behaves exactly as before.
+{% endcomment %}
+<div class="inv-preview{% if style_id and style_id != 'classic' %} tpl-{{ style_id }}{% endif %}" id="inv-preview"{% if accent %} style="--tpl-accent:{{ accent }};--tpl-secondary:{{ secondary }};--tpl-text:{{ text }};--tpl-muted:{{ muted }};--tpl-border:{{ border }};--tpl-tint:{{ tint }}"{% endif %}>
+
+  <!-- SECTION: header -->
+  <div class="pvw-sec" data-sec="header">
+    <div class="pvw-top">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="pvw-circle" id="pvw-logo-circle">{% if logo_url %}<img src="{{ logo_url }}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:50%">{% else %}Rs{% endif %}</div>
+        <div>
+          <div style="font-size:10px;font-weight:800" id="pvw-co-name">{{ co_name|default:"YOUR COMPANY" }}</div>
+          <div style="font-size:7.5px;color:#64748B" id="pvw-co-gst">{{ co_gst|default:"" }}</div>
+          <div style="font-size:7px;color:#94A3B8;line-height:1.5" id="pvw-co-addr">{{ co_addr|default:"" }}</div>
+        </div>
+      </div>
+      <div id="pvw-invoice-lbl" style="font-size:20px;font-weight:900;color:#C1121F">INVOICE</div>
+    </div>
+    <div class="pvw-divider"></div>
+  </div>
+
+  <!-- SECTION: invoice_meta -->
+  <div class="pvw-sec" data-sec="invoice_meta">
+    <div class="pvw-meta" id="pvw-meta-generic">
+      <div></div>
+      <div style="text-align:right">
+        <div style="display:flex;gap:6px;justify-content:flex-end;font-size:7.5px"><span class="pvw-mlbl">Invoice No.</span><span class="pvw-mval" id="pvw-inv-no">{{ inv_no|default:"—" }}</span></div>
+        <div style="display:flex;gap:6px;justify-content:flex-end;font-size:7.5px;margin-top:2px"><span class="pvw-mlbl">Invoice Date</span><span class="pvw-mval" id="pvw-date">{{ inv_date|default:"—" }}</span></div>
+      </div>
+    </div>
+    <!-- Task templates (staffing/payroll) print an ID / period block instead
+         of the generic invoice-no + date bar (see _sec_staffing's meta()). -->
+    <div class="pvw-meta-staffing" id="pvw-meta-staffing">
+      <div class="pms-col">
+        <div class="pms-lbl" id="pvw-cust-id-lbl">{{ cust_id_lbl|default:"Number / Customer ID" }}</div>
+        <div class="pms-val" id="pvw-cust-id">{{ cust_id|default:"—" }}</div>
+      </div>
+      <div class="pms-col">
+        <div class="pms-lbl" id="pvw-period-lbl">{{ period_lbl|default:"Billing Period" }}</div>
+        <div class="pms-val" id="pvw-bp-from">{{ bp_from|default:"—" }}</div>
+        <div class="pms-val pms-val-2" id="pvw-bp-to">{{ bp_to|default:"—" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: bill_to -->
+  <div class="pvw-sec" data-sec="bill_to">
+    <div class="pvw-addr">
+      <div style="border-right:1px solid #fff">
+        <div class="pvw-addr-hdr">FROM</div>
+        <div class="pvw-addr-body">
+          <div class="pvw-addr-name" id="pvw-from-name">{{ from_name|default:"—" }}</div>
+          <div class="pvw-addr-muted" id="pvw-from-addr">{{ from_addr|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-from-cin">{{ from_cin|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-from-gst">{{ from_gst|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-from-pan">{{ from_pan|default:"" }}</div>
+        </div>
+      </div>
+      <div>
+        <div class="pvw-addr-hdr">BILL TO</div>
+        <div class="pvw-addr-body">
+          <div class="pvw-addr-name" id="pvw-to-name">{{ to_name|default:"—" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-recipient">{{ to_recipient|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-addr">{{ to_addr|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-email">{{ to_email|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-phone">{{ to_phone|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-cin">{{ to_cin|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-gst">{{ to_gst|default:"" }}</div>
+          <div class="pvw-addr-muted" id="pvw-to-pan">{{ to_pan|default:"" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: items_table -->
+  <div class="pvw-sec" data-sec="items_table">
+    <div class="pvw-items">
+      <div class="pvw-items-hdr" id="pvw-items-hdr"{% if items_grid %} style="grid-template-columns:{{ items_grid }}"{% endif %}>
+        {% if item_cols %}{% for c in item_cols %}<span>{{ c }}</span>{% endfor %}
+        {% else %}<span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>SET%</span><span>AMOUNT</span>{% endif %}
+      </div>
+      <div id="pvw-items-body">{% for r in item_rows %}<div class="pvw-item-row"{% if items_grid %} style="grid-template-columns:{{ items_grid }}"{% endif %}>{% for c in r %}<span>{{ c }}</span>{% endfor %}</div>{% endfor %}</div>
+    </div>
+  </div>
+
+  <!-- SECTION: totals -->
+  <div class="pvw-sec" data-sec="totals">
+    <div class="pvw-tots">
+      <div class="pvw-tots-box">
+        <div class="pvw-tot-r{% if staffing %} strong{% endif %}"><span id="pvw-sub-lbl">{{ sub_lbl|default:"Subtotal" }}</span><span id="pvw-sub">{{ sub|default:"₹0.00" }}</span></div>
+        {# Live preview: all three rows render (JS fills/toggles). Print: hide_inactive_gst hides non-applying rows. #}
+        {% if not hide_inactive_gst or cgst_lbl %}<div class="pvw-tot-r" id="pvw-row-cgst"><span id="pvw-cgst-lbl">{{ cgst_lbl|default:"CGST @9%" }}</span><span id="pvw-cgst">{{ cgst|default:"₹0.00" }}</span></div>{% endif %}
+        {% if not hide_inactive_gst or sgst_lbl %}<div class="pvw-tot-r" id="pvw-row-sgst"><span id="pvw-sgst-lbl">{{ sgst_lbl|default:"SGST @9%" }}</span><span id="pvw-sgst">{{ sgst|default:"₹0.00" }}</span></div>{% endif %}
+        {% if not hide_inactive_gst or igst_lbl %}<div class="pvw-tot-r" id="pvw-row-igst"><span id="pvw-igst-lbl">{{ igst_lbl|default:"IGST @9%" }}</span><span id="pvw-igst">{{ igst|default:"₹0.00" }}</span></div>{% endif %}
+        <div class="pvw-tot-r" id="pvw-gsttot-row"{% if not staffing or not gst_total %} style="display:none"{% endif %}><span id="pvw-gsttot-lbl">{{ gsttot_lbl|default:"Total GST @18%" }}</span><span id="pvw-gsttot">{{ gsttot|default:"₹0.00" }}</span></div>
+        <div class="pvw-tot-r grand"><span id="pvw-grand-lbl">{{ grand_lbl|default:"GRAND TOTAL" }}</span><span id="pvw-grand">{{ grand|default:"₹0.00" }}</span></div>
+      </div>
+      <div class="pvw-words" id="pvw-words"{% if not staffing %} style="display:none"{% endif %}><b>Amount in Words:</b> <span id="pvw-words-txt">{{ words|default:"" }}</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION: notes -->
+  <div class="pvw-sec" data-sec="notes">
+    <div style="padding:6px 10px 2px;font-size:7px;color:#64748B;line-height:1.5">
+      <div style="font-weight:700;color:#0F172A;font-size:7.5px;margin-bottom:1px">Notes</div>
+      <div id="pvw-notes">{{ notes|default:"Thank you for your business!" }}</div>
+    </div>
+  </div>
+
+  <!-- SECTION: terms -->
+  <div class="pvw-sec" data-sec="terms">
+    <div style="padding:4px 10px 4px;font-size:7px;color:#94A3B8;line-height:1.5">
+      <div style="font-weight:700;color:#334155;font-size:7px;margin-bottom:1px;text-transform:uppercase;letter-spacing:.05em">Terms</div>
+      <div id="pvw-terms">{{ terms|default:"Payment due within 30 days." }}</div>
+    </div>
+  </div>
+
+  <!-- SECTION: signature -->
+  <div class="pvw-sec" data-sec="signature">
+    <div style="text-align:center;padding:8px 10px 4px;font-size:7px">
+      {% comment %}
+      updateSigPreview() sets display:block on this img, which cancels the
+      parent's text-align:center and pinned the signature to the left edge in
+      the preview while the PDF (inline img) centred it. Auto side margins
+      centre it in both cases.
+      {% endcomment %}
+      <img id="pvw-sig-img" src="{{ sig_url|default:'' }}" alt="" style="max-height:32px;max-width:80px;{% if not sig_url %}display:none;{% endif %}margin:0 auto 2px">
+      <div class="pvw-sig-line"></div>
+      <div class="pvw-sig-lbl" style="margin-top:2px">Authorized Signatory</div>
+      <div id="pvw-sig-name" style="font-size:7px;font-weight:700;color:#0F172A">{{ sig_name|default:"" }}</div>
+    </div>
+  </div>
+
+  <!-- SECTION: footer -->
+  <div class="pvw-sec" data-sec="footer">
+    <div style="display:flex;justify-content:center;padding:4px 8px">
+      <div class="pvw-stamp"><span>Thank</span><span>YOU!</span></div>
+    </div>
+    <div style="padding:2px 8px 5px;font-size:6.5px;color:#94A3B8;text-align:center" id="pvw-dept">{{ dept|default:"" }}</div>
+    <div class="pvw-foot" id="pvw-foot">
+      <div class="pf-thanks" id="pvw-foot-thanks">{{ foot_thanks|default:"" }}</div>
+      <div class="pf-dept"   id="pvw-foot-dept">{{ foot_dept|default:"" }}</div>
+      <div class="pf-addr"   id="pvw-foot-addr">{{ foot_addr|default:"" }}</div>
+      <div class="pf-web"    id="pvw-foot-web">{{ foot_web|default:"" }}</div>
+      <div class="pf-con"    id="pvw-foot-con">{% if foot_phone %}Mobile: {{ foot_phone }} {% endif %}{% if foot_phone and foot_email %}<span class="pf-pipe">|</span>{% endif %}{% if foot_email %}<span class="pf-mail">{{ foot_email }}</span>{% endif %}</div>
+    </div>
+    <div class="pvw-bar" id="pvw-bar">{{ bar|default:"Zayron Infotech Pvt. Ltd." }}</div>
+  </div>
+
+</div><!-- /inv-preview -->

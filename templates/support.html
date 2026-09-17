@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Support â€” Zayro Invoice</title>
+  <meta name="description" content="Get help with Zayro Invoice. Browse FAQs, contact our team, or report an issue."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --ember:#C1121F;--ember-d:#8C0F1B;
+      --dark:#0A0C10;--dark-2:#101318;--dark-3:#161A22;--dark-4:#1C2029;
+      --dark-b:rgba(255,255,255,.06);--dark-b2:rgba(255,255,255,.12);--dark-b3:rgba(255,255,255,.2);
+      --text:#F0F1F5;--text-2:rgba(242,243,245,.52);--text-3:rgba(242,243,245,.28);
+      --green:#4ADE80;--red:#F87171;--r:10px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Geist',system-ui,sans-serif;background:var(--dark);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+    /* NAV */
+    /* NAV styles — provided by templates/_site_nav.html (shared partial) */
+
+    /* HERO */
+    .hero{text-align:center;padding:80px 5vw 60px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(193,18,31,.1) 0%,transparent 70%);}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(193,18,31,.1);border:1px solid rgba(193,18,31,.25);border-radius:100px;padding:5px 16px;font-size:.75rem;font-weight:700;color:var(--ember);letter-spacing:.06em;text-transform:uppercase;margin-bottom:24px;}
+    .hero h1{font-size:clamp(1.9rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1.1;max-width:640px;margin:0 auto 16px;text-wrap:balance;}
+    .hero p{color:var(--text-2);font-size:1rem;max-width:480px;margin:0 auto 32px;}
+
+    /* SEARCH */
+    .search-wrap{max-width:520px;margin:0 auto;position:relative;}
+    .search-wrap i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-2);font-size:1rem;pointer-events:none;}
+    #support-search{width:100%;background:var(--dark-3);border:1px solid var(--dark-b2);border-radius:12px;padding:14px 16px 14px 44px;color:var(--text);font-family:inherit;font-size:.95rem;outline:none;transition:border-color .15s;}
+    #support-search:focus{border-color:rgba(193,18,31,.5);}
+    #support-search::placeholder{color:var(--text-3);}
+
+    /* QUICK LINKS */
+    .quick-links{max-width:1100px;margin:0 auto;padding:48px 5vw 0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    .quick-card{background:var(--dark-2);border:1px solid var(--dark-b);border-radius:14px;padding:24px;display:flex;align-items:flex-start;gap:14px;text-decoration:none;color:var(--text);transition:border-color .2s,transform .15s;}
+    .quick-card:hover{border-color:rgba(193,18,31,.35);transform:translateY(-2px);}
+    .quick-icon{width:40px;height:40px;background:rgba(193,18,31,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .quick-icon i{font-size:1.1rem;color:var(--ember);}
+    .quick-card h3{font-size:.9rem;font-weight:700;margin-bottom:3px;}
+    .quick-card p{font-size:.78rem;color:var(--text-2);line-height:1.5;}
+
+    /* MAIN LAYOUT */
+    .support-layout{max-width:1100px;margin:0 auto;padding:56px 5vw;display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:start;}
+
+    /* FAQ */
+    .section-label{font-size:.72rem;font-weight:700;color:var(--ember);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+    .section-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:28px;}
+    .faq-item{border:1px solid var(--dark-b);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .15s;}
+    .faq-item.open{border-color:rgba(193,18,31,.3);}
+    .faq-q{width:100%;background:none;border:none;color:var(--text);font-family:inherit;font-size:.9rem;font-weight:600;padding:18px 20px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+    .faq-q i{color:var(--text-2);transition:transform .2s,color .15s;flex-shrink:0;}
+    .faq-item.open .faq-q i{transform:rotate(45deg);color:var(--ember);}
+    .faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease;}
+    .faq-item.open .faq-a{grid-template-rows:1fr;}
+    .faq-a-inner{overflow:hidden;padding:0 20px 18px;font-size:.85rem;color:var(--text-2);line-height:1.7;}
+    .faq-a-inner a{color:var(--ember);text-decoration:none;}
+    .faq-a-inner a:hover{text-decoration:underline;}
+
+    /* CONTACT FORM */
+    .contact-card{background:var(--dark-2);border:1px solid var(--dark-b);border-radius:16px;padding:28px;position:sticky;top:80px;}
+    .contact-card h2{font-size:1.1rem;font-weight:800;margin-bottom:6px;}
+    .contact-card p{font-size:.82rem;color:var(--text-2);margin-bottom:20px;line-height:1.55;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text-2);margin-bottom:6px;letter-spacing:.02em;}
+    .form-group input,.form-group textarea,.form-group select{width:100%;background:var(--dark-3);border:1px solid var(--dark-b2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:border-color .15s;}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(193,18,31,.5);}
+    .form-group textarea{resize:vertical;min-height:90px;}
+    .form-group select option{background:var(--dark-3);}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-3);}
+    .btn-submit{width:100%;background:var(--ember);border:none;border-radius:8px;padding:11px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-submit:hover{background:var(--ember-d);}
+    .form-success{display:none;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:10px;padding:14px;text-align:center;font-size:.85rem;color:var(--green);}
+    .form-err{display:none;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:10px 12px;font-size:.82rem;color:var(--red);margin-bottom:10px;}
+
+    /* STATUS */
+    .status-strip{max-width:1100px;margin:0 auto;padding:0 5vw 56px;}
+    .status-card{background:var(--dark-2);border:1px solid var(--dark-b);border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:14px;}
+    .status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
+    .status-text{font-size:.88rem;font-weight:600;}
+    .status-sub{font-size:.78rem;color:var(--text-2);margin-top:1px;}
+    .status-right{margin-left:auto;font-size:.75rem;color:var(--text-2);}
+
+    /* FOOTER */
+    footer{background:var(--dark);border-top:1px solid var(--dark-b);padding:40px 5vw;text-align:center;}
+    .footer-links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+    .footer-links a{color:var(--text-2);text-decoration:none;font-size:.82rem;transition:color .15s;}
+    .footer-links a:hover{color:var(--text);}
+    .footer-copy{font-size:.78rem;color:var(--text-3);}
+
+    /* SEARCH HIGHLIGHT */
+    .faq-item.hidden-by-search{display:none;}
+
+    @media(max-width:768px){
+      .support-layout{grid-template-columns:1fr;}
+      .quick-links{grid-template-columns:1fr 1fr;}
+      .contact-card{position:static;}
+    }
+    @media(max-width:480px){
+      .quick-links{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+{% include '_site_nav.html' %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow"><i class="bi bi-headset"></i> Help centre</div>
+  {% if auth_user %}
+  <h1>Hi {{ auth_user.username }}, how can we help?</h1>
+  <p>Search the FAQ below, or send us a message â€” your account details are pre-filled.</p>
+  {% else %}
+  <h1>How can we help you?</h1>
+  <p>Find answers in our FAQ, or send us a message. We typically reply within a few hours on working days.</p>
+  {% endif %}
+  <div class="search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="text" id="support-search" placeholder="Search for help â€” invoices, GST, paymentsâ€¦" oninput="filterFAQ(this.value)"/>
+  </div>
+</section>
+
+{% if auth_user %}
+<!-- LOGGED-IN USER CONTEXT PANEL -->
+<div style="max-width:1100px;margin:0 auto;padding:32px 5vw 0;">
+  <div style="background:var(--dark-2);border:1px solid rgba(193,18,31,.2);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--ember),var(--ember-d));display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;flex-shrink:0;">
+      {{ auth_user.username|slice:":1"|upper }}
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-weight:700;font-size:.95rem;">{{ auth_user.username }}</div>
+      <div style="font-size:.78rem;color:var(--text-2);">{{ auth_user.email }} &middot;
+        <span style="color:var(--ember);font-weight:600;">
+          {% if subscription %}{{ subscription.plan|capfirst }} plan{% else %}Free plan{% endif %}
+        </span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="/dashboard/" style="display:inline-flex;align-items:center;gap:6px;background:var(--ember-subtle);border:1px solid rgba(193,18,31,.25);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:600;color:var(--ember);text-decoration:none;"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+      <a href="/invoices/create/" style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--dark-b2);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:600;color:var(--text-2);text-decoration:none;"><i class="bi bi-plus-circle"></i> New invoice</a>
+      <a href="/pricing/upgrade/" style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--dark-b2);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:600;color:var(--text-2);text-decoration:none;"><i class="bi bi-lightning-charge"></i> Upgrade plan</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- QUICK LINKS -->
+<div class="quick-links">
+  <a href="#faq-invoices" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+    <div><h3>Invoice help</h3><p>Creating, editing, and sending GST invoices</p></div>
+  </a>
+  <a href="#faq-billing" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-credit-card-fill"></i></div>
+    <div><h3>Billing & plans</h3><p>Subscriptions, upgrades, and payments</p></div>
+  </a>
+  <a href="#faq-account" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-person-fill"></i></div>
+    <div><h3>Account & security</h3><p>Profile, password, GSTIN, and access</p></div>
+  </a>
+  {% if auth_user %}
+  <a href="/invoices/" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-archive-fill"></i></div>
+    <div><h3>My invoices</h3><p>View, download and manage your invoices</p></div>
+  </a>
+  <a href="/pricing/manage/" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-sliders"></i></div>
+    <div><h3>My subscription</h3><p>Manage your plan and billing history</p></div>
+  </a>
+  <a href="/auth/profile/" class="quick-card">
+    <div class="quick-icon"><i class="bi bi-pencil-square"></i></div>
+    <div><h3>Edit profile</h3><p>Update GSTIN, business name, and logo</p></div>
+  </a>
+  {% endif %}
+</div>
+
+<!-- MAIN -->
+<div class="support-layout">
+  <div>
+    <!-- INVOICES FAQ -->
+    <div id="faq-invoices" style="margin-bottom:40px;">
+      <div class="section-label">Invoices</div>
+      <div class="section-title">Invoice questions</div>
+
+      <div class="faq-item" data-tags="invoice create gstin gst">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          How do I create a GST-compliant invoice? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Go to <strong>Invoices â†’ New Invoice</strong>. Fill in your customer's details, add line items with HSN/SAC codes and GST rates, and Zayro automatically calculates CGST, SGST, or IGST depending on whether the transaction is intra-state or inter-state. Click <strong>Generate PDF</strong> to download a compliant invoice ready to send.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="invoice pdf download share">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          How do I share an invoice with my client? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Open any invoice and click <strong>Download PDF</strong>. You'll get a professionally formatted PDF with your business logo, GST details, and itemised breakdown. Share it via WhatsApp, email, or any file-sharing tool.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="invoice number duplicate">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          Can I customise my invoice number format? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Yes. In <strong>Settings â†’ Invoice Preferences</strong>, you can set a prefix (e.g. <code>INV-2025-</code>) and starting number. Zayro then auto-increments for each new invoice. Invoice numbers are unique and cannot be reused.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="invoice edit modify sent">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          Can I edit an invoice after it has been generated? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          You can edit draft invoices freely. Once an invoice is marked as <strong>Sent</strong>, we recommend creating a credit note instead of editing the original â€” this maintains a proper audit trail as required under GST rules.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="free trial invoice limit">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          How many free invoices can I create without signing up? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          You can create 2 invoices without an account using the free generator on our homepage. For more invoices, templates, payment tracking, and customer management, <a href="/">create a free account</a> â€” it takes under a minute.
+        </div></div>
+      </div>
+    </div>
+
+    <!-- BILLING FAQ -->
+    <div id="faq-billing" style="margin-bottom:40px;">
+      <div class="section-label">Billing & plans</div>
+      <div class="section-title">Subscription questions</div>
+
+      <div class="faq-item" data-tags="plan upgrade free paid price">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          What is included in the free plan? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          The free plan includes basic invoicing, customer management, and access to core templates. Paid plans unlock unlimited invoices, advanced templates, payment tracking, GSTR-1 export, UPI reconciliation, and priority support. See our <a href="/">pricing page</a> for a full comparison.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="cancel subscription refund">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          Can I cancel my subscription at any time? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Yes. Cancel anytime from <strong>Settings â†’ Subscription</strong>. You keep access until the end of your billing period. We do not offer prorated refunds, but you can downgrade to the free plan at any time.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="payment upi card razorpay">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          What payment methods do you accept? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          We accept UPI, all major debit and credit cards (Visa, Mastercard, RuPay), and net banking via Razorpay. All transactions are secured with 256-bit SSL encryption.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="invoice billing receipt gst subscription">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          Can I get a GST invoice for my Zayro subscription? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Yes. Go to <strong>Settings â†’ Billing</strong> and enter your GSTIN. Your next subscription invoice will include GST breakdowns. You can download all past billing receipts from the same page.
+        </div></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT FAQ -->
+    <div id="faq-account">
+      <div class="section-label">Account & security</div>
+      <div class="section-title">Account questions</div>
+
+      <div class="faq-item" data-tags="password reset forgot">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          I forgot my password. How do I reset it? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          On the login screen, click <strong>Forgot password</strong> and enter your registered email. You'll receive a reset link within a few minutes. Check your spam folder if it doesn't arrive.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="gstin business details update">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          How do I update my business GSTIN or address? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Go to <strong>Settings â†’ Business Profile</strong>. You can update your GSTIN, registered business name, address, PAN, and logo here. Changes apply to all new invoices immediately.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="delete account data">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          How do I delete my account? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          You can request account deletion by contacting us at <a href="mailto:support@zayro.in">support@zayro.in</a>. We'll delete your data within 7 business days. We recommend downloading your invoice archive before requesting deletion.
+        </div></div>
+      </div>
+
+      <div class="faq-item" data-tags="multi user team access">
+        <button class="faq-q" onclick="toggleFAQ(this)">
+          Can I add team members to my account? <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Multi-user access is available on the Pro and Business plans. Go to <strong>Settings â†’ Team</strong> to invite members by email and assign them roles (Admin, Accountant, Viewer).
+        </div></div>
+      </div>
+    </div>
+
+    <!-- NO RESULTS -->
+    <div id="faq-no-results" style="display:none;text-align:center;padding:40px 0;">
+      <i class="bi bi-search" style="font-size:2rem;color:var(--text-3);display:block;margin-bottom:12px;"></i>
+      <p style="color:var(--text-2);font-size:.9rem;">No results for that search. Try different keywords or <a href="#contact-form" style="color:var(--ember);">send us a message</a>.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT FORM -->
+  <div id="contact-form">
+    <div class="contact-card">
+      <h2>Send us a message</h2>
+      <p>Can't find your answer? Our team replies within a few hours on weekdays.</p>
+      <div id="form-err" class="form-err"></div>
+      <form id="support-form" onsubmit="submitSupport(event)">
+        <div class="form-group">
+          <label>Your name</label>
+          <input type="text" id="s-name" placeholder="Amit Kumar" value="{% if auth_user %}{{ auth_user.username }}{% endif %}" required/>
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="s-email" placeholder="amit@example.com" value="{% if auth_user %}{{ auth_user.email }}{% endif %}" required/>
+        </div>
+        <div class="form-group">
+          <label>Topic</label>
+          <select id="s-topic">
+            <option value="">Select a topicâ€¦</option>
+            <option>Invoice creation</option>
+            <option>GST / tax question</option>
+            <option>PDF or download issue</option>
+            <option>Billing or subscription</option>
+            <option>Account or login</option>
+            <option>Bug report</option>
+            <option>Feature request</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="s-message" placeholder="Describe your issue in detailâ€¦" required></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <i class="bi bi-send-fill"></i> Send message
+        </button>
+      </form>
+      <div class="form-success" id="form-success">
+        <i class="bi bi-check-circle-fill" style="font-size:1.4rem;display:block;margin-bottom:8px;"></i>
+        Message sent. We'll get back to you soon.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="status-strip">
+  <div class="status-card">
+    <div class="status-dot"></div>
+    <div>
+      <div class="status-text">All systems operational</div>
+      <div class="status-sub">Invoice generation, PDF export, and API are running normally.</div>
+    </div>
+    <div class="status-right">Last checked: just now</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/support/">Support</a>
+    <a href="/">Privacy Policy</a>
+    <a href="/">Terms of Service</a>
+  </div>
+  <div class="footer-copy">&copy; 2025 Zayro Invoice. Made in India</div>
+</footer>
+
+<script>
+function toggleFAQ(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+function filterFAQ(q) {
+  const term = q.toLowerCase().trim();
+  const items = document.querySelectorAll('.faq-item');
+  let visible = 0;
+  items.forEach(item => {
+    const tags = (item.dataset.tags || '').toLowerCase();
+    const text = item.textContent.toLowerCase();
+    const match = !term || tags.includes(term) || text.includes(term);
+    item.classList.toggle('hidden-by-search', !match);
+    if (match) visible++;
+  });
+  document.getElementById('faq-no-results').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function submitSupport(e) {
+  e.preventDefault();
+  const name = document.getElementById('s-name').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const message = document.getElementById('s-message').value.trim();
+  const errEl = document.getElementById('form-err');
+  errEl.style.display = 'none';
+
+  if (!name || !email || !message) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .6s linear infinite;"></span> Sendingâ€¦';
+
+  /* In production wire this to a real endpoint. For now simulate success. */
+  setTimeout(() => {
+    document.getElementById('support-form').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  }, 1200);
+}
+</script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+</body>
+</html>

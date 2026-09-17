@@ -1,0 +1,119 @@
+{% comment %}
+Print page — what Chrome headless renders into the PDF.
+
+It includes the SAME CSS partial and the SAME markup partial the live preview
+uses. Nothing here restyles the invoice; the only rules below are page/document
+mechanics (page size, margins, colour retention, page-break control) plus the
+scale that maps the preview's authored canvas onto A4.
+{% endcomment %}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{ inv_no }}</title>
+
+{# 1. The invoice's own styling — one source of truth, shared with the preview #}
+{% include "invoices/_invoice_doc_css.html" %}
+
+{# 2. Print mechanics ONLY — do not redesign .inv-preview in here #}
+<style>
+  /* The preview is authored on a ~411px canvas (measured from the live panel).
+     A4 at 96dpi is 794px, so scale by 794/411 to fill the page while keeping
+     every font size, padding and column width in exact proportion. `zoom`
+     rather than `transform` because zoom participates in layout, so page-break
+     calculations stay correct. */
+  /* A4 with 12mm margins -> printable width 186mm = 703px at 96dpi.
+     zoom = 703/411 = 1.7104 maps the preview's authored canvas onto that width.
+     Filling the full 794px page width (zoom 1.9319) left only ~55pt of vertical
+     headroom, so a one-row invoice with a slightly longer address spilled onto a
+     second page. The margins also mirror the preview, which sits inset in its
+     panel rather than bleeding to the edge. */
+  :root { --canvas: 411px; }
+
+  @page { size: A4; margin: 12mm; }
+
+  html, body {
+    margin: 0; padding: 0; background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .print-canvas {
+    width: var(--canvas);
+    /* Filling the printable WIDTH exactly would be 703/411 = 1.7104, but the
+       editorial layout is ~612px tall and that scale overflows the 1032px
+       printable height by 14px, tipping a one-row invoice onto a second page.
+       1.64 uses 96% of the width and leaves ~28px of vertical headroom, so a
+       slightly longer address or terms line still fits on one page. */
+    zoom: 1.64;
+    margin: 0 auto;
+  }
+
+  /* On paper the document is the page — drop the on-screen card treatment. */
+  .print-canvas .inv-preview {
+    width: var(--canvas);
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  /* Keep logical blocks whole across a page break. */
+  .pvw-sec,
+  .pvw-tots, .pvw-tots-box, .pvw-words,
+  .pvw-item-row, .pvw-meta-staffing, .pvw-addr,
+  .pvw-foot { break-inside: avoid; page-break-inside: avoid; }
+
+  /* The items table may split between rows, but never mid-row. */
+  .pvw-items { break-inside: auto; page-break-inside: auto; }
+
+  /* NOTE: .pvw-foot deliberately flows in normal document order.
+     It was previously position:fixed to bottom:0 so the address repeated on
+     every page — but that block also contains the thank-you line, so pinning it
+     dragged the whole thing to the foot of the page and opened a large gap
+     under the signature that the live preview does not have. Preview parity
+     wins; a multi-page invoice prints the footer once, at the end. */
+</style>
+</head>
+<body>
+  <div class="print-canvas">
+    {# 3. The invoice itself — same markup file the preview includes #}
+    {% include "invoices/_invoice_doc.html" %}
+  </div>
+
+  <script>
+    /* Chrome is told to wait for this flag so fonts and images (logo,
+       signature) are decoded before the PDF snapshot is taken. */
+    window.__READY__ = false;
+
+    /* Fit-to-page. A fixed zoom cannot know how tall a given invoice renders —
+       a fuller Bill To or an extra terms line pushed a ONE-ROW invoice onto a
+       second page. Measure the laid-out height once everything has loaded and
+       scale to fit, clamped:
+         BASE  never enlarge past the width-safe scale
+         MIN   stop shrinking rather than render unreadably small; genuinely
+               long invoices are allowed to paginate instead. */
+    const BASE = 1.64, MIN = 1.30;
+
+    function fitToPage() {
+      const canvas = document.querySelector('.print-canvas');
+      if (!canvas) return;
+      const printablePx = (842 - 2 * 34) / 72 * 96;   // A4 less 12mm margins
+      canvas.style.zoom = 1;                           // measure unscaled
+      const natural = canvas.getBoundingClientRect().height;
+      if (!natural) { canvas.style.zoom = BASE; return; }
+      canvas.style.zoom = Math.min(BASE, Math.max(MIN, printablePx / natural));
+    }
+
+    (async () => {
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+      const imgs = [...document.images].filter(i => i.src);
+      await Promise.all(imgs.map(i => i.complete
+        ? Promise.resolve()
+        : new Promise(r => { i.onload = i.onerror = r; })));
+      fitToPage();                       // after images, so heights are final
+      window.__READY__ = true;
+      document.documentElement.setAttribute('data-ready', '1');
+    })();
+  </script>
+</body>
+</html>

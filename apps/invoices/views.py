@@ -1,15 +1,60 @@
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from django.http import FileResponse
 from django.conf import settings
 from apps.authentication.authentication import MongoJWTAuthentication
 from apps.authentication.permissions import IsReadOnlyForUser, IsAdminOrSuperAdmin
 from apps.authentication.models import BusinessProfile
+from apps.subscriptions.entitlements import can_create_invoice, increment_usage, get_plan_for_request
 from .models import Invoice
 from .serializers import InvoiceSerializer, InvoiceListSerializer, InvoiceDetailSerializer
 from .pdf_generator import generate_invoice_pdf
+from . import template_registry
 from .tasks import send_invoice_email_task
 from utils.response import success, error
 import os
+
+
+def _limit_message(plan, reason):
+    limits = settings.PLAN_LIMITS.get(plan, {})
+    label = limits.get('label', plan.capitalize())
+    if reason == 'daily_limit':
+        d = limits.get('invoices_per_day', '?')
+        return f"Daily limit of {d} invoices reached on your {label} plan. Upgrade to create more."
+    if reason == 'monthly_limit':
+        m = limits.get('invoices_per_month', '?')
+        return f"Monthly limit of {m} invoices reached on your {label} plan. Upgrade to create more."
+    return "Invoice limit reached. Upgrade to create more."
+
+
+def _user_plan(request):
+    if getattr(request.user, 'role', '') == 'superadmin':
+        return 'unlimited'
+    plan, _ = get_plan_for_request(request)
+    return plan
+
+
+def _check_template_allowed(request, template_id):
+    """Returns None if allowed, else an error Response."""
+    plan = _user_plan(request)
+    tdef = template_registry.get_template_def(template_id)
+    if not tdef:
+        return error(f"Unknown template '{template_id}'.", status=400)
+    min_plan = template_registry.effective_min_plan(template_id)
+    if template_registry.is_blocked(template_id):
+        return error(
+            f"The '{tdef['name']}' template is currently unavailable.",
+            {"upgrade_required": False, "blocked": True}, status=403)
+    from .template_registry import PLAN_RANK
+    if PLAN_RANK.get(plan, 0) < PLAN_RANK.get(min_plan, 0):
+        need_label = settings.PLAN_LIMITS.get(
+            'pro' if min_plan == 'unlimited' else min_plan, {}).get('label', min_plan.capitalize())
+        return error(
+            f"The '{tdef['name']}' template requires the {need_label} plan or higher. Upgrade to use it.",
+            {"upgrade_required": True, "current_plan": plan,
+             "required_plan": min_plan, "template_id": template_id},
+            status=403)
+    return None
 
 
 def _invoice_qs(user):
@@ -48,24 +93,31 @@ class InvoiceListCreateView(APIView):
         })
 
     def post(self, request):
-        # Superadmin has no limits
-        if getattr(request.user, 'role', '') != 'superadmin':
-            from apps.subscriptions.models import Subscription
-            sub = Subscription.objects(user_id=str(request.user.pk)).first()
-            if not sub:
-                sub = Subscription(user_id=str(request.user.pk)).save()
-            can, reason = sub.can_create_invoice()
-            if not can:
-                return error(reason, {"upgrade_required": True}, status=402)
+        ok, reason, plan, sub = can_create_invoice(request)
+        if not ok:
+            return error(
+                _limit_message(plan, reason),
+                {"upgrade_required": True, "current_plan": plan, "reason": reason},
+                status=402,
+            )
+
+        tpl_err = _check_template_allowed(request, request.data.get('template_style', 'classic'))
+        if tpl_err is not None:
+            return tpl_err
 
         serializer = InvoiceSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
         invoice = serializer.save()
 
-        # Increment usage counter
-        if getattr(request.user, 'role', '') != 'superadmin':
-            sub.increment_usage()
+        increment_usage(request, plan, sub)
+
+        try:
+            from apps.authentication.models import AuditLog
+            AuditLog.log(request.user, 'invoice_created',
+                         f'{invoice.invoice_number} — {invoice.customer_name} — ₹{invoice.grand_total}')
+        except Exception:
+            pass
 
         return success(InvoiceDetailSerializer(invoice).data, "Invoice created.", 201)
 
@@ -89,6 +141,9 @@ class InvoiceDetailView(APIView):
             return error("Invoice not found.", status=404)
         if invoice.status in ['Paid', 'Cancelled']:
             return error(f"Cannot edit a {invoice.status} invoice.")
+        tpl_err = _check_template_allowed(request, request.data.get('template_style', invoice.template_style))
+        if tpl_err is not None:
+            return tpl_err
         serializer = InvoiceSerializer(invoice, data=request.data, context={'request': request})
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
@@ -160,3 +215,33 @@ class InvoiceStatusView(APIView):
         invoice.status = new_status
         invoice.save()
         return success({'status': invoice.status}, "Status updated.")
+
+
+class AvailableTemplatesView(APIView):
+    """Template catalogue for the invoice form — includes per-user plan unlock state."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def get(self, request):
+        plan = _user_plan(request)
+        from .template_registry import PLAN_RANK, SECTION_LABELS
+        user_rank = PLAN_RANK.get(plan, 0)
+        templates = []
+        for t in template_registry.templates_payload():
+            min_plan = t['effective_min_plan']
+            unlocked = user_rank >= PLAN_RANK.get(min_plan, 0) and not t['blocked']
+            templates.append({
+                'id': t['id'],
+                'name': t['name'],
+                'desc': t['desc'],
+                'min_plan': min_plan,
+                'badge': t.get('badge', '#F8FAFC'),
+                'blocked': t['blocked'],
+                'unlocked': unlocked,
+            })
+        return success({
+            'plan': plan,
+            'templates': templates,
+            'sections': SECTION_LABELS,
+            'default_section_order': template_registry.SECTIONS,
+        })

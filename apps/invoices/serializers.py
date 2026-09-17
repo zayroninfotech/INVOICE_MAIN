@@ -14,6 +14,11 @@ class InvoiceItemInputSerializer(serializers.Serializer):
     unit_price   = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
     tax_rate     = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, default=0)
     hsn_code     = serializers.CharField(required=False, allow_blank=True, default='')
+    # Staffing template only: the row's secondary line. When supplied it becomes
+    # the item's `description` (rendered as "Role") and `description` stays the
+    # primary name. Blank for every other template, which keeps the old
+    # product_name == description behaviour.
+    role         = serializers.CharField(required=False, allow_blank=True, default='')
 
 
 class InvoiceSerializer(serializers.Serializer):
@@ -25,6 +30,15 @@ class InvoiceSerializer(serializers.Serializer):
     customer_email   = serializers.EmailField(required=False, allow_blank=True, default='noemail@example.com')
     customer_address = serializers.CharField(required=False, allow_blank=True, default='')
     customer_gst     = serializers.CharField(required=False, allow_blank=True, default='')
+    customer_phone   = serializers.CharField(required=False, allow_blank=True, default='')
+    customer_pan     = serializers.CharField(required=False, allow_blank=True, default='')
+    customer_cin     = serializers.CharField(required=False, allow_blank=True, default='')
+    customer_recipient = serializers.CharField(required=False, allow_blank=True, default='')
+    # Per-component GST rates, needed by templates that show CGST/SGST/IGST as
+    # three separate lines (staffing). Zero = fall back to halving tax_amount.
+    cgst_rate      = serializers.FloatField(required=False, default=0)
+    sgst_rate      = serializers.FloatField(required=False, default=0)
+    igst_rate      = serializers.FloatField(required=False, default=0)
     invoice_date   = serializers.DateTimeField()
     due_date       = serializers.DateTimeField(required=False, allow_null=True)
     items          = InvoiceItemInputSerializer(many=True, write_only=True)
@@ -32,6 +46,12 @@ class InvoiceSerializer(serializers.Serializer):
     terms          = serializers.CharField(default='Payment due within 30 days.', allow_blank=True)
     currency       = serializers.CharField(default='INR')
     template_color = serializers.CharField(default='#F97316', allow_blank=True, required=False)
+    template_style = serializers.CharField(default='classic', allow_blank=True, required=False)
+    layout_config  = serializers.DictField(default=dict, required=False)
+    signature_image   = serializers.CharField(default='', allow_blank=True, required=False)
+    signatory_name    = serializers.CharField(default='', allow_blank=True, required=False)
+    signature_company = serializers.CharField(default='', allow_blank=True, required=False)
+    department        = serializers.CharField(default='', allow_blank=True, required=False)
     status         = serializers.CharField(read_only=True)
     subtotal       = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     tax_amount     = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
@@ -90,10 +110,11 @@ class InvoiceSerializer(serializers.Serializer):
                 # Manual item — unit_price is required
                 price = float(manual_price or 0)
                 desc  = item_data.get('description', '') or 'Item'
+                role  = item_data.get('role', '') or ''
                 built.append(InvoiceItem(
                     product_id='manual',
                     product_name=desc,
-                    description=desc,
+                    description=role or desc,
                     hsn_code=item_data.get('hsn_code', ''),
                     unit='Nos',
                     unit_price=price,
@@ -123,12 +144,25 @@ class InvoiceSerializer(serializers.Serializer):
             customer_email=cemail,
             customer_address=caddr,
             customer_gst=cgst,
+            customer_phone=validated_data.get('customer_phone', ''),
+            customer_pan=validated_data.get('customer_pan', ''),
+            customer_cin=validated_data.get('customer_cin', ''),
+            customer_recipient=validated_data.get('customer_recipient', ''),
+            cgst_rate=validated_data.get('cgst_rate', 0) or 0,
+            sgst_rate=validated_data.get('sgst_rate', 0) or 0,
+            igst_rate=validated_data.get('igst_rate', 0) or 0,
             invoice_date=validated_data['invoice_date'],
             due_date=due,
             notes=validated_data.get('notes', ''),
             terms=validated_data.get('terms', 'Payment due within 30 days.'),
             currency=validated_data.get('currency', 'INR'),
             template_color=validated_data.get('template_color', '#F97316'),
+            template_style=validated_data.get('template_style', 'classic'),
+            layout_config=validated_data.get('layout_config', {}),
+            signature_image=validated_data.get('signature_image', ''),
+            signatory_name=validated_data.get('signatory_name', ''),
+            signature_company=validated_data.get('signature_company', ''),
+            department=validated_data.get('department', ''),
             created_by=user_id,
         )
         invoice.items = self._build_items(items_data, user_id, is_superadmin)
@@ -148,7 +182,11 @@ class InvoiceSerializer(serializers.Serializer):
         instance.customer_address = caddr
         instance.customer_gst     = cgst
 
-        for field in ['invoice_date', 'due_date', 'notes', 'terms', 'currency', 'template_color']:
+        for field in ['invoice_date', 'due_date', 'notes', 'terms', 'currency', 'template_color', 'template_style',
+                      'layout_config', 'signature_image', 'signatory_name', 'signature_company',
+                      'department',
+                      'customer_phone', 'customer_pan', 'customer_cin', 'customer_recipient',
+                      'cgst_rate', 'sgst_rate', 'igst_rate']:
             if field in validated_data:
                 setattr(instance, field, validated_data[field])
         if items_data is not None:
@@ -176,6 +214,14 @@ class InvoiceDetailSerializer(serializers.Serializer):
     customer_email = serializers.EmailField()
     customer_address = serializers.CharField()
     customer_gst = serializers.CharField()
+    customer_phone = serializers.CharField(required=False, default='')
+    customer_pan = serializers.CharField(required=False, default='')
+    customer_cin = serializers.CharField(required=False, default='')
+    customer_recipient = serializers.CharField(required=False, default='')
+    cgst_rate = serializers.FloatField(required=False, default=0)
+    sgst_rate = serializers.FloatField(required=False, default=0)
+    igst_rate = serializers.FloatField(required=False, default=0)
+    department = serializers.CharField(required=False, default='')
     invoice_date = serializers.DateTimeField()
     due_date = serializers.DateTimeField()
     items = serializers.SerializerMethodField()
@@ -187,6 +233,11 @@ class InvoiceDetailSerializer(serializers.Serializer):
     terms = serializers.CharField()
     currency = serializers.CharField()
     template_color = serializers.CharField()
+    template_style = serializers.CharField()
+    layout_config  = serializers.DictField()
+    signature_image = serializers.CharField()
+    signatory_name = serializers.CharField()
+    signature_company = serializers.CharField()
     created_at = serializers.DateTimeField()
 
     def get_items(self, obj):

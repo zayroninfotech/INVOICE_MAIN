@@ -1,321 +1,484 @@
 {% extends "base.html" %}
-{% block title %}Dashboard – Zayro ₹ Invoice{% endblock %}
+
+{% block title %}Dashboard — Zayro ₹ Invoice{% endblock %}
+
 {% block nav_dashboard %}active{% endblock %}
+
 {% block page_title %}Dashboard{% endblock %}
 
+
+
 {% block extra_css %}
+
 <style>
-  .stat-card-accent { border-left: 4px solid; }
+
   .quick-action-btn {
+
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 8px; padding: 18px 12px; background: #fff; border: 1.5px solid #E2E8F0; border-radius: 10px;
-    text-decoration: none; color: #334155; font-size: .8rem; font-weight: 600; transition: all .15s;
+
+    gap: 8px; padding: 18px 12px; background: var(--surface); border: 1px solid var(--border);
+
+    border-radius: var(--radius-lg); text-decoration: none; color: var(--text-secondary);
+
+    font-size: .78rem; font-weight: 600; transition: border-color .15s, color .15s, background .15s, transform .15s;
+
     text-align: center;
+
   }
-  .quick-action-btn:hover { border-color: var(--primary); color: var(--primary); background: #FFF7ED; transform: translateY(-1px); }
-  .quick-action-btn i { font-size: 1.5rem; }
+
+  .quick-action-btn:hover {
+
+    border-color: var(--orange-border); color: var(--orange);
+
+    background: var(--orange-light); transform: translateY(-1px);
+
+  }
+
+  .quick-action-btn i { font-size: 1.4rem; }
+
   .recent-row { cursor: pointer; }
-  .trend-up   { color: #15803D; font-size: .75rem; font-weight: 600; }
-  .trend-down { color: #B91C1C; font-size: .75rem; font-weight: 600; }
+
+  .trend-up   { color: var(--color-success); font-size: .72rem; font-weight: 600; }
+
+  .trend-down { color: var(--color-danger); font-size: .72rem; font-weight: 600; }
+
 </style>
+
 {% endblock %}
+
+
 
 {% block content %}
 
+
+
 <!-- ── Onboarding Checklist (shown only if setup incomplete) ── -->
+
 <div id="onboarding-banner" style="display:none;margin-bottom:24px">
+
   <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:14px;padding:24px 28px;color:#fff">
+
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-      <div style="width:40px;height:40px;background:#F97316;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+
+      <div style="width:40px;height:40px;background:var(--ember);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+
         <i class="bi bi-rocket-takeoff-fill" style="font-size:1.1rem"></i>
+
       </div>
+
       <div>
+
         <div style="font-size:1.1rem;font-weight:700">Welcome to Zayro ₹ Invoice!</div>
-        <div style="color:#94A3B8;font-size:.85rem">Complete these steps to start creating invoices</div>
+
+        <div style="color:var(--text-muted);font-size:.85rem">Complete these steps to start creating invoices</div>
+
       </div>
-      <button onclick="document.getElementById('onboarding-banner').style.display='none'" style="margin-left:auto;background:none;border:none;color:#64748B;font-size:1.2rem;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+
+      <button onclick="document.getElementById('onboarding-banner').style.display='none'" style="margin-left:auto;background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+
     </div>
+
     <div class="row g-3" id="onboarding-steps">
+
       <!-- steps injected by JS -->
+
     </div>
+
   </div>
+
 </div>
+
+
 
 <!-- Superadmin: User stats row -->
+
 <div id="superadmin-cards" class="row g-3 mb-4" style="display:none">
+
   <div class="col-sm-4">
-    <div class="stat-card stat-card-accent" style="border-left-color:#7C3AED">
+
+    <div class="stat-card">
+
       <div class="d-flex align-items-center gap-3">
-        <div class="stat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED;font-size:1.2rem"></i></div>
+
+        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-people-fill" style="color:var(--ember);font-size:1.2rem"></i></div>
+
         <div>
+
           <div class="stat-label">Total Users</div>
+
           <div class="stat-value" id="stat-total-users">—</div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
   <div class="col-sm-4">
-    <div class="stat-card stat-card-accent" style="border-left-color:#F97316">
+
+    <div class="stat-card">
+
       <div class="d-flex align-items-center gap-3">
-        <div class="stat-icon" style="background:#FFF7ED"><i class="bi bi-shield-check" style="color:#F97316;font-size:1.2rem"></i></div>
+
+        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-shield-check" style="color:var(--ember);font-size:1.2rem"></i></div>
+
         <div>
+
           <div class="stat-label">Admins</div>
+
           <div class="stat-value" id="stat-admins">—</div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
   <div class="col-sm-4">
-    <div class="stat-card stat-card-accent" style="border-left-color:#64748B">
+
+    <div class="stat-card">
+
       <div class="d-flex align-items-center gap-3">
-        <div class="stat-icon" style="background:#F1F5F9"><i class="bi bi-person" style="color:#64748B;font-size:1.2rem"></i></div>
+
+        <div class="stat-icon" style="background:var(--surface-subtle)"><i class="bi bi-person" style="color:var(--text-secondary);font-size:1.2rem"></i></div>
+
         <div>
+
           <div class="stat-label">Regular Users</div>
+
           <div class="stat-value" id="stat-reg-users">—</div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </div>
 
-<!-- Main stats -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="d-flex align-items-start justify-content-between">
+
+
+<!-- Plan usage card (non-superadmin only) -->
+
+<div id="plan-usage-card" class="mb-4" style="display:none">
+
+  <div class="stat-card">
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-lightning-charge-fill" style="color:var(--ember);font-size:1.2rem"></i></div>
+
         <div>
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value text-primary" id="stat-revenue">—</div>
-          <div class="stat-sub" id="stat-monthly-sub">This month: —</div>
+
+          <div class="stat-label">Plan</div>
+
+          <div class="stat-value" id="plan-label" style="font-size:1rem">—</div>
+
+          <div class="stat-sub" id="plan-usage-sub">Loading…</div>
+
         </div>
-        <div class="stat-icon" style="background:#FFF7ED"><i class="bi bi-currency-rupee" style="color:#F97316;font-size:1.2rem"></i></div>
+
       </div>
+
+      <a id="plan-upgrade-cta" href="/pricing/upgrade/" class="btn btn-sm btn-primary" style="font-size:.8rem;display:none"><i class="bi bi-arrow-up-circle me-1"></i>Upgrade</a>
+
     </div>
+
   </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="d-flex align-items-start justify-content-between">
-        <div>
-          <div class="stat-label">Paid Invoices</div>
-          <div class="stat-value" style="color:#15803D" id="stat-paid">—</div>
-          <div class="stat-sub">Completed payments</div>
-        </div>
-        <div class="stat-icon" style="background:#DCFCE7"><i class="bi bi-check-circle-fill" style="color:#16A34A;font-size:1.2rem"></i></div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="d-flex align-items-start justify-content-between">
-        <div>
-          <div class="stat-label">Pending</div>
-          <div class="stat-value" style="color:#D97706" id="stat-pending">—</div>
-          <div class="stat-sub">Draft + Sent + Partial</div>
-        </div>
-        <div class="stat-icon" style="background:#FEF9C3"><i class="bi bi-clock-fill" style="color:#CA8A04;font-size:1.2rem"></i></div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="d-flex align-items-start justify-content-between">
-        <div>
-          <div class="stat-label">Overdue</div>
-          <div class="stat-value" style="color:#DC2626" id="stat-overdue">—</div>
-          <div class="stat-sub">Needs attention</div>
-        </div>
-        <div class="stat-icon" style="background:#FEE2E2"><i class="bi bi-exclamation-triangle-fill" style="color:#DC2626;font-size:1.2rem"></i></div>
-      </div>
-    </div>
-  </div>
+
 </div>
 
-<!-- Secondary stats + Quick Actions -->
-<div class="row g-3 mb-4">
-  <div class="col-md-8">
-    <div class="card-ms p-4">
-      <div class="section-header mb-3">
-        <span class="section-title">Quick Actions</span>
-      </div>
-      <div class="row g-3" id="quick-actions">
-        <div class="col-6 col-sm-3">
-          <a href="/invoices/create/" class="quick-action-btn" id="qa-create-invoice">
-            <i class="bi bi-plus-circle-fill text-primary"></i>
-            New Invoice
-          </a>
-        </div>
-        <div class="col-6 col-sm-3">
-          <a href="/customers/add/" class="quick-action-btn" id="qa-add-customer">
-            <i class="bi bi-person-plus-fill" style="color:#7C3AED"></i>
-            Add Customer
-          </a>
-        </div>
-        <div class="col-6 col-sm-3">
-          <a href="/products/add/" class="quick-action-btn" id="qa-add-product">
-            <i class="bi bi-box-fill" style="color:#0891B2"></i>
-            Add Product
-          </a>
-        </div>
-        <div class="col-6 col-sm-3">
-          <a href="/reports/" class="quick-action-btn">
-            <i class="bi bi-bar-chart-fill" style="color:#D97706"></i>
-            Reports
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="row g-3 h-100">
-      <div class="col-6 col-md-12">
-        <div class="stat-card" style="padding: 16px">
-          <div class="stat-label">Customers</div>
-          <div class="stat-value fs-3" id="stat-customers">—</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-12">
-        <div class="stat-card" style="padding: 16px">
-          <div class="stat-label">Products</div>
-          <div class="stat-value fs-3" id="stat-products">—</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
+
+
+
 
 <!-- Recent Invoices -->
+
 <div class="card-ms">
+
   <div class="d-flex align-items-center justify-content-between p-4 pb-0">
+
     <span class="section-title">Recent Invoices</span>
+
     <a href="/invoices/" class="btn btn-sm btn-outline-primary">View All <i class="bi bi-arrow-right ms-1"></i></a>
+
   </div>
+
   <div style="overflow-x:auto; margin-top: 16px;">
+
     <table class="ms-table">
+
       <thead>
+
         <tr>
+
           <th>Invoice #</th>
+
           <th>Customer</th>
+
           <th>Amount</th>
+
           <th>Date</th>
+
           <th>Status</th>
+
           <th>Action</th>
+
         </tr>
+
       </thead>
+
       <tbody id="recent-invoices">
-        <tr><td colspan="6" style="text-align:center;padding:32px;color:#94A3B8">
+
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">
+
           <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
+
         </td></tr>
+
       </tbody>
+
     </table>
+
   </div>
+
 </div>
+
 {% endblock %}
 
+
+
 {% block extra_js %}
+
 <script>
+
 async function loadDashboard() {
+
+  document.getElementById('recent-invoices').innerHTML = skeletonRows(6);
+
   const res = await API.get('/api/dashboard/stats/');
+
   if (!res.success) {
+
     document.getElementById('recent-invoices').innerHTML =
-      '<tr><td colspan="6" style="text-align:center;padding:32px;color:#EF4444">Failed to load dashboard data. Please refresh.</td></tr>';
+
+      '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--color-danger)">Failed to load dashboard data. Please refresh.</td></tr>';
+
     return;
+
   }
+
   const d = res.data;
+
   const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits: 2});
 
-  document.getElementById('stat-revenue').textContent    = fmt(d.total_revenue);
-  document.getElementById('stat-monthly-sub').textContent = 'This month: ' + fmt(d.monthly_revenue);
-  document.getElementById('stat-paid').textContent      = d.paid_invoices;
-  document.getElementById('stat-pending').textContent   = d.pending_invoices;
-  document.getElementById('stat-overdue').textContent   = d.overdue_invoices;
-  document.getElementById('stat-customers').textContent = d.total_customers;
-  document.getElementById('stat-products').textContent  = d.total_products;
+
+
+
+
 
   if (d.role === 'superadmin') {
+
     const el = document.getElementById('superadmin-cards');
+
     el.style.display = '';
+
     document.getElementById('stat-total-users').textContent = d.total_users ?? 0;
+
     document.getElementById('stat-admins').textContent      = d.total_admins ?? 0;
+
     document.getElementById('stat-reg-users').textContent   = d.total_regular_users ?? 0;
+
+  } else if (d.plan) {
+
+    const p = d.plan;
+
+    document.getElementById('plan-usage-card').style.display = '';
+
+    document.getElementById('plan-label').textContent = p.label;
+
+    let sub = '';
+
+    if (p.daily_limit) sub = `${p.used_today ?? 0} / ${p.daily_limit} invoices today`;
+
+    else if (p.monthly_limit) sub = `${p.used_month ?? 0} / ${p.monthly_limit} invoices this month`;
+
+    else sub = 'Unlimited invoices';
+
+    document.getElementById('plan-usage-sub').textContent = sub;
+
+    if (p.slug !== 'unlimited') document.getElementById('plan-upgrade-cta').style.display = '';
+
   }
+
   const tbody = document.getElementById('recent-invoices');
+
   if (!d.recent_invoices.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#94A3B8">
+
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">
+
       No invoices yet. <a href="/invoices/create/">Create your first invoice →</a>
+
     </td></tr>`;
+
     return;
+
   }
+
   tbody.innerHTML = d.recent_invoices.map(inv => `
+
     <tr class="recent-row" onclick="window.location='/invoices/${inv.id}/'">
+
       <td><a href="/invoices/${inv.id}/" class="fw-700 text-primary text-decoration-none" onclick="event.stopPropagation()">${inv.invoice_number}</a></td>
-      <td style="color:#334155">${inv.customer_name}</td>
+
+      <td style="color:var(--text-secondary)">${inv.customer_name}</td>
+
       <td class="fw-700">₹${Number(inv.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
-      <td style="color:#64748B">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+
+      <td style="color:var(--text-secondary)">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+
       <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
+
       <td>
+
         <a href="/invoices/${inv.id}/" class="btn-icon btn-icon-primary" title="View" onclick="event.stopPropagation()"><i class="bi bi-eye"></i></a>
+
       </td>
+
     </tr>`).join('');
+
 }
+
 loadDashboard();
 
+
+
 async function loadOnboarding() {
+
   const [bpRes, custRes, prodRes, invRes] = await Promise.all([
+
     API.get('/api/auth/business-profile/'),
+
     API.get('/api/customers/?page_size=1'),
+
     API.get('/api/products/?page_size=1'),
+
     API.get('/api/invoices/?page_size=1'),
+
   ]);
 
+
+
   const bp   = bpRes.success ? bpRes.data : {};
+
   const hasProfile  = bp.company_name && bp.company_name.trim() !== '';
+
   const hasCustomer = custRes.success && custRes.data.total > 0;
+
   const hasProduct  = prodRes.success && prodRes.data.total > 0;
+
   const hasInvoice  = invRes.success  && invRes.data.total > 0;
+
+
 
   if (hasProfile && hasCustomer && hasProduct && hasInvoice) return; // all done, hide
 
+
+
   const steps = [
-    { done: hasProfile,  icon: 'bi-building',       label: 'Business Profile', sub: 'Add your company name & logo', link: '/auth/profile/' },
+
+    { done: hasProfile,  icon: 'bi-building',       label: 'Business Profile', sub: 'Name, logo & GSTIN', link: '/auth/profile/' },
+
     { done: hasCustomer, icon: 'bi-person-plus-fill',label: 'Add a Customer',   sub: 'Who you will bill',            link: '/customers/' },
+
     { done: hasProduct,  icon: 'bi-box-fill',        label: 'Add a Product',    sub: 'What you are selling',         link: '/products/' },
+
     { done: hasInvoice,  icon: 'bi-file-earmark-text-fill', label: 'Create Invoice', sub: 'Generate your first PDF', link: '/invoices/?new=1' },
+
   ];
 
+
+
   const completedCount = steps.filter(s => s.done).length;
+
   const pct = Math.round((completedCount / steps.length) * 100);
 
+
+
   document.getElementById('onboarding-steps').innerHTML = `
+
     <div class="col-12" style="margin-bottom:4px">
+
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:.8rem;color:#94A3B8">${completedCount} of ${steps.length} steps completed</span>
-        <span style="font-size:.8rem;font-weight:700;color:#F97316">${pct}%</span>
+
+        <span style="font-size:.8rem;color:var(--text-muted)">${completedCount} of ${steps.length} steps completed</span>
+
+        <span style="font-size:.8rem;font-weight:700;color:var(--ember)">${pct}%</span>
+
       </div>
-      <div style="background:#334155;border-radius:99px;height:6px">
-        <div style="background:#F97316;width:${pct}%;height:6px;border-radius:99px;transition:width .4s"></div>
+
+      <div style="background:#334155;border-radius:99px;height:6px;overflow:hidden">
+
+        <div style="background:var(--ember);width:100%;height:6px;border-radius:99px;transform-origin:left;transform:scaleX(${pct/100});transition:transform .4s"></div>
+
       </div>
+
     </div>
+
     ${steps.map(s => `
+
     <div class="col-6 col-md-3">
+
       <a href="${s.link}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;
+
         background:${s.done ? 'rgba(34,197,94,.1)' : 'rgba(255,255,255,.05)'};
+
         border:1.5px solid ${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'};
+
         text-decoration:none;transition:all .15s"
-        onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'}'">
+
+        onmouseover="this.style.borderColor='var(--ember)'" onmouseout="this.style.borderColor='${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'}'">
+
         <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-          background:${s.done ? '#22C55E' : '#F97316'}">
+
+          background:${s.done ? '#22C55E' : 'var(--ember)'}">
+
           <i class="bi ${s.done ? 'bi-check-lg' : s.icon}" style="color:#fff;font-size:.95rem"></i>
+
         </div>
+
         <div>
+
           <div style="font-size:.82rem;font-weight:700;color:${s.done ? '#86EFAC' : '#fff'}">${s.label}</div>
-          <div style="font-size:.72rem;color:#64748B">${s.sub}</div>
+
+          <div style="font-size:.72rem;color:var(--text-secondary)">${s.sub}</div>
+
         </div>
+
       </a>
+
     </div>`).join('')}
+
   `;
 
+
+
   document.getElementById('onboarding-banner').style.display = '';
+
 }
+
 loadOnboarding();
+
 </script>
+
 {% endblock %}
+

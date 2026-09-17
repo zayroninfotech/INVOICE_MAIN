@@ -1,0 +1,312 @@
+{% comment %}
+SINGLE SOURCE OF TRUTH for invoice document styling.
+
+Included by the live preview (form.html / edit.html / detail.html) AND by
+the print page that Chrome headless renders into the PDF, so the PDF is a
+print of the same markup+CSS the preview shows rather than a second design.
+
+Do NOT redesign .inv-preview in a print stylesheet - print mechanics only
+live in _invoice_doc_print.html.
+{% endcomment %}
+<style>
+/* ── preview ── */
+
+.gen-preview-header{padding:12px 16px;background:var(--dark-surface-alt);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:0 16px 0 0;}
+
+.preview-wrap{flex:1;padding:14px;overflow-y:auto;}
+
+/* line-height MUST be declared here. In the app the preview inherited 1.5 from
+   the global body style, but the print page loads only this partial, so it fell
+   back to `normal` (~1.15) and every block WITHOUT its own line-height rendered
+   shorter in the PDF than in the preview — the meta, items and totals sections
+   were 11/7/23px short. Declaring it makes the component self-contained and
+   identical in both. 1.5 is the value the preview already computed, so no
+   template's on-screen rendering changes. */
+.inv-preview{--tpl-accent:#C1121F;--tpl-secondary:#0F172A;--tpl-text:#0F172A;--tpl-muted:#64748B;--tpl-border:#E2E8F0;--tpl-tint:#F8FAFC;background:#fff;border-radius:7px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.12);font-family:Arial,sans-serif;font-size:10px;line-height:1.5;color:var(--tpl-text);}
+
+.pvw-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;}
+
+.pvw-circle{width:38px;height:38px;border-radius:50%;background:var(--tpl-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0;}
+
+.pvw-divider{height:3px;background:var(--tpl-accent);}
+
+.pvw-meta{display:flex;justify-content:space-between;padding:7px 14px 5px;font-size:8px;}
+
+.pvw-mlbl{color:#94A3B8;font-weight:600;}
+
+.pvw-mval{color:var(--tpl-text);font-weight:700;}
+
+.pvw-addr{display:grid;grid-template-columns:1fr 1fr;margin:0 8px 7px;border:1px solid var(--tpl-border);border-radius:4px;overflow:hidden;}
+
+.pvw-addr-hdr{background:var(--tpl-accent);color:#fff;font-weight:700;font-size:7.5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.06em;}
+
+.pvw-addr-body{padding:6px 7px;font-size:8px;line-height:1.6;min-height:46px;}
+
+.pvw-addr-name{font-weight:700;font-size:8.5px;margin-bottom:1px;}
+
+.pvw-addr-muted{color:#64748B;}
+
+.pvw-items{margin:0 8px 5px;border:1px solid var(--tpl-border);border-radius:4px;overflow:hidden;}
+
+.pvw-items-hdr{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;background:var(--tpl-secondary);color:#fff;font-size:7px;font-weight:700;}
+
+.pvw-items-hdr span,.pvw-item-row span{padding:4px 4px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.pvw-items-hdr span:first-child,.pvw-item-row span:first-child{text-align:left;}
+
+.pvw-item-row{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;border-top:1px solid #F1F5F9;font-size:7.5px;}
+
+.pvw-item-row:nth-child(even){background:#FAFAFA;}
+
+.pvw-item-row span:first-child{font-weight:600;color:var(--tpl-text);}
+
+.pvw-item-row span:last-child{font-weight:700;}
+
+.pvw-tots{display:flex;justify-content:flex-end;padding:0 8px 6px;}
+
+.pvw-tots-box{width:175px;font-variant-numeric:tabular-nums;}
+
+.pvw-tot-r{display:flex;justify-content:space-between;font-size:7.5px;padding:2px 0;color:#374151;border-bottom:1px solid #F1F5F9;}
+
+.pvw-tot-r.amber{font-weight:700;color:#92400E;background:#FFFBEB;padding:2px 4px;border-radius:2px;border:none;margin-top:1px;}
+
+.pvw-tot-r.grand{background:var(--tpl-accent);color:#fff;font-weight:700;font-size:8px;padding:4px 5px;border-radius:3px;margin-top:4px;border:none;}
+
+.pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;padding:7px 8px;border-top:1px solid var(--tpl-border);align-items:center;}
+
+.pvw-stamp{width:46px;height:46px;border-radius:50%;border:2px solid var(--tpl-accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;}
+
+.pvw-stamp span:first-child{font-size:6.5px;font-weight:700;color:var(--tpl-accent);}
+
+.pvw-stamp span:last-child{font-size:10px;font-weight:900;color:var(--tpl-accent);}
+
+.pvw-sig-lbl{font-weight:700;color:var(--tpl-accent);font-size:6.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;text-align:center;}
+
+.pvw-sig-line{border-top:1px solid var(--tpl-text);width:70px;margin:14px auto 2px;}
+
+/* ── Template preview skins ──
+   Structural/layout rules only below (spacing, flex direction, font-size,
+   display). Colors come from the --tpl-* custom properties set in JS
+   (applyPreviewSkin) from TEMPLATE_SPECS — apps/invoices/template_registry.py
+   is the single source of truth for those values. ── */
+
+/* ── MINIMAL: typography-first, no color blocks ── */
+.inv-preview.tpl-minimal .pvw-top{background:var(--tpl-tint);padding:10px 14px 6px;border-bottom:none;}
+.inv-preview.tpl-minimal .pvw-circle{display:none;}
+.inv-preview.tpl-minimal #pvw-co-name{font-size:13px;letter-spacing:.02em;color:var(--tpl-text);}
+.inv-preview.tpl-minimal .pvw-top>#pvw-invoice-lbl{font-size:11px;font-weight:900;color:var(--tpl-text);letter-spacing:3px;}
+.inv-preview.tpl-minimal .pvw-divider{height:1.5px;background:var(--tpl-secondary);margin:0;}
+.inv-preview.tpl-minimal .pvw-addr-hdr{background:transparent;color:var(--tpl-muted);font-size:6px;letter-spacing:1px;border-bottom:1px solid var(--tpl-border);padding:3px 8px 2px;}
+.inv-preview.tpl-minimal .pvw-addr{border:1px solid var(--tpl-border);}
+.inv-preview.tpl-minimal .pvw-items-hdr{background:transparent;color:var(--tpl-text);border-bottom:1.5px solid var(--tpl-secondary);border-top:none;}
+.inv-preview.tpl-minimal .pvw-tot-r.grand{background:var(--tpl-secondary);}
+.inv-preview.tpl-minimal .pvw-stamp{display:none;}
+.inv-preview.tpl-minimal .pvw-sig-lbl{color:var(--tpl-text);}
+.inv-preview.tpl-minimal .pvw-bar{background:var(--tpl-secondary);}
+
+/* ── MODERN: dark full-width header band ── */
+.inv-preview.tpl-modern .pvw-top{background:var(--tpl-secondary);padding:14px 14px 12px;border-bottom:3px solid var(--tpl-accent);}
+.inv-preview.tpl-modern #pvw-co-name{color:#fff;font-size:11px;}
+.inv-preview.tpl-modern #pvw-co-gst{color:var(--tpl-muted);}
+.inv-preview.tpl-modern .pvw-top>#pvw-invoice-lbl{color:#fff;}
+.inv-preview.tpl-modern .pvw-circle{background:var(--tpl-accent);}
+.inv-preview.tpl-modern .pvw-meta{background:var(--tpl-tint);padding:4px 10px;border-bottom:1px solid var(--tpl-border);}
+.inv-preview.tpl-modern .pvw-addr-hdr{background:var(--tpl-accent);letter-spacing:.08em;}
+.inv-preview.tpl-modern .pvw-items-hdr{background:var(--tpl-secondary);}
+.inv-preview.tpl-modern .pvw-tot-r.grand{background:var(--tpl-accent);}
+.inv-preview.tpl-modern .pvw-bar{background:var(--tpl-secondary);}
+
+/* ── PROFESSIONAL: thin accent top bar, warm tinted address band ── */
+.inv-preview.tpl-professional .pvw-top{border-top:4px solid var(--tpl-accent);background:#fff;padding-top:10px;}
+.inv-preview.tpl-professional .pvw-circle{background:var(--tpl-accent);}
+.inv-preview.tpl-professional .pvw-divider{background:var(--tpl-border);height:1px;}
+.inv-preview.tpl-professional .pvw-addr{background:var(--tpl-tint);border:1px solid var(--tpl-border);}
+.inv-preview.tpl-professional .pvw-addr-hdr{background:transparent;color:var(--tpl-accent);font-size:6px;letter-spacing:1px;border-bottom:1px solid var(--tpl-border);padding:3px 8px 2px;}
+.inv-preview.tpl-professional .pvw-items-hdr{background:var(--tpl-secondary);}
+.inv-preview.tpl-professional .pvw-tot-r.grand{background:var(--tpl-accent);}
+.inv-preview.tpl-professional .pvw-bar{background:var(--tpl-accent);}
+
+/* ── BOLD: full-bleed orange header, dark navy grand total, orange footer ── */
+.inv-preview.tpl-bold .pvw-top{background:var(--tpl-accent);padding:16px 14px 14px;}
+.inv-preview.tpl-bold #pvw-co-name{color:#fff;font-size:13px;font-weight:900;}
+.inv-preview.tpl-bold #pvw-co-gst{color:rgba(255,255,255,.75);}
+.inv-preview.tpl-bold .pvw-top>#pvw-invoice-lbl{color:#fff;font-size:24px;font-weight:900;}
+.inv-preview.tpl-bold .pvw-circle{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);}
+.inv-preview.tpl-bold .pvw-divider{background:rgba(255,255,255,.35);height:1px;}
+.inv-preview.tpl-bold .pvw-addr-hdr{background:var(--tpl-accent);}
+.inv-preview.tpl-bold .pvw-items-hdr{background:var(--tpl-accent);}
+.inv-preview.tpl-bold .pvw-tot-r.grand{background:var(--tpl-secondary);}
+.inv-preview.tpl-bold .pvw-footer{background:var(--tpl-tint);}
+.inv-preview.tpl-bold .pvw-stamp{border-color:var(--tpl-accent);}
+.inv-preview.tpl-bold .pvw-stamp span{color:var(--tpl-accent);}
+.inv-preview.tpl-bold .pvw-sig-lbl{color:var(--tpl-accent);}
+.inv-preview.tpl-bold .pvw-bar{background:var(--tpl-accent);}
+
+/* ── COMPACT: dense gray meta strip, thin dark header rule ── */
+.inv-preview.tpl-compact{font-size:9px;}
+.inv-preview.tpl-compact .pvw-top{padding:8px 12px 6px;}
+.inv-preview.tpl-compact .pvw-circle{width:28px;height:28px;font-size:10px;}
+.inv-preview.tpl-compact #pvw-co-name{font-size:11px;}
+.inv-preview.tpl-compact #pvw-invoice-lbl{font-size:14px;color:var(--tpl-accent);}
+.inv-preview.tpl-compact .pvw-divider{height:1.5px;background:var(--tpl-secondary);}
+.inv-preview.tpl-compact .pvw-meta{background:var(--tpl-tint);padding:3px 12px;border-bottom:none;}
+.inv-preview.tpl-compact .pvw-addr-hdr{background:var(--tpl-accent);font-size:6.5px;}
+.inv-preview.tpl-compact .pvw-items-hdr{background:var(--tpl-secondary);font-size:6.5px;}
+.inv-preview.tpl-compact .pvw-item-row{font-size:7px;}
+.inv-preview.tpl-compact .pvw-tot-r.grand{background:var(--tpl-accent);}
+
+/* ── SIDEBAR: navy left identity panel, offset content ── */
+.inv-preview.tpl-sidebar .pvw-top{background:var(--tpl-secondary);margin:0;display:flex;justify-content:space-between;align-items:flex-start;padding:14px 14px 16px;}
+.inv-preview.tpl-sidebar .pvw-circle{background:var(--tpl-accent);border-radius:8px;width:34px;height:34px;}
+.inv-preview.tpl-sidebar #pvw-co-name{color:#fff;font-size:12px;}
+.inv-preview.tpl-sidebar #pvw-co-gst{color:#C7D2E5;}
+.inv-preview.tpl-sidebar #pvw-invoice-lbl{color:#fff;font-size:22px;}
+.inv-preview.tpl-sidebar .pvw-divider{background:var(--tpl-secondary);height:4px;}
+.inv-preview.tpl-sidebar .pvw-meta{border-left:3px solid var(--tpl-accent);background:var(--tpl-tint);}
+.inv-preview.tpl-sidebar .pvw-addr{border-left:3px solid var(--tpl-secondary);border-top:none;}
+.inv-preview.tpl-sidebar .pvw-addr-hdr{background:var(--tpl-secondary);}
+.inv-preview.tpl-sidebar .pvw-items-hdr{background:var(--tpl-secondary);}
+.inv-preview.tpl-sidebar .pvw-tot-r.grand{background:var(--tpl-secondary);}
+.inv-preview.tpl-sidebar .pvw-bar{background:var(--tpl-secondary);}
+
+/* ── BOXED/CARD: centered mint masthead, boxed sections ── */
+.inv-preview.tpl-boxed .pvw-top{background:var(--tpl-tint);border:1px solid var(--tpl-border);border-bottom:none;border-radius:7px 7px 0 0;margin:8px 8px 0;padding:14px;flex-direction:column;gap:4px;align-items:center;text-align:center;}
+.inv-preview.tpl-boxed #pvw-co-name{font-size:13px;}
+.inv-preview.tpl-boxed #pvw-invoice-lbl{color:var(--tpl-secondary);font-size:12px;letter-spacing:3px;}
+.inv-preview.tpl-boxed .pvw-divider{background:var(--tpl-secondary);height:2px;margin:0 8px;}
+.inv-preview.tpl-boxed .pvw-meta{border:1px solid var(--tpl-border);border-radius:5px;margin:8px 8px 0;}
+.inv-preview.tpl-boxed .pvw-addr{margin:8px 8px 5px;}
+.inv-preview.tpl-boxed .pvw-addr>div:first-child{border-right:1px solid #E2E8F0 !important;}
+.inv-preview.tpl-boxed .pvw-addr-hdr{background:var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-items{margin:0 8px 5px;}
+.inv-preview.tpl-boxed .pvw-items-hdr{background:var(--tpl-tint);color:var(--tpl-secondary);border-bottom:2px solid var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-tot-r.grand{background:var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-stamp{border-color:var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-stamp span{color:var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-sig-lbl{color:var(--tpl-secondary);}
+.inv-preview.tpl-boxed .pvw-bar{background:var(--tpl-secondary);}
+
+/* ── STATEMENT: giant editorial type, oversized accent amount block ── */
+.inv-preview.tpl-statement .pvw-top{flex-direction:column;align-items:flex-start;gap:8px;padding:16px 14px 10px;}
+.inv-preview.tpl-statement #pvw-invoice-lbl{font-size:38px;line-height:1;color:var(--tpl-text);letter-spacing:-1px;}
+.inv-preview.tpl-statement .pvw-circle{display:none;}
+.inv-preview.tpl-statement #pvw-co-name{color:var(--tpl-accent);letter-spacing:1px;}
+.inv-preview.tpl-statement .pvw-divider{height:2.5px;background:var(--tpl-secondary);}
+.inv-preview.tpl-statement .pvw-meta{display:flex;justify-content:space-between;align-items:center;}
+.inv-preview.tpl-statement .pvw-meta::after{content:'';display:none;}
+.inv-preview.tpl-statement .pvw-addr{border:none;border-left:3px solid var(--tpl-accent);border-radius:0;}
+.inv-preview.tpl-statement .pvw-addr-hdr{background:transparent;color:var(--tpl-accent);padding-left:0;}
+.inv-preview.tpl-statement .pvw-addr-name{font-size:12px;}
+.inv-preview.tpl-statement .pvw-items-hdr{background:transparent;color:var(--tpl-text);border-bottom:2.5px solid var(--tpl-secondary);}
+.inv-preview.tpl-statement .pvw-tot-r.grand{background:var(--tpl-secondary);font-size:9px;}
+.inv-preview.tpl-statement .pvw-bar{background:var(--tpl-secondary);}
+
+/* ── EMPLOYEE / ONBOARDING (tpl-staffing) ────────────────────────────────────
+   Editorial orange-on-white treatment. Tokens sampled from the reference
+   invoice inv00123.pdf: #F97316 accent, #FFFBEB / #92400E amount-in-words,
+   #0F172A body, #64748B muted, #E5E7EB hairlines.
+
+   EVERY rule below is scoped to .inv-preview.tpl-staffing, so no other
+   template's preview or PDF is affected. Shared with the print page, so the
+   PDF is a print of exactly this. */
+
+/* Header — identity left, large orange INVOICE right, thick orange rule under */
+.inv-preview.tpl-staffing .pvw-top,.inv-preview.tpl-payroll .pvw-top {align-items:flex-start;padding:10px 12px 8px;}
+/* !important because the markup carries an inline color:#C1121F on this node,
+   which outranks a plain rule. Overriding the shared inline style instead would
+   also change minimal/modern (whose own colour rules that inline style is
+   currently defeating), so the fix stays scoped to this template. */
+.inv-preview.tpl-staffing #pvw-invoice-lbl,.inv-preview.tpl-payroll #pvw-invoice-lbl {display:block;font-size:20px;font-weight:800;
+  color:var(--tpl-accent) !important;letter-spacing:.01em;line-height:1;}
+.inv-preview.tpl-staffing .pvw-circle,.inv-preview.tpl-payroll .pvw-circle {background:transparent;width:30px;height:30px;}
+.inv-preview.tpl-staffing #pvw-co-name,.inv-preview.tpl-payroll #pvw-co-name {font-size:10px;font-weight:700;color:var(--tpl-text);}
+.inv-preview.tpl-staffing #pvw-co-gst,.inv-preview.tpl-payroll #pvw-co-gst {font-size:7px;color:var(--tpl-muted);}
+.inv-preview.tpl-staffing #pvw-co-addr,.inv-preview.tpl-payroll #pvw-co-addr {display:none;}
+.inv-preview.tpl-staffing .pvw-divider,.inv-preview.tpl-payroll .pvw-divider {height:2.5px;background:var(--tpl-accent);margin:0 12px;}
+
+/* Meta — NUMBER / BILLING PERIOD label+value columns, no shaded strip */
+.inv-preview.tpl-staffing #pvw-meta-generic,.inv-preview.tpl-payroll #pvw-meta-generic {display:none;}
+.inv-preview.tpl-staffing #pvw-meta-staffing,.inv-preview.tpl-payroll #pvw-meta-staffing {display:grid;}
+.pvw-meta-staffing{display:none;grid-template-columns:1fr 1fr;gap:12px;padding:10px 12px 4px;}
+.pvw-meta-staffing .pms-lbl{font-size:6.5px;font-weight:700;color:var(--tpl-muted);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.pvw-meta-staffing .pms-val{font-size:9px;font-weight:700;color:var(--tpl-text);}
+.pvw-meta-staffing .pms-val-2{font-weight:400;color:var(--tpl-muted);}
+
+/* From / Bill To — orange caption bars over a hairline box */
+.inv-preview.tpl-staffing .pvw-addr,.inv-preview.tpl-payroll .pvw-addr {margin:8px 12px 0;border:1px solid var(--tpl-border);
+  border-radius:0;background:#fff;}
+.inv-preview.tpl-staffing .pvw-addr>div,.inv-preview.tpl-payroll .pvw-addr>div {border-right:none;}
+.inv-preview.tpl-staffing .pvw-addr>div:first-child,.inv-preview.tpl-payroll .pvw-addr>div:first-child {border-right:1px solid var(--tpl-border);}
+.inv-preview.tpl-staffing .pvw-addr-hdr,.inv-preview.tpl-payroll .pvw-addr-hdr {background:var(--tpl-accent);color:#fff;
+  font-size:6.5px;letter-spacing:.08em;padding:3px 7px;}
+.inv-preview.tpl-staffing .pvw-addr-body,.inv-preview.tpl-payroll .pvw-addr-body {padding:7px;min-height:0;}
+.inv-preview.tpl-staffing .pvw-addr-name,.inv-preview.tpl-payroll .pvw-addr-name {font-size:9px;color:var(--tpl-text);}
+.inv-preview.tpl-staffing .pvw-addr-muted,.inv-preview.tpl-payroll .pvw-addr-muted {color:var(--tpl-muted);}
+
+/* Items — flat white table, muted caps header over an orange rule */
+.inv-preview.tpl-staffing .pvw-items,.inv-preview.tpl-payroll .pvw-items {margin:8px 12px 0;border:none;border-radius:0;}
+.inv-preview.tpl-staffing .pvw-items-hdr,.inv-preview.tpl-payroll .pvw-items-hdr {background:transparent;color:var(--tpl-muted);
+  font-size:6.5px;letter-spacing:.06em;border-bottom:1.5px solid var(--tpl-accent);}
+.inv-preview.tpl-staffing .pvw-items-hdr span,.inv-preview.tpl-payroll .pvw-items-hdr span {padding:5px 4px;}
+.inv-preview.tpl-staffing .pvw-item-row,.inv-preview.tpl-payroll .pvw-item-row {border-top:none;
+  border-bottom:1px solid var(--tpl-border);background:#fff;font-size:7.5px;}
+.inv-preview.tpl-staffing .pvw-item-row:nth-child(even),.inv-preview.tpl-payroll .pvw-item-row:nth-child(even) {background:#fff;}
+.inv-preview.tpl-staffing .pvw-item-row span,.inv-preview.tpl-payroll .pvw-item-row span {padding:6px 4px;color:var(--tpl-text);}
+.inv-preview.tpl-staffing .pvw-item-row span:last-child,.inv-preview.tpl-payroll .pvw-item-row span:last-child {font-weight:700;}
+
+/* Amount in words + totals.
+   .pvw-words is a DOM sibling of .pvw-tots-box inside .pvw-tots. Laid out as a
+   row they became equal-height columns and the cream band stretched to match
+   the totals. Column direction with order:-1 puts the band full-width ABOVE the
+   summary, as the reference does, without touching the shared markup. */
+.inv-preview.tpl-staffing .pvw-tots,.inv-preview.tpl-payroll .pvw-tots {display:flex;flex-direction:column;padding:8px 12px 0;}
+.inv-preview.tpl-staffing .pvw-words,.inv-preview.tpl-payroll .pvw-words {order:-1;background:#FFFBEB;color:#92400E;
+  font-size:7px;font-weight:700;padding:5px 8px;text-align:left;margin:0 0 8px;
+  border:1px solid #FDE68A;}
+/* 62% keeps "Grand Total (Including GST)" on one line at 8.5px. */
+.inv-preview.tpl-staffing .pvw-tots-box,.inv-preview.tpl-payroll .pvw-tots-box {width:62%;align-self:flex-end;
+  border:1px solid var(--tpl-border);}
+.inv-preview.tpl-staffing .pvw-tot-r,.inv-preview.tpl-payroll .pvw-tot-r {padding:4px 8px;font-size:7.5px;
+  border-bottom:1px solid var(--tpl-border);color:var(--tpl-muted);}
+.inv-preview.tpl-staffing .pvw-tot-r span:last-child,.inv-preview.tpl-payroll .pvw-tot-r span:last-child {color:var(--tpl-text);font-weight:700;}
+.inv-preview.tpl-staffing .pvw-tot-r.strong,.inv-preview.tpl-payroll .pvw-tot-r.strong {background:transparent;color:var(--tpl-muted);
+  font-weight:400;}
+.inv-preview.tpl-staffing .pvw-tot-r.grand,.inv-preview.tpl-payroll .pvw-tot-r.grand {background:var(--tpl-accent);color:#fff;
+  font-weight:700;font-size:8.5px;border-bottom:none;}
+.inv-preview.tpl-staffing .pvw-tot-r.grand span:last-child,.inv-preview.tpl-payroll .pvw-tot-r.grand span:last-child {color:#fff;}
+
+/* Notes / terms — left aligned editorial block */
+.inv-preview.tpl-staffing .pvw-sec[data-sec="notes"],.inv-preview.tpl-payroll .pvw-sec[data-sec="notes"] {display:none;}
+.inv-preview.tpl-staffing .pvw-sec[data-sec="terms"]>div,.inv-preview.tpl-payroll .pvw-sec[data-sec="terms"]>div {padding:8px 12px 0;}
+
+/* Signature — compact centred block */
+.inv-preview.tpl-staffing .pvw-stamp,.inv-preview.tpl-payroll .pvw-stamp {display:none;}
+.inv-preview.tpl-staffing #pvw-dept,.inv-preview.tpl-payroll #pvw-dept {display:none;}
+.inv-preview.tpl-staffing .pvw-sig-lbl,.inv-preview.tpl-payroll .pvw-sig-lbl {color:var(--tpl-muted);font-weight:600;}
+
+/* Footer — centred, hairline rule above, no solid colour bar */
+.inv-preview.tpl-staffing .pvw-bar,.inv-preview.tpl-payroll .pvw-bar {display:none;}
+.inv-preview.tpl-staffing .pvw-foot,.inv-preview.tpl-payroll .pvw-foot {display:block;border-top:1px solid var(--tpl-border);
+  margin:8px 12px 0;padding:7px 0 8px;}
+.inv-preview.tpl-staffing #pvw-co-addr,.inv-preview.tpl-payroll #pvw-co-addr,.inv-preview.tpl-staffing .inv-preview.tpl-staffing #pvw-from-addr,.inv-preview.tpl-payroll .inv-preview.tpl-staffing #pvw-from-addr {display:none;}
+
+.pvw-foot{display:none;text-align:center;padding:8px 10px 10px;line-height:1.6;}
+.pvw-foot .pf-thanks{font-size:9px;font-weight:700;color:var(--tpl-accent,#C1121F);}
+.pvw-foot .pf-dept{font-size:6.5px;color:var(--tpl-muted,#64748B);margin-bottom:4px;}
+.pvw-foot .pf-addr{font-size:6.5px;color:var(--tpl-muted,#64748B);}
+.pvw-foot .pf-web{font-size:6.5px;color:var(--tpl-muted,#64748B);}
+.pvw-foot .pf-con{font-size:6.5px;color:var(--tpl-muted,#64748B);}
+.pvw-foot .pf-con .pf-pipe{color:var(--tpl-accent,#C1121F);}
+.pvw-foot .pf-con .pf-mail{color:var(--tpl-muted,#64748B);}
+
+.pvw-bar{background:#C1121F;color:#fff;font-size:6.5px;font-weight:700;text-align:center;padding:4px 6px;}
+
+/* Required field indicators in preview */
+.pvw-required-empty{color:#EF4444 !important;font-style:italic;}
+.pvw-required-banner{display:none;align-items:center;gap:6px;background:#FEF2F2;border-bottom:1px solid #FECACA;padding:6px 10px;font-size:7px;color:#DC2626;font-weight:600;}
+.pvw-required-banner.show{display:flex;}
+.pvw-required-banner i{font-size:9px;flex-shrink:0;}
+.pvw-field-req{color:#EF4444;font-weight:700;font-size:6.5px;font-style:normal;background:#FEF2F2;border-radius:2px;padding:0 2px;}
+
+</style>

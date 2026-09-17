@@ -19,7 +19,7 @@ def env(key, default=None, cast=None):
 
 SECRET_KEY = env('SECRET_KEY', 'django-insecure-change-this-in-production')
 DEBUG = env('DEBUG', 'True', cast=bool)
-ALLOWED_HOSTS = env('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') + ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -45,31 +45,18 @@ INSTALLED_APPS = [
 
 # ── Subscription Plan Limits ──────────────────────────────────────────────────
 PLAN_LIMITS = {
-    'free': {
-        'invoices_per_day': 3,
-        'invoices_per_month': None,
-        'label': 'Free',
-        'price': 0,
-        'price_display': '₹0',
-        'period': 'forever',
-    },
-    'plus': {
-        'invoices_per_day': None,
-        'invoices_per_month': 10,
-        'label': 'Plus',
-        'price': 1499,
-        'price_display': '₹1,499',
-        'period': 'month',
-    },
-    'premium': {
-        'invoices_per_day': None,
-        'invoices_per_month': None,
-        'label': 'Premium',
-        'price': 2299,
-        'price_display': '₹2,299',
-        'period': 'month',
-    },
+    'anonymous': {'invoices_per_session': 100000, 'invoices_per_day': None, 'invoices_per_month': None,
+                  'label': 'Anonymous', 'price': 0, 'price_display': '₹0', 'period': 'per session'},
+    'free':      {'invoices_per_session': None, 'invoices_per_day': 5, 'invoices_per_month': None,
+                  'label': 'Free', 'price': 0, 'price_display': '₹0', 'period': 'forever'},
+    'plus':      {'invoices_per_session': None, 'invoices_per_day': None, 'invoices_per_month': 300,
+                  'label': 'Plus', 'price': 199, 'price_display': '₹199', 'period': 'month'},
+    'pro':       {'invoices_per_session': None, 'invoices_per_day': None, 'invoices_per_month': 1000,
+                  'label': 'Pro', 'price': 499, 'price_display': '₹499', 'period': 'month'},
+    'unlimited': {'invoices_per_session': None, 'invoices_per_day': None, 'invoices_per_month': None,
+                  'label': 'Unlimited', 'price': 999, 'price_display': '₹999', 'period': 'month'},
 }
+PAID_PLANS = ('plus', 'pro', 'unlimited')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

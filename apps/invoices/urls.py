@@ -1,11 +1,13 @@
 from django.urls import path
 from .views import (InvoiceListCreateView, InvoiceDetailView,
-                    InvoicePDFView, InvoiceEmailView, InvoiceStatusView)
+                    InvoicePDFView, InvoiceEmailView, InvoiceStatusView,
+                    AvailableTemplatesView)
 from .free_views import FreeInvoiceView, FreeInvoicePDFView
 
 urlpatterns = [
     path('free/', FreeInvoiceView.as_view(), name='free_invoice'),
     path('free/<str:pk>/pdf/', FreeInvoicePDFView.as_view(), name='free_invoice_pdf'),
+    path('templates/', AvailableTemplatesView.as_view(), name='invoice_templates'),
     path('', InvoiceListCreateView.as_view(), name='invoice_list'),
     path('<str:pk>/', InvoiceDetailView.as_view(), name='invoice_detail'),
     path('<str:pk>/pdf/', InvoicePDFView.as_view(), name='invoice_pdf'),

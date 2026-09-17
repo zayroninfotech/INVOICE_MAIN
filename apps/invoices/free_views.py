@@ -4,28 +4,16 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.http import FileResponse
 from django.conf import settings
 from .models import Invoice, InvoiceItem
-from .free_pdf import generate_free_invoice_pdf
+from .pdf_generator import generate_invoice_pdf
 from utils.response import success, error
+from apps.subscriptions.entitlements import can_create_invoice, increment_usage
 from datetime import datetime, date
-import mongoengine as me
 from mongoengine.errors import NotUniqueError
 import base64
 import os
+import re
 import uuid
 import json
-
-
-class FreeInvoiceUsage(me.Document):
-    ip = me.StringField(required=True)
-    date_str = me.StringField(required=True)
-    count = me.IntField(default=0)
-    meta = {
-        'collection': 'free_invoice_usage',
-        'indexes': [{'fields': ['ip', 'date_str'], 'unique': True}],
-    }
-
-
-FREE_DAILY_LIMIT = 100
 
 
 def _seller_dir():
@@ -44,11 +32,6 @@ def _load_seller(invoice_pk):
         with open(path) as f:
             return json.load(f)
     return {}
-
-
-def _get_ip(request):
-    xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', 'unknown')
 
 
 def _save_upload(file_obj, subdir):
@@ -86,15 +69,12 @@ class FreeInvoiceView(APIView):
     parser_classes     = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
-        ip = _get_ip(request)
-        today = date.today().isoformat()
-
-        usage = FreeInvoiceUsage.objects(ip=ip, date_str=today).first()
-        if usage and usage.count >= FREE_DAILY_LIMIT:
+        ok, reason, plan, _ = can_create_invoice(request)
+        if not ok:
             return error(
-                f"Daily free limit reached ({FREE_DAILY_LIMIT}/day). "
-                "Register for unlimited invoices.",
-                status=429
+                "You've used your free trial invoice. Sign up to create more.",
+                {"reason": reason, "signup_required": True},
+                status=403,
             )
 
         data = request.data
@@ -121,10 +101,22 @@ class FreeInvoiceView(APIView):
         # ── Invoice meta ──────────────────────────────────────────────────────
         inv_number_custom = str(data.get('invoice_number', '')).strip()
         terms             = str(data.get('terms', 'Due on Receipt')).strip()
+        # Accent colour chosen in the generator preview — must reach the PDF
+        # (pdf_generator._accent reads Invoice.template_color).
+        template_color = str(data.get('template_color', '') or '').strip()
+        if not re.fullmatch(r'#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})', template_color):
+            template_color = '#C1121F'   # the generator preview's default
 
         # ── GST rates ────────────────────────────────────────────────────────
-        cgst_rate = float(data.get('cgst_rate', 9) or 9)
-        sgst_rate = float(data.get('sgst_rate', 9) or 9)
+        cgst_rate = float(data.get('cgst_rate', 9) or 0)
+        sgst_rate = float(data.get('sgst_rate', 9) or 0)
+        igst_rate = float(data.get('igst_rate', 0) or 0)
+        # CGST+SGST (intra-state) and IGST (inter-state) are mutually
+        # exclusive: a positive IGST cancels the split, and vice versa.
+        if igst_rate > 0:
+            cgst_rate = sgst_rate = 0.0
+        elif cgst_rate > 0 or sgst_rate > 0:
+            igst_rate = 0.0
 
         # ── Invoice footer / signatory ────────────────────────────────────────
         thankyou_msg = str(data.get('thankyou_msg', 'Thank you for your business!')).strip()
@@ -172,7 +164,8 @@ class FreeInvoiceView(APIView):
         raw_sub    = round(raw_sub, 2)
         cgst_amt   = round(raw_sub * cgst_rate / 100, 2)
         sgst_amt   = round(raw_sub * sgst_rate / 100, 2)
-        tax_total  = round(cgst_amt + sgst_amt, 2)
+        igst_amt   = round(raw_sub * igst_rate / 100, 2)
+        tax_total  = round(cgst_amt + sgst_amt + igst_amt, 2)
         grand_total = round(raw_sub + tax_total, 2)
 
         free_count = Invoice.objects(created_by='anonymous').count()
@@ -197,6 +190,7 @@ class FreeInvoiceView(APIView):
                 notes='',
                 terms=terms,
                 currency='INR',
+                template_color=template_color,
                 created_by='anonymous',
             ).save()
         except NotUniqueError:
@@ -234,8 +228,10 @@ class FreeInvoiceView(APIView):
             'recipient': recipient,
             'cgst_rate': cgst_rate,
             'sgst_rate': sgst_rate,
+            'igst_rate': igst_rate,
             'cgst_amt': cgst_amt,
             'sgst_amt': sgst_amt,
+            'igst_amt': igst_amt,
             'thankyou_msg': thankyou_msg,
             'department': department,
             'sig_name': sig_name,
@@ -244,11 +240,7 @@ class FreeInvoiceView(APIView):
         }
         _save_seller(str(invoice.pk), seller_data)
 
-        if usage:
-            usage.count += 1
-            usage.save()
-        else:
-            FreeInvoiceUsage(ip=ip, date_str=today, count=1).save()
+        increment_usage(request, 'anonymous', None)
 
         return success({
             'id': str(invoice.pk),
@@ -265,7 +257,6 @@ class FreeInvoiceView(APIView):
                  'tax': float(i.tax_rate), 'total': float(i.total)}
                 for i in invoice.items
             ],
-            'remaining_today': max(0, FREE_DAILY_LIMIT - (usage.count if usage else 1)),
         }, "Free invoice created.", 201)
 
 
@@ -277,7 +268,9 @@ class FreeInvoicePDFView(APIView):
         if not invoice:
             return error("Invoice not found.", status=404)
         seller = _load_seller(str(invoice.pk))
-        pdf_path = generate_free_invoice_pdf(invoice, seller=seller)
+        # Anonymous/no-login flow is restricted to free-tier templates
+        # (classic, minimal) via resolve_template()'s plan gating.
+        pdf_path = generate_invoice_pdf(invoice, seller=seller, plan='free')
         invoice.pdf_path = pdf_path
         invoice.save()
         full_path = os.path.join(settings.MEDIA_ROOT, pdf_path)

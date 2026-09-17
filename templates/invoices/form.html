@@ -1,783 +1,2504 @@
 {% extends "base.html" %}
-{% block title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %} – Zayro ₹ Invoice{% endblock %}
+
+{% block title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %} — Zayro ₹ Invoice{% endblock %}
+
 {% block nav_invoices %}active{% endblock %}
+
 {% block page_title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %}{% endblock %}
 
+{% block page_back %}<a href="{% url 'invoice_list_page' %}" class="page-back-btn" aria-label="Back to invoices"><i class="bi bi-arrow-left"></i></a>{% endblock %}
+
+
+
 {% block extra_css %}
+
 <style>
+
 /* ── layout ── */
+
 .free-zone{max-width:1400px;margin:0 auto;}
+
 .gen-layout{display:grid;grid-template-columns:1fr 440px;align-items:start;gap:0;min-height:600px;}
-.gen-main{min-width:0;background:#fff;border-radius:16px 0 0 16px;box-shadow:0 4px 32px rgba(0,0,0,.08);overflow:hidden;}
-.gen-preview{position:sticky;top:0;height:100vh;overflow-y:auto;background:#F1F5F9;border-left:1px solid #E2E8F0;border-radius:0 16px 16px 0;display:flex;flex-direction:column;box-shadow:0 4px 32px rgba(0,0,0,.08);}
+
+/* ── State 1 (template select) vs State 2 (details entry) ── */
+.stg-hidden{display:none !important;}
+.gen-layout.stage-1{grid-template-columns:1fr;}
+.gen-layout.stage-1 .gen-main{border-radius:16px;}
+
+.gen-main{min-width:0;background:var(--surface);border-radius:16px 0 0 16px;box-shadow:var(--shadow-md);overflow:hidden;}
+
+.gen-preview{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface-sunken);border-left:1px solid var(--border);border-radius:0 16px 16px 0;display:flex;flex-direction:column;box-shadow:var(--shadow-md);}
+
+
+
 
 /* ── from bar ── */
-.from-bar{background:#0F172A;padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.from-logo-wrap{position:relative;width:64px;height:64px;border-radius:10px;background:rgba(255,255,255,.1);border:2px dashed rgba(255,255,255,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+
+.from-bar{background:var(--surface-subtle);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+
+.from-logo-wrap{position:relative;width:64px;height:64px;border-radius:10px;background:var(--surface);border:2px dashed var(--border-strong);cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+
 .from-logo-wrap img{width:100%;height:100%;object-fit:contain;display:none;border-radius:8px;}
-.from-logo-wrap .logo-ph{font-size:.65rem;color:rgba(255,255,255,.5);text-align:center;line-height:1.3;}
+
+.from-logo-wrap .logo-ph{font-size:.65rem;color:var(--text-muted);text-align:center;line-height:1.3;}
+
 .from-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 12px;flex:1;min-width:0;}
-.from-inp{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:6px 10px;font-size:.78rem;color:#fff;outline:none;width:100%;}
-.from-inp::placeholder{color:rgba(255,255,255,.35);}
-.from-inp:focus{border-color:#F97316;background:rgba(249,115,22,.1);}
+
+.from-inp{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.78rem;color:var(--text-primary);outline:none;width:100%;}
+
+.from-inp::placeholder{color:var(--placeholder);}
+
+.from-inp:focus{border-color:var(--ember);background:rgba(193,18,31,.16);box-shadow:0 0 0 3px var(--focus-ring);}
+
+
 
 /* ── form body ── */
+
 .form-body{padding:24px;}
+
 .fi-sec{margin-bottom:20px;}
-.fi-sec-lbl{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#F97316;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #FFF7ED;}
+
+.fi-sec-lbl{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ember-border);}
+
+/* template picker */
+.tpl-card{border:2px solid var(--border);border-radius:12px;padding:14px 12px 12px;cursor:pointer;text-align:center;transition:border-color .15s,box-shadow .15s;position:relative;background:var(--surface);}
+.tpl-card:hover{border-color:var(--ember);}
+.tpl-card.active{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
+.tpl-card.locked{opacity:.55;cursor:not-allowed;}
+.tpl-thumb{width:100%;height:120px;border-radius:7px;margin-bottom:10px;overflow:hidden;}
+.tpl-name{font-size:.85rem;font-weight:700;color:var(--text-primary);}
+.tpl-badge{font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;margin-top:5px;}
+.tpl-badge.free{background:var(--color-success-bg);color:var(--color-success);}
+.tpl-badge.plus{background:var(--color-warning-bg);color:var(--color-warning);}
+.tpl-badge.pro{background:var(--color-purple-bg);color:var(--color-purple);}
+.tpl-lock{position:absolute;top:6px;right:6px;color:var(--text-muted);font-size:.85rem;}
+.tpl-preview-btn{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--text-primary);color:var(--surface);border:none;display:flex;align-items:center;justify-content:center;font-size:.7rem;opacity:.55;transition:opacity .15s,background .15s;z-index:2;}
+.tpl-card:hover .tpl-preview-btn{opacity:1;}
+.tpl-preview-btn:hover{background:var(--ember);}
+#tplPreviewModal .modal-dialog{max-width:min(760px,calc(100vw - 32px));}
+#tplPreviewModal .preview-wrap{padding:20px;background:var(--surface-sunken);display:flex;justify-content:center;overflow:auto;}
+#tplPreviewModal .inv-preview{width:100%;max-width:700px;cursor:zoom-in;transform-origin:top center;transition:transform .2s ease;}
+#tplPreviewModal .inv-preview.zoomed{transform:scale(1.6);cursor:zoom-out;}
+/* section editor */
+.sec-editor{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface);}
+.sec-editor-hint{padding:8px 12px;font-size:.7rem;color:var(--text-muted);background:var(--surface-subtle);border-bottom:1px solid var(--border);}
+.sec-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface);cursor:grab;user-select:none;-webkit-user-select:none;}
+.sec-row:last-child{border-bottom:none;}
+.sec-row.dragging{opacity:.4;background:var(--ember-light);}
+.sec-row.drag-over{box-shadow:inset 0 2px 0 var(--ember);}
+.sec-row.hidden-sec{opacity:.5;background:var(--surface-subtle);}
+.sec-grip{color:var(--placeholder);font-size:.9rem;cursor:grab;flex-shrink:0;}
+.sec-name{flex:1;font-size:.8rem;font-weight:600;color:var(--text-primary);min-width:0;}
+.sec-eye{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.95rem;padding:2px 4px;flex-shrink:0;}
+.sec-eye:hover{color:var(--ember);}
+.sec-row.hidden-sec .sec-eye{color:var(--placeholder);}
+.sec-caret{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem;padding:2px 4px;flex-shrink:0;transition:transform .15s;}
+.sec-caret.open{transform:rotate(90deg);}
+.sec-sub{display:none;padding:4px 12px 10px 34px;background:var(--surface-subtle);border-bottom:1px solid var(--border);}
+.sec-sub.open{display:block;}
+.sec-sub .tgl-row{padding:3px 0;}
+/* logo size slider */
+.logo-size-wrap{display:flex;align-items:center;gap:12px;margin-top:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);flex-wrap:wrap;}
+.logo-size-wrap label{font-size:.75rem;font-weight:700;color:var(--text-secondary);white-space:nowrap;}
+input[type=range].logo-slider{-webkit-appearance:none;appearance:none;flex:1;min-width:120px;height:5px;border-radius:3px;background:var(--border-strong);outline:none;cursor:pointer;}
+input[type=range].logo-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ember);cursor:pointer;border:2px solid var(--surface);box-shadow:var(--shadow-sm);}
+input[type=range].logo-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ember);cursor:pointer;border:2px solid var(--surface);}
+#logo-size-val{font-size:.75rem;font-weight:700;color:var(--ember);min-width:38px;text-align:right;}
+/* field toggles */
+.tgl-row{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);cursor:pointer;padding:4px 0;}
+.tgl-row input[type=checkbox]{accent-color:var(--ember);width:15px;height:15px;cursor:pointer;}
+
 .fi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;}
+
 .fi-row{display:flex;flex-direction:column;gap:3px;}
-.fi-lbl{font-size:.75rem;font-weight:700;color:#475569;}
-.fi{width:100%;border:1.5px solid #E2E8F0;border-radius:7px;padding:8px 11px;font-size:.85rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
-.fi:focus{border-color:#F97316;box-shadow:0 0 0 3px rgba(249,115,22,.1);}
-.fi::placeholder{color:#CBD5E1;}
+
+.fi-lbl{font-size:.75rem;font-weight:700;color:var(--text-secondary);}
+
+.fi{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;font-size:.85rem;color:var(--text-primary);outline:none;background:var(--surface);transition:border-color .15s;}
+
+.fi:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
+
+.fi::placeholder{color:var(--placeholder);}
+
+.iinp::placeholder,.tax-pct::placeholder,.form-body textarea::placeholder{color:var(--placeholder);}
+
+.fi:disabled,.iinp:disabled,.tax-pct:disabled{background:var(--surface-subtle);color:var(--text-muted);cursor:not-allowed;}
+
+
 
 /* ── items table ── */
-.items-hdr{display:grid;grid-template-columns:1fr 80px 70px 90px 55px 90px 28px;gap:3px;padding:8px 8px;background:#0F172A;border-radius:7px 7px 0 0;}
-.items-hdr span{font-size:.6rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;text-align:right;}
+
+.items-hdr{display:grid;grid-template-columns:1fr 80px 70px 90px 55px 90px 28px;gap:3px;padding:8px 8px;background:var(--dark-surface);border-radius:7px 7px 0 0;}
+
+.items-hdr span{font-size:.6rem;font-weight:700;color:var(--on-dark);text-transform:uppercase;letter-spacing:.06em;text-align:right;}
+
 .items-hdr span:first-child{text-align:left;}
-.item-row{display:grid;grid-template-columns:1fr 80px 70px 90px 55px 90px 28px;gap:3px;align-items:center;padding:4px 6px;border-bottom:1px solid #F1F5F9;}
-.item-row:nth-child(even){background:#FAFAFA;}
-.iinp{width:100%;border:1px solid #E2E8F0;border-radius:4px;padding:5px 6px;font-size:.8rem;color:#0F172A;outline:none;text-align:right;background:#fff;}
-.iinp:focus{border-color:#F97316;}
+
+.item-row{display:grid;grid-template-columns:1fr 80px 70px 90px 55px 90px 28px;gap:3px;align-items:center;padding:4px 6px;border-bottom:1px solid var(--border);}
+
+/* Employee/onboarding item rows drop the SET% (discount) column, so the grid
+   is six tracks instead of seven. Scoped to .items-employee — every other
+   template keeps the seven-track layout above untouched. */
+.items-hdr.items-employee,
+.item-row.items-employee{grid-template-columns:1fr 104px 76px 90px 90px 28px;}
+
+.item-row:nth-child(even){background:var(--surface-subtle);}
+
+.iinp{width:100%;border:1px solid var(--border);border-radius:4px;padding:5px 6px;font-size:.8rem;color:var(--text-primary);outline:none;text-align:right;background:var(--surface);}
+
+.iinp:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
+
 .iinp.left{text-align:left;}
-.itotal{font-size:.82rem;font-weight:700;color:#0F172A;text-align:right;}
-.idel{width:26px;height:26px;border:1px solid #E2E8F0;border-radius:4px;background:#fff;cursor:pointer;color:#94A3B8;font-size:.75rem;display:flex;align-items:center;justify-content:center;}
-.idel:hover{border-color:#EF4444;color:#EF4444;}
-.btn-add{width:30px;height:30px;border-radius:50%;background:#1E293B;border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:8px;}
-.btn-add:hover{background:#F97316;}
+
+.itotal{font-size:.82rem;font-weight:700;color:var(--text-primary);text-align:right;}
+
+.idel{width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text-muted);font-size:.75rem;display:flex;align-items:center;justify-content:center;}
+
+.idel:hover{border-color:var(--color-danger);color:var(--color-danger);}
+
+.btn-add{width:30px;height:30px;border-radius:50%;background:var(--dark-surface-alt);border:none;color:var(--on-dark);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:8px;}
+
+.btn-add:hover{background:var(--ember);}
+
+
 
 /* ── totals ── */
-.tax-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:.84rem;color:#374151;}
-.tax-pct{width:55px;border:1.5px solid #E2E8F0;border-radius:5px;padding:4px 6px;font-size:.82rem;text-align:center;outline:none;}
-.tax-pct:focus{border-color:#F97316;}
+
+.tax-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:.84rem;color:var(--text-secondary);}
+
+.tax-pct{width:55px;border:1.5px solid var(--border);border-radius:5px;padding:4px 6px;font-size:.82rem;text-align:center;outline:none;background:var(--surface);color:var(--text-primary);}
+
+.tax-pct:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
+
 .tots-box{width:300px;margin-left:auto;margin-top:14px;}
-.tot-r{display:flex;justify-content:space-between;padding:5px 0;font-size:.84rem;color:#374151;border-bottom:1px solid #F1F5F9;}
-.tot-r.amber{background:#FFFBEB;padding:5px 8px;border-radius:4px;font-weight:700;color:#92400E;border:none;margin-top:2px;}
-.tot-r.grand{background:#F97316;color:#fff;font-weight:900;font-size:.95rem;padding:10px 12px;border-radius:8px;margin-top:8px;border:none;}
+
+.tot-r{display:flex;justify-content:space-between;padding:5px 0;font-size:.84rem;color:var(--text-secondary);border-bottom:1px solid var(--border);}
+
+.tot-r.amber{background:var(--color-warning-bg);padding:5px 8px;border-radius:4px;font-weight:700;color:var(--color-warning);border:none;margin-top:2px;}
+
+.tot-r.grand{background:var(--ember);color:#fff;font-weight:900;font-size:.95rem;padding:10px 12px;border-radius:8px;margin-top:8px;border:none;}
+
+
 
 /* ── signature ── */
+
 .sig-tabs{display:flex;gap:4px;margin-bottom:10px;}
-.sig-tab{padding:6px 14px;border-radius:6px;border:1.5px solid #E2E8F0;background:#fff;font-size:.78rem;font-weight:600;color:#64748B;cursor:pointer;}
-.sig-tab.active{background:#F97316;color:#fff;border-color:#F97316;}
-.sig-canvas{border:1.5px dashed #E2E8F0;border-radius:8px;cursor:crosshair;display:block;}
+
+.sig-tab{padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);font-size:.78rem;font-weight:600;color:var(--text-secondary);cursor:pointer;}
+
+.sig-tab.active{background:var(--ember);color:#fff;border-color:var(--ember);}
+
+.sig-canvas{border:1.5px dashed var(--border-strong);border-radius:8px;cursor:crosshair;display:block;background:#fff;max-width:100%;}
+
 canvas#sig-canvas{touch-action:none;}
-.sig-clear-row{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:.78rem;color:#64748B;}
+
+.sig-clear-row{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:.78rem;color:var(--text-secondary);}
+
+
 
 /* ── action ── */
-.act-bar{display:flex;gap:12px;padding:20px 24px;border-top:1px solid #E2E8F0;background:#FAFAFA;flex-wrap:wrap;align-items:center;}
-.btn-pdf{padding:11px 28px;background:#F97316;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;}
-.btn-pdf:hover{background:#EA580C;}
-.btn-pdf:disabled{opacity:.6;}
-.btn-cancel{padding:11px 20px;border:1.5px solid #E2E8F0;border-radius:8px;color:#374151;font-weight:600;font-size:.9rem;cursor:pointer;background:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;}
-.btn-cancel:hover{border-color:#94A3B8;}
 
-/* ── preview ── */
-.gen-preview-header{padding:12px 16px;background:#1E293B;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:0 16px 0 0;}
-.preview-wrap{flex:1;padding:14px;overflow-y:auto;}
-.inv-preview{background:#fff;border-radius:7px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.12);font-family:Arial,sans-serif;font-size:10px;color:#0F172A;}
-.pvw-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;}
-.pvw-circle{width:38px;height:38px;border-radius:50%;background:#F97316;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0;}
-.pvw-divider{height:3px;background:#F97316;}
-.pvw-meta{display:flex;justify-content:space-between;padding:7px 14px 5px;font-size:8px;}
-.pvw-mlbl{color:#94A3B8;font-weight:600;}
-.pvw-mval{color:#0F172A;font-weight:700;}
-.pvw-addr{display:grid;grid-template-columns:1fr 1fr;margin:0 8px 7px;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden;}
-.pvw-addr-hdr{background:#F97316;color:#fff;font-weight:700;font-size:7.5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.06em;}
-.pvw-addr-body{padding:6px 7px;font-size:8px;line-height:1.6;min-height:46px;}
-.pvw-addr-name{font-weight:700;font-size:8.5px;margin-bottom:1px;}
-.pvw-addr-muted{color:#64748B;}
-.pvw-items{margin:0 8px 5px;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden;}
-.pvw-items-hdr{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;background:#0F172A;color:#fff;font-size:7px;font-weight:700;}
-.pvw-items-hdr span,.pvw-item-row span{padding:4px 4px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pvw-items-hdr span:first-child,.pvw-item-row span:first-child{text-align:left;}
-.pvw-item-row{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;border-top:1px solid #F1F5F9;font-size:7.5px;}
-.pvw-item-row:nth-child(even){background:#FAFAFA;}
-.pvw-item-row span:first-child{font-weight:600;color:#0F172A;}
-.pvw-item-row span:last-child{font-weight:700;}
-.pvw-tots{display:flex;justify-content:flex-end;padding:0 8px 6px;}
-.pvw-tots-box{width:175px;}
-.pvw-tot-r{display:flex;justify-content:space-between;font-size:7.5px;padding:2px 0;color:#374151;border-bottom:1px solid #F1F5F9;}
-.pvw-tot-r.amber{font-weight:700;color:#92400E;background:#FFFBEB;padding:2px 4px;border-radius:2px;border:none;margin-top:1px;}
-.pvw-tot-r.grand{background:#F97316;color:#fff;font-weight:700;font-size:8px;padding:4px 5px;border-radius:3px;margin-top:4px;border:none;}
-.pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;padding:7px 8px;border-top:1px solid #E2E8F0;align-items:center;}
-.pvw-stamp{width:46px;height:46px;border-radius:50%;border:2px solid #F97316;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;}
-.pvw-stamp span:first-child{font-size:6.5px;font-weight:700;color:#F97316;}
-.pvw-stamp span:last-child{font-size:10px;font-weight:900;color:#F97316;}
-.pvw-sig-lbl{font-weight:700;color:#F97316;font-size:6.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;text-align:center;}
-.pvw-sig-line{border-top:1px solid #0F172A;width:70px;margin:14px auto 2px;}
-.pvw-bar{background:#F97316;color:#fff;font-size:6.5px;font-weight:700;text-align:center;padding:4px 6px;}
+.act-bar{display:flex;gap:12px;padding:20px 24px;border-top:1px solid var(--border);background:var(--surface-subtle);flex-wrap:wrap;align-items:center;}
 
-@media(max-width:1024px){.gen-layout{grid-template-columns:1fr;}.gen-preview{position:static;height:auto;border-radius:16px;margin-top:16px;}}
+.btn-pdf{padding:11px 28px;background:var(--ember);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;}
+
+.btn-pdf:hover{background:var(--ember-dark);}
+
+.btn-pdf:disabled{opacity:.55;cursor:not-allowed;}
+
+.btn-cancel{padding:11px 20px;border:1.5px solid var(--border);border-radius:8px;color:var(--text-secondary);font-weight:600;font-size:.9rem;cursor:pointer;background:var(--surface);text-decoration:none;display:flex;align-items:center;gap:8px;}
+
+.btn-cancel:hover{border-color:var(--border-strong);background:var(--surface-subtle);}
+
+
+
+
+/* Accessible focus ring for the editor chrome (both themes) */
+.fi:focus-visible,.iinp:focus-visible,.tax-pct:focus-visible,.from-inp:focus-visible,
+.tpl-card:focus-visible,.sig-tab:focus-visible,.btn-pdf:focus-visible,.btn-cancel:focus-visible,
+.btn-add:focus-visible,.idel:focus-visible,.sec-eye:focus-visible,.sec-caret:focus-visible,
+.tpl-preview-btn:focus-visible,.sec-nav-item:focus-visible{outline:2px solid var(--ember);outline-offset:2px;}
+
 </style>
+
+{# Invoice document styling lives in ONE place, shared with the print page #}
+{% include "invoices/_invoice_doc_css.html" %}
+
+<style>
+@media(max-width:1024px){.gen-layout{grid-template-columns:1fr;}.gen-preview{position:static;height:auto;border-radius:16px;margin-top:16px;}}
+@media(max-width:600px){
+  #tpl-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .sec-row{padding:9px 8px;gap:6px;}
+  .sec-name{font-size:.74rem;}
+  .logo-size-wrap{flex-direction:column;align-items:stretch;gap:6px;}
+}
+
+/* ── Responsive overrides ───────────────────────────────────────
+   Must sit AFTER the base rules. Media queries add no specificity,
+   so while these lived above the base .from-fields / .item-row
+   declarations the base won on source order and the mobile layout
+   silently never applied (inputs computed to ~58px and clipped). */
+#mobile-view-toggle {
+  display:none; position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
+  z-index:60; align-items:center; gap:8px; background:var(--dark-surface); color:var(--on-dark);
+  border:1px solid var(--dark-border); border-radius:99px; padding:11px 20px;
+  font-size:.82rem; font-weight:700; box-shadow:var(--shadow-lg); cursor:pointer;
+}
+#mobile-view-toggle i { font-size:.95rem; }
+@media (max-width:900px) {
+  .gen-layout { grid-template-columns:1fr; }
+  .gen-main   { border-radius:16px; }
+  .gen-preview{ display:none; }
+  .from-fields{ grid-template-columns:1fr 1fr; }
+
+  /* Details <-> Live Preview switcher: on mobile there is no room for both
+     columns side by side, and the preview being unconditionally
+     display:none left no way to ever see it. #gen-layout.show-preview
+     flips which panel is visible; the button itself only exists in
+     stage 2 (there's nothing to preview during template selection). This
+     base rule above hides the button by default - it MUST sit before this
+     @media block, or same-specificity source order lets it win over the
+     display:flex below regardless of viewport width. */
+  #gen-layout.show-preview .gen-main    { display:none; }
+  #gen-layout.show-preview .gen-preview { display:flex; }
+  #mobile-view-toggle { display:flex; }
+}
+/* The Template & Layout header carries a "Change template" action. It was
+   floated, which lifts it out of the line box so the label's border-bottom
+   drew straight through it. Flex keeps both halves on the rule. */
+#layout-sec .fi-sec-lbl{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+
+@media (max-width:600px) {
+  .from-fields{ grid-template-columns:1fr; }
+  /* #from-address carries an inline `grid-column:span 2`, which in a
+     single-track grid spawns an implicit second column and squeezes every
+     other field to ~22px. Inline styles outrank the stylesheet, so this
+     reset needs !important to land. */
+  #from-address{ grid-column:auto !important; }
+  /* Bill To / seller pairs also need to stack, or their inputs clip
+     mid-placeholder at 375px. */
+  .fi-grid    { grid-template-columns:1fr; }
+  .items-hdr  { display:none; }
+  .item-row   { grid-template-columns:1fr 70px 55px 55px 28px; }
+}
+</style>
+
 {% endblock %}
 
+
+
 {% block content %}
+
 <div class="free-zone">
+
 <div id="error-msg" class="alert alert-danger d-none mb-3 rounded-3" style="font-size:.85rem"></div>
 
-<div class="gen-layout">
 
-<!-- ══ LEFT: FORM ══ -->
+
+<div class="gen-layout stage-1" id="gen-layout">
+
+
+
+<!-- â•â• LEFT: FORM â•â• -->
+
 <div class="gen-main">
+
   <form id="invoice-form" autocomplete="off">
 
+
+
     <!-- FROM bar (auto-filled from profile) -->
-    <div class="from-bar">
+
+    <div class="from-bar stage2-only">
+
       <div class="from-logo-wrap" id="logo-wrap" onclick="document.getElementById('logo-input').click()" title="Click to upload logo">
+
         <img id="logo-preview" alt="Logo">
+
         <div class="logo-ph" id="logo-ph"><i class="bi bi-image" style="font-size:1.2rem;display:block;color:rgba(255,255,255,.4)"></i>Logo</div>
+
       </div>
+
       <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="onLogo(this)">
+
       <div class="from-fields">
+
+        <input class="from-inp" id="from-name"    placeholder="Business / Sender Name" style="grid-column:span 3" oninput="updatePvw()">
+
         <input class="from-inp" id="from-gst"     placeholder="GSTIN Number"  oninput="updatePvw()">
+
         <input class="from-inp" id="from-cin"     placeholder="CIN Number"    oninput="updatePvw()">
+
         <input class="from-inp" id="from-pan"     placeholder="PAN Number"    oninput="updatePvw()">
-        <input class="from-inp" id="from-address" placeholder="Address, City, State – Pincode" style="grid-column:span 2" oninput="updatePvw()">
+
+        <input class="from-inp" id="from-address" placeholder="Address, City, State, Pincode" style="grid-column:span 2" oninput="updatePvw()">
+
         <input class="from-inp" id="from-email"   placeholder="email@company.com" oninput="updatePvw()">
+
         <input class="from-inp" id="from-website" placeholder="www.company.com"   oninput="updatePvw()">
+
         <input class="from-inp" id="from-phone"   placeholder="+91 00000 00000"   oninput="updatePvw()">
+
       </div>
+
     </div>
+
+
 
     <div class="form-body">
 
-      <!-- Invoice meta -->
-      <div class="fi-sec">
-        <div class="fi-grid">
-          <div class="fi-row">
-            <label class="fi-lbl">Invoice No. <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="inv-number" placeholder="INV-2026-001" oninput="updatePvw()">
-          </div>
-          <div class="fi-row">
-            <label class="fi-lbl">Invoice Date <span style="color:#EF4444">*</span></label>
-            <input class="fi" type="date" id="invoice_date" required oninput="updatePvw()">
-          </div>
+
+
+      <!-- STAGE 1: Template selection ONLY — nothing else visible until a template is chosen -->
+      <div class="fi-sec stage1-only" id="template-sec">
+
+        <div class="fi-sec-lbl">Choose a Template</div>
+        <p style="font-size:.8rem;color:var(--text-secondary);margin:-4px 0 14px">Pick a template to start building your invoice. Click the eye icon for a full preview.</p>
+
+        <!-- Template cards (built from /api/invoices/templates/) -->
+        <div id="tpl-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;margin-bottom:16px">
         </div>
+
+        <!-- Accent colour — sent as template_color and applied to the final PDF -->
+        <div style="display:flex;align-items:center;gap:10px">
+          <label for="accent-color" style="font-size:.8rem;font-weight:700;color:var(--text-secondary)">Accent colour</label>
+          <input type="color" id="accent-color" value="#C1121F" oninput="setAccentColor(this.value)" style="width:42px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;padding:2px">
+          <span id="accent-color-val" style="font-size:.75rem;color:var(--text-muted);font-family:monospace">#C1121F</span>
+        </div>
+
       </div>
+
+      <!-- STAGE 2: Layout controls for the chosen template (logo size + section order) -->
+      <div class="fi-sec stage2-only" id="layout-sec">
+
+        <div class="fi-sec-lbl">Invoice Template &amp; Layout
+          <button type="button" onclick="goToStage(1)" style="background:none;border:none;padding:0;color:var(--ember);font-weight:700;font-size:.72rem;text-transform:none;letter-spacing:0;cursor:pointer;white-space:nowrap"><i class="bi bi-arrow-left-right"></i> Change template</button>
+        </div>
+
+        <!-- Logo size -->
+        <div class="logo-size-wrap">
+          <label for="logo-size">Logo size</label>
+          <input type="range" class="logo-slider" id="logo-size" min="60" max="200" step="10" value="110" oninput="onLogoSize(this.value)">
+          <span id="logo-size-val">110px</span>
+        </div>
+
+        <!-- Section order/visibility editor - lives in the Edit workspace's
+             Sections panel, not the initial creation flow. Kept in the DOM
+             (hidden) so layoutState still initializes with sensible
+             defaults for new invoices; customize it after saving via
+             Edit Invoice. -->
+        <div class="stg-hidden" style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Sections <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-muted)">drag to reorder · eye to hide</span></div>
+        <div class="sec-editor stg-hidden" id="sec-editor">
+          <div class="sec-editor-hint"><i class="bi bi-arrows-move"></i> Drag rows to change the order sections appear on the invoice PDF</div>
+          <div id="sec-rows"></div>
+        </div>
+
+      </div>
+
+
+
+      <!-- Invoice meta -->
+
+      <div class="fi-sec stage2-only">
+
+        <div class="fi-grid">
+
+          <div class="fi-row">
+
+            <label class="fi-lbl">Invoice No. <span style="color:var(--color-danger)">*</span></label>
+
+            <input class="fi" id="inv-number" placeholder="INV-2026-001" oninput="updatePvw()">
+
+          </div>
+
+          <div class="fi-row">
+
+            <label class="fi-lbl">Invoice Date <span style="color:var(--color-danger)">*</span></label>
+
+            <input class="fi" type="date" id="invoice_date" required oninput="updatePvw()">
+
+          </div>
+
+          <div class="fi-row">
+
+            <label class="fi-lbl">Due Date</label>
+
+            <input class="fi" type="date" id="due_date" oninput="updatePvw()">
+
+          </div>
+
+        </div>
+
+      </div>
+
+
 
       <!-- Bill To -->
-      <div class="fi-sec">
-        <div class="fi-sec-lbl">Bill To <span style="color:#EF4444">*</span> <span style="color:#94A3B8;font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Required Fields</span></div>
+
+      <div class="fi-sec stage2-only">
+
+        <div class="fi-sec-lbl">Bill To <span style="color:var(--color-danger)">*</span> <span style="color:var(--text-muted);font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Required Fields</span></div>
+
         <select class="fi" id="customer_id" onchange="onCustomerChange()" style="display:none"></select>
+
         <div class="fi-grid">
+
           <div class="fi-row">
-            <label class="fi-lbl">Customer <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="cust-name" placeholder="Client Company Name" oninput="updatePvw()" style="border-color:#FCA5A5">
+
+            <label class="fi-lbl">Customer <span style="color:var(--color-danger)">*</span></label>
+
+            <input class="fi" id="cust-name" placeholder="Client Company Name" oninput="updatePvw()" style="border-color:var(--color-danger)">
+
           </div>
+
           <div class="fi-row">
+
             <label class="fi-lbl">PAN</label>
+
             <input class="fi" id="cust-pan" placeholder="AABCP1234D" oninput="updatePvw()">
+
           </div>
+
           <div class="fi-row">
+
             <label class="fi-lbl">Recipient</label>
+
             <input class="fi" id="cust-contact" placeholder="Contact Person Name" oninput="updatePvw()">
+
           </div>
+
           <div class="fi-row">
+
             <label class="fi-lbl">GST Number</label>
+
             <input class="fi" id="cust-gst" placeholder="29AABCP1234D1Z5" oninput="updatePvw()">
+
           </div>
-          <div class="fi-row" style="grid-column:1/-1">
-            <label class="fi-lbl">Address <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="cust-addr" placeholder="Street, City, State - PIN" oninput="updatePvw()" style="border-color:#FCA5A5">
+
+          <div class="fi-row">
+
+            <label class="fi-lbl">CIN</label>
+
+            <input class="fi" id="cust-cin" placeholder="U12345AB2020PTC123456" oninput="updatePvw()">
+
           </div>
+
           <div class="fi-row" style="grid-column:1/-1">
-            <label class="fi-lbl">Email <span style="color:#EF4444">*</span></label>
-            <input class="fi" id="cust-email" type="email" placeholder="client@company.com" oninput="updatePvw()" style="border-color:#FCA5A5">
+
+            <label class="fi-lbl">Address <span style="color:var(--color-danger)">*</span></label>
+
+            <input class="fi" id="cust-addr" placeholder="Street, City, State - PIN" oninput="updatePvw()" style="border-color:var(--color-danger)">
+
           </div>
+
           <div class="fi-row" style="grid-column:1/-1">
+
+            <label class="fi-lbl">Email <span style="color:var(--color-danger)">*</span></label>
+
+            <input class="fi" id="cust-email" type="email" placeholder="client@company.com" oninput="updatePvw()" style="border-color:var(--color-danger)">
+
+          </div>
+
+          <div class="fi-row" style="grid-column:1/-1">
+
             <label class="fi-lbl">Phone</label>
+
             <input class="fi" id="cust-phone" placeholder="+91 XXXXX XXXXX" oninput="updatePvw()">
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- Items -->
-      <div class="fi-sec">
-        <div class="fi-sec-lbl">Items / Services <span style="float:right;color:#94A3B8;font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Description and Rate* required</span></div>
+
+      <div class="fi-sec stage2-only">
+
+        <div class="fi-sec-lbl">Items / Services <span style="float:right;color:var(--text-muted);font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Description and Rate* required</span></div>
+
         <div class="items-hdr">
+
           <span>#&nbsp;&nbsp;DESCRIPTION</span>
+
           <span>HSN/SAC</span>
+
           <span>QTY</span>
+
           <span>RATE (₹)</span>
+
           <span>SET%</span>
+
           <span>AMOUNT (₹)</span>
+
           <span></span>
+
         </div>
+
         <div id="items-wrap"></div>
+
         <button type="button" class="btn-add" onclick="addItem()" title="Add item">+</button>
+
       </div>
+
+
 
       <!-- GST rates + Totals -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+
+      <div class="stage2-only" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+
         <div class="tots-box">
+
           <div class="tax-row"><span style="min-width:90px">Subtotal</span><span style="margin-left:auto;font-weight:700" id="sum-sub">₹0.00</span></div>
+
           <div class="tax-row">
+
+            <span style="min-width:60px">GST Type</span>
+
+            <select id="tax-mode" onchange="setTaxMode(this.value)" style="flex:1;padding:4px 6px;border:1px solid #E2E8F0;border-radius:6px;font-size:.84rem;background:#fff;">
+              <option value="intra" selected>CGST + SGST (Intra-state)</option>
+              <option value="inter">IGST (Inter-state)</option>
+            </select>
+
+          </div>
+
+          <div class="tax-row" id="tax-row-cgst">
+
             <span style="min-width:60px">CGST @</span>
+
             <input class="tax-pct" type="number" id="cgst-rate" value="9" min="0" max="50" step="0.5" oninput="recalc()">
+
             <span>%</span>
+
             <span style="margin-left:auto;font-weight:600" id="sum-cgst">₹0.00</span>
+
           </div>
-          <div class="tax-row">
+
+          <div class="tax-row" id="tax-row-sgst">
+
             <span style="min-width:60px">SGST @</span>
+
             <input class="tax-pct" type="number" id="sgst-rate" value="9" min="0" max="50" step="0.5" oninput="recalc()">
+
             <span>%</span>
+
             <span style="margin-left:auto;font-weight:600" id="sum-sgst">₹0.00</span>
+
           </div>
-          <div class="tot-r amber"><span>Total GST (@ <span id="tot-gst-pct">18</span>%)</span><span id="sum-gst">₹0.00</span></div>
+
+          <div class="tax-row" id="tax-row-igst" style="display:none">
+
+            <span style="min-width:60px">IGST @</span>
+
+            <input class="tax-pct" type="number" id="igst-rate" value="0" min="0" max="50" step="0.5" oninput="recalc()">
+
+            <span>%</span>
+
+            <span style="margin-left:auto;font-weight:600" id="sum-igst">₹0.00</span>
+
+          </div>
+
+          <div class="tot-r amber"><span>Total GST (@ <span id="tot-gst-pct">27</span>%)</span><span id="sum-gst">₹0.00</span></div>
+
           <div class="tot-r grand"><span>Grand Total (Incl. GST)</span><span id="sum-total">₹0.00</span></div>
+
         </div>
+
       </div>
+
+
 
       <!-- Footer / Signatory -->
-      <div class="fi-sec">
+
+      <div class="fi-sec stage2-only">
+
         <div class="fi-sec-lbl">Invoice Footer</div>
+
         <div class="fi-grid" style="margin-bottom:10px">
+
           <div class="fi-row" style="grid-column:1/-1">
+
             <label class="fi-lbl">Thank You Message</label>
+
             <input class="fi" id="thankyou-msg" value="Thank you for your business!" oninput="updatePvw()">
+
           </div>
+
           <div class="fi-row" style="grid-column:1/-1">
-            <label class="fi-lbl">Sales & Department</label>
-            <input class="fi" id="department" placeholder="Sales & Procurement Department" oninput="updatePvw()">
+
+            <label class="fi-lbl">Terms &amp; Conditions</label>
+
+            <textarea class="fi" id="invoice-terms" rows="2" placeholder="e.g. Payment due within 30 days. Interest @18% p.a. on overdue amounts." oninput="updatePvw()"></textarea>
+
           </div>
+
+          <div class="fi-row" style="grid-column:1/-1">
+
+            <label class="fi-lbl">Sales & Department</label>
+
+            <input class="fi" id="department" placeholder="Sales & Procurement Department" oninput="updatePvw()">
+
+          </div>
+
         </div>
+
       </div>
+
+
 
       <!-- Authorized Signatory -->
-      <div class="fi-sec">
+
+      <div class="fi-sec stage2-only">
+
         <div class="fi-sec-lbl">Authorized Signatory</div>
+
         <div class="sig-tabs">
+
           <button type="button" class="sig-tab active" onclick="switchSig('draw')" id="tab-draw"><i class="bi bi-pen"></i> Draw</button>
+
           <button type="button" class="sig-tab" onclick="switchSig('upload')" id="tab-upload"><i class="bi bi-upload"></i> Upload</button>
+
           <button type="button" class="sig-tab" onclick="switchSig('type')" id="tab-type"><i class="bi bi-fonts"></i> Type Name</button>
+
         </div>
+
+
 
         <!-- Draw -->
+
         <div id="sig-draw-area">
+
           <canvas id="sig-canvas" class="sig-canvas" width="480" height="120"></canvas>
+
           <div class="sig-clear-row">
-            <button type="button" onclick="clearCanvas()" style="border:1px solid #E2E8F0;border-radius:5px;padding:4px 10px;background:#fff;font-size:.75rem;cursor:pointer"><i class="bi bi-arrow-counterclockwise"></i> Clear</button>
+
+            <button type="button" onclick="clearCanvas()" style="border:1px solid var(--border);border-radius:5px;padding:4px 10px;background:var(--surface);color:var(--text-secondary);font-size:.75rem;cursor:pointer"><i class="bi bi-arrow-counterclockwise"></i> Clear</button>
+
             <span>Draw your signature above using touch or mouse</span>
+
           </div>
+
         </div>
+
+
 
         <!-- Upload -->
+
         <div id="sig-upload-area" style="display:none">
-          <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1.5px solid #E2E8F0;border-radius:8px;padding:10px 18px;font-size:.83rem;color:#374151">
+
+          <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1.5px solid var(--border);border-radius:8px;padding:10px 18px;font-size:.83rem;color:var(--text-secondary)">
+
             <i class="bi bi-cloud-upload"></i> Choose signature image
+
             <input type="file" id="sig-file" accept="image/*" style="display:none" onchange="onSigUpload(this)">
+
           </label>
-          <img id="sig-preview-img" src="" alt="Signature" style="max-height:80px;max-width:240px;display:none;margin-top:8px;border-radius:6px;border:1px solid #E2E8F0">
+
+          <img id="sig-preview-img" src="" alt="Signature" style="max-height:80px;max-width:240px;display:none;margin-top:8px;border-radius:6px;border:1px solid var(--border)">
+
         </div>
+
+
 
         <!-- Type -->
+
         <div id="sig-type-area" style="display:none">
+
           <input class="fi" id="sig-typed" placeholder="Type your name here" oninput="updateTypedSig()">
-          <div id="sig-typed-preview" style="font-family:'Dancing Script',cursive,serif;font-size:1.6rem;color:#0F172A;padding:8px 0;min-height:50px;border-bottom:1px solid #0F172A;margin-top:8px"></div>
+
+          <div id="sig-typed-preview" style="font-family:'Dancing Script',cursive,serif;font-size:1.6rem;color:var(--text-primary);padding:8px 0;min-height:50px;border-bottom:1px solid var(--border-strong);margin-top:8px"></div>
+
         </div>
 
+
+
         <div class="fi-grid" style="margin-top:12px">
+
           <div class="fi-row">
+
             <label class="fi-lbl">Signatory Name</label>
-            <input class="fi" id="sig-name" placeholder="e.g. Vamsi Krishna" oninput="updatePvw()">
+
+            <input class="fi" id="sig-name" placeholder="e.g. Authorized Signatory" oninput="updatePvw()">
+
           </div>
+
           <div class="fi-row">
+
             <label class="fi-lbl">Company (on signature block)</label>
+
             <input class="fi" id="sig-company" placeholder="Zayron Infotech Pvt. Ltd." oninput="updatePvw()">
+
           </div>
+
         </div>
-        <div style="margin-top:8px;font-size:.75rem;color:#94A3B8"><i class="bi bi-info-circle"></i> This signature appears at the bottom-right of the invoice PDF.</div>
+
+        <div style="margin-top:8px;font-size:.75rem;color:var(--text-muted)"><i class="bi bi-info-circle"></i> This signature appears at the bottom-right of the invoice PDF.</div>
+
       </div>
+
+
 
     </div><!-- /form-body -->
 
-    <div class="act-bar">
+
+
+    <div class="act-bar stage2-only">
+
       <button type="submit" class="btn-pdf" id="submit-btn">
+
         <i class="bi bi-file-earmark-pdf"></i>
+
         <span id="btn-text">Save Invoice</span>
-        <span id="btn-spin" class="spinner-border spinner-border-sm d-none"></span>
+
+        <span id="btn-spin" class="d-none"></span>
+
       </button>
+
       <a href="/invoices/" class="btn-cancel"><i class="bi bi-x-lg"></i> Cancel</a>
+
     </div>
+
+
 
   </form>
+
 </div><!-- /gen-main -->
 
-<!-- ══ RIGHT: LIVE PREVIEW ══ -->
-<div class="gen-preview">
+
+
+<!-- â•â• RIGHT: LIVE PREVIEW â•â• -->
+
+<button type="button" id="mobile-view-toggle" class="stage2-only" onclick="toggleMobilePreview()">
+  <i class="bi bi-eye-fill"></i> <span id="mobile-view-toggle-label">Preview</span>
+</button>
+
+<div class="gen-preview stage2-only">
+
   <div class="gen-preview-header">
-    <span style="font-size:.72rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em"><i class="bi bi-eye-fill me-1" style="color:#10B981"></i>Live Preview</span>
-    <span style="font-size:.68rem;color:#64748B">Updates as you type</span>
+
+    <span style="font-size:.72rem;font-weight:700;color:var(--on-dark-dim);text-transform:uppercase;letter-spacing:.08em"><i class="bi bi-eye-fill me-1" style="color:var(--color-success)"></i>Live Preview</span>
+
+    <span style="font-size:.68rem;color:var(--on-dark-dim)">Updates as you type</span>
+
   </div>
+
+  <div class="pvw-required-banner" id="pvw-required-banner">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span id="pvw-required-banner-text">Fill required fields to complete invoice</span>
+  </div>
+
   <div class="preview-wrap">
-    <div class="inv-preview">
-      <!-- Header -->
-      <div class="pvw-top">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="pvw-circle" id="pvw-logo-circle">Rs</div>
-          <div>
-            <div style="font-size:10px;font-weight:800" id="pvw-co-name">YOUR COMPANY</div>
-            <div style="font-size:7.5px;color:#64748B" id="pvw-co-gst"></div>
-          </div>
-        </div>
-        <div style="font-size:20px;font-weight:900;color:#F97316">INVOICE</div>
-      </div>
-      <div class="pvw-divider"></div>
-      <!-- Meta -->
-      <div class="pvw-meta">
-        <div style="font-size:7.5px;color:#64748B;line-height:1.6" id="pvw-co-addr"></div>
-        <div style="text-align:right">
-          <div style="display:flex;gap:6px;justify-content:flex-end;font-size:7.5px"><span class="pvw-mlbl">Invoice No.</span><span class="pvw-mval" id="pvw-inv-no">—</span></div>
-          <div style="display:flex;gap:6px;justify-content:flex-end;font-size:7.5px;margin-top:2px"><span class="pvw-mlbl">Invoice Date</span><span class="pvw-mval" id="pvw-date">—</span></div>
-        </div>
-      </div>
-      <!-- Addresses -->
-      <div class="pvw-addr">
-        <div style="border-right:1px solid #fff">
-          <div class="pvw-addr-hdr">FROM</div>
-          <div class="pvw-addr-body">
-            <div class="pvw-addr-name" id="pvw-from-name">—</div>
-            <div class="pvw-addr-muted" id="pvw-from-addr"></div>
-            <div class="pvw-addr-muted" id="pvw-from-gst"></div>
-          </div>
-        </div>
-        <div>
-          <div class="pvw-addr-hdr">BILL TO</div>
-          <div class="pvw-addr-body">
-            <div class="pvw-addr-name" id="pvw-to-name">—</div>
-            <div class="pvw-addr-muted" id="pvw-to-addr"></div>
-            <div class="pvw-addr-muted" id="pvw-to-email"></div>
-            <div class="pvw-addr-muted" id="pvw-to-gst"></div>
-          </div>
-        </div>
-      </div>
-      <!-- Items -->
-      <div class="pvw-items">
-        <div class="pvw-items-hdr">
-          <span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>SET%</span><span>AMOUNT</span>
-        </div>
-        <div id="pvw-items-body"></div>
-      </div>
-      <!-- Totals -->
-      <div class="pvw-tots">
-        <div class="pvw-tots-box">
-          <div class="pvw-tot-r"><span>Subtotal</span><span id="pvw-sub">Rs. 0.00</span></div>
-          <div class="pvw-tot-r"><span id="pvw-cgst-lbl">CGST @9%</span><span id="pvw-cgst">Rs. 0.00</span></div>
-          <div class="pvw-tot-r"><span id="pvw-sgst-lbl">SGST @9%</span><span id="pvw-sgst">Rs. 0.00</span></div>
-          <div class="pvw-tot-r amber"><span>Total GST</span><span id="pvw-gst-total">Rs. 0.00</span></div>
-          <div class="pvw-tot-r grand"><span>GRAND TOTAL</span><span id="pvw-grand">Rs. 0.00</span></div>
-        </div>
-      </div>
-      <!-- Footer -->
-      <div class="pvw-footer">
-        <div style="font-size:7px;color:#64748B;line-height:1.5">
-          <div style="font-weight:700;color:#0F172A;font-size:7.5px;margin-bottom:1px">Notes</div>
-          <div id="pvw-notes">Thank you for your business!</div>
-          <div id="pvw-dept" style="color:#94A3B8;margin-top:2px"></div>
-        </div>
-        <div class="pvw-stamp"><span>Thank</span><span>YOU!</span></div>
-        <div style="text-align:center;font-size:7px">
-          <div class="pvw-sig-lbl">Authorized Signatory</div>
-          <img id="pvw-sig-img" src="" alt="" style="max-height:32px;max-width:80px;display:none;margin-bottom:2px">
-          <div class="pvw-sig-line"></div>
-          <div id="pvw-sig-name" style="font-size:7px;font-weight:700;color:#0F172A"></div>
-        </div>
-      </div>
-      <div class="pvw-bar" id="pvw-bar">Zayron Infotech Pvt. Ltd.</div>
-    </div><!-- /inv-preview -->
+
+    {% comment %}
+    Invoice markup lives in ONE place, shared with the print page that Chrome
+    renders into the PDF. Included with no context here so every field keeps its
+    placeholder and updatePvw() populates it live.
+    {% endcomment %}
+    {% include "invoices/_invoice_doc.html" %}
+
   </div>
+
 </div><!-- /gen-preview -->
 
+<!-- Template preview modal: renders the SAME #inv-preview node (moved in/out via JS),
+     skinned by the SAME applyPreviewSkin()/TEMPLATE_SPECS as the sticky panel. -->
+<div class="modal fade" id="tplPreviewModal" tabindex="-1" aria-labelledby="tplPreviewModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:14px;border:1.5px solid var(--border);background:var(--surface);overflow:hidden">
+      <div class="modal-header" style="border-bottom:1px solid var(--border);padding:16px 20px">
+        <h6 class="modal-title fw-700" id="tplPreviewModalTitle" style="margin:0">Template Preview</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body preview-wrap" id="tplPreviewModalBody" style="max-height:70vh;overflow-y:auto" onclick="toggleTemplateZoom()"></div>
+      <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 20px;gap:8px">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm" style="background:var(--ember);color:#fff" onclick="selectFromPreviewModal()">Select This Template</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /gen-layout -->
+
 </div><!-- /free-zone -->
+
 {% endblock %}
 
+
+
 {% block extra_js %}
+
 <script>
+
 const ACTION = '{{ action }}';
+
 const INVOICE_ID = '{{ invoice_id }}';
+
 let products = [], customers = [], itemCount = 0;
 
-const fmtRs  = n => 'Rs. ' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+
+const fmtRs  = n => '₹' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+
 const fmtRup = n => '₹' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+
 const fmtDate = s => { if(!s) return '—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); };
+
 const _t = (id,v) => { const el=document.getElementById(id); if(el) el.textContent = v||''; };
 
+// For the few preview spots that must build innerHTML (multi-color runs).
+const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Indian numbering words — the JS twin of pdf_generator.py's _amount_words(),
+// kept identical to landing.html's copy so both previews read like the PDF.
+function amountToWords(n){const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];function tw(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');}function convert(n){if(n===0)return'';if(n<100)return tw(n);if(n<1000)return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+tw(n%100):'');if(n<100000)return convert(Math.floor(n/1000))+' Thousand'+(n%1000?' '+convert(n%1000):'');if(n<10000000)return convert(Math.floor(n/100000))+' Lakh'+(n%100000?' '+convert(n%100000):'');return convert(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+convert(n%10000000):'');}const rupees=Math.floor(n);const paise=Math.round((n-rupees)*100);let words=convert(rupees)||'Zero';words+=' Rupee'+(rupees!==1?'s':'');if(paise>0)words+=' and '+tw(paise)+' Paise';return words+' Only.';}
+
+
+
 /* ── Load customers & products ── */
+
 async function loadCustomers() {
+
   const res = await API.get('/api/customers/?page_size=500');
+
   if (!res.success) return;
+
   customers = res.data.results;
+
   const sel = document.getElementById('customer_id');
+
+  // Blank first option so no saved customer is auto-selected on load. Without
+  // it the select defaults to the first real customer, and the API's
+  // _resolve_customer() then overwrites every manually-typed Bill-To field
+  // with that customer's details — silently saving a different customer than
+  // the one shown in the live preview.
+  sel.insertAdjacentHTML('beforeend', '<option value="">— Enter customer manually —</option>');
+
   customers.forEach(c => {
+
     sel.insertAdjacentHTML('beforeend',
+
       `<option value="${c.id}"
+
          data-name="${c.customer_name||''}" data-company="${c.company||''}"
+
          data-email="${c.email||''}" data-addr="${c.address||''}"
+
          data-gst="${c.gst_number||''}" data-phone="${c.phone||''}"
-         data-pan="${c.pan||''}">${c.customer_name}${c.company?' – '+c.company:''}</option>`);
+
+         data-pan="${c.pan||''}">${c.customer_name}${c.company?' - '+c.company:''}</option>`);
+
   });
+
 }
+
 async function loadProducts() {
+
   const res = await API.get('/api/products/?page_size=500');
+
   if (!res.success) return;
+
   products = res.data.results;
+
 }
+
+
 
 /* ── Customer auto-fill ── */
+
 function onCustomerChange() {
+
   const opt = document.getElementById('customer_id').selectedOptions[0];
+
   if (!opt?.value) return;
+
   document.getElementById('cust-name').value    = opt.dataset.name  || '';
+
   document.getElementById('cust-email').value   = opt.dataset.email || '';
+
   document.getElementById('cust-addr').value    = opt.dataset.addr  || '';
+
   document.getElementById('cust-gst').value     = opt.dataset.gst   || '';
+
   document.getElementById('cust-phone').value   = opt.dataset.phone || '';
+
   document.getElementById('cust-pan').value     = opt.dataset.pan   || '';
+
   updatePvw();
+
 }
+
+
 
 /* ── Items ── */
+
 function addItem(data = {}) {
+
   itemCount++;
+
   const i = itemCount;
+
   const opts = products.map(p =>
+
     `<option value="${p.id}" data-price="${p.price}" data-tax="${p.tax_rate||0}" ${data.product_id===p.id?'selected':''}>${p.name}</option>`
+
   ).join('');
+
   const row = document.createElement('div');
-  row.className = 'item-row'; row.id = `row-${i}`;
+
+  // Which controls this line shows is decided by the selected template's schema.
+  const sc  = itemSchema(window._selectedTemplate);
+  const hid = f => sc[f] ? '' : 'display:none;';
+  // A date input only accepts YYYY-MM-DD; keep legacy free text out of it.
+  const hsnVal = sc.dateInput && !/^\d{4}-\d{2}-\d{2}$/.test(data.hsn_code || '')
+                 ? '' : (data.hsn_code || '');
+
+  row.className = 'item-row' + (sc.rowClass ? ' ' + sc.rowClass : '');
+  row.id = `row-${i}`;
+
   row.innerHTML = `
+
     <div style="display:flex;flex-direction:column;gap:2px">
-      <select class="iinp left" id="prod-${i}" onchange="onProdChange(${i})" style="margin-bottom:2px">
+
+      <select class="iinp left" id="prod-${i}" onchange="onProdChange(${i})" style="margin-bottom:2px;${hid('product')}">
+
         <option value="">— product —</option>${opts}
+
       </select>
-      <input class="iinp left" id="desc-${i}" placeholder="Description" value="${data.description||''}">
+
+      <input class="iinp left" id="desc-${i}" placeholder="${sc.descPh}" value="${data.description||''}" oninput="updatePvw()">
+
+      <input class="iinp left" id="role-${i}" placeholder="${sc.rolePh || 'Role'}" value="${data.role||''}"
+             style="margin-top:2px;${hid('role')}" oninput="updatePvw()">
+
     </div>
-    <input class="iinp" id="hsn-${i}" placeholder="—" value="${data.hsn_code||''}">
-    <input class="iinp" type="number" id="qty-${i}"   value="${data.quantity||1}"   min="0.01" step="0.01" oninput="recalc()">
+
+    <input class="iinp" ${sc.dateInput ? 'type="date"' : ''} id="hsn-${i}" placeholder="${sc.hsnPh}" value="${hsnVal}" oninput="updatePvw()">
+
+    <input class="iinp" type="number" id="qty-${i}"   value="${data.quantity||1}"   min="1" step="1" oninput="recalc()">
+
     <input class="iinp" type="number" id="price-${i}" value="${data.unit_price||''}" step="0.01" oninput="recalc()">
-    <input class="iinp" type="number" id="disc-${i}"  value="${data.discount||0}"   min="0" max="100" step="0.01" oninput="recalc()" placeholder="0">
+
+    <input class="iinp" type="number" id="disc-${i}"  value="${data.discount||0}"   min="0" max="100" step="0.01" oninput="recalc()" placeholder="0" style="${hid('discount')}">
+
     <span class="itotal" id="total-${i}">₹0.00</span>
+
     <button type="button" class="idel" onclick="removeItem(${i})"><i class="bi bi-x"></i></button>`;
+
   document.getElementById('items-wrap').appendChild(row);
+
   if (data.product_id) onProdChange(i);
+
   recalc();
+
 }
+
 function onProdChange(i) {
+
   const opt = document.getElementById(`prod-${i}`).selectedOptions[0];
+
   if (!opt?.value) return;
+
   document.getElementById(`price-${i}`).value = opt.dataset.price;
+
   recalc();
+
 }
+
 function removeItem(i) { document.getElementById(`row-${i}`)?.remove(); recalc(); }
 
+
+
+function setTaxMode(m) {
+  // CGST+SGST (intra-state) and IGST (inter-state) are mutually exclusive —
+  // switching modes hides the other rows, zeroes their rates and preserves
+  // the combined tax rate.
+  window._taxMode = m;
+  const intra = m === 'intra';
+  const sel = document.getElementById('tax-mode');
+  if (sel && sel.value !== m) sel.value = m;
+  document.getElementById('tax-row-cgst').style.display = intra ? '' : 'none';
+  document.getElementById('tax-row-sgst').style.display = intra ? '' : 'none';
+  document.getElementById('tax-row-igst').style.display = intra ? 'none' : '';
+  const cg = document.getElementById('cgst-rate'), sg = document.getElementById('sgst-rate'), ig = document.getElementById('igst-rate');
+  const cgVal = parseFloat(cg.value) || 0, sgVal = parseFloat(sg.value) || 0, igVal = parseFloat(ig.value) || 0;
+  if (intra) {
+    if (igVal > 0 && !cgVal && !sgVal) { const half = Math.round(igVal / 2 * 2) / 2; cg.value = half; sg.value = half; }
+    else if (!cgVal && !sgVal) { cg.value = 9; sg.value = 9; }
+    ig.value = 0;
+  } else {
+    ig.value = (cgVal + sgVal) || 18;
+    cg.value = 0; sg.value = 0;
+  }
+  recalc();
+}
 function recalc() {
+
   let sub = 0;
+
   document.querySelectorAll('#items-wrap .item-row').forEach(row => {
+
     const i     = row.id.replace('row-','');
+
     const price = parseFloat(document.getElementById(`price-${i}`)?.value||0);
+
     const qty   = parseFloat(document.getElementById(`qty-${i}`)?.value||0);
+
     const disc  = parseFloat(document.getElementById(`disc-${i}`)?.value||0);
+
     const after = price * qty * (1 - disc/100);
+
     sub += after;
+
     const el = document.getElementById(`total-${i}`);
+
     if(el) el.textContent = fmtRup(after);
+
   });
+
   const cgst = sub * (parseFloat(document.getElementById('cgst-rate').value)||0) / 100;
+
   const sgst = sub * (parseFloat(document.getElementById('sgst-rate').value)||0) / 100;
-  const gst  = cgst + sgst;
+
+  const igst = sub * (parseFloat(document.getElementById('igst-rate').value)||0) / 100;
+
+  const gst  = cgst + sgst + igst;
+
   _t('sum-sub',   fmtRup(sub));
+
   _t('sum-cgst',  fmtRup(cgst));
+
   _t('sum-sgst',  fmtRup(sgst));
+
+  _t('sum-igst',  fmtRup(igst));
+
   _t('sum-gst',   fmtRup(gst));
-  _t('tot-gst-pct', (parseFloat(document.getElementById('cgst-rate').value||0)+parseFloat(document.getElementById('sgst-rate').value||0)).toFixed(0));
+
+  _t('tot-gst-pct', (parseFloat(document.getElementById('cgst-rate').value||0)+parseFloat(document.getElementById('sgst-rate').value||0)+parseFloat(document.getElementById('igst-rate').value||0)).toFixed(0));
+
   _t('sum-total', fmtRup(sub + gst));
+
   updatePvw();
+
 }
 
+
+
 /* ── Live Preview ── */
+
+/* Sample invoice content shown ONLY while the template preview modal is open
+   (window._pvwSampleMode). Display-only: never written to a form input and
+   never read by the submit payload — updatePvw() substitutes it at render
+   time and re-renders from the real form state on modal close. */
+const PVW_SAMPLE = {
+  'from-address': '3rd Floor, Prestige Tech Park, Kadubeesanahalli, Bengaluru, Karnataka - 560103',
+  'from-gst':     '29AABCZ1234M1Z5',
+  'inv-number':   'INV-2026-0042',
+  'invoice_date': '2026-08-14',
+  'cust-name':    'Kavya Textiles Pvt Ltd',
+  'cust-addr':    '42 MG Road, Bengaluru, Karnataka - 560001',
+  'cust-email':   'accounts@kavyatextiles.in',
+  'cust-gst':     '29AAECK5678P1Z9',
+  'cgst-rate':    '9',
+  'sgst-rate':    '9',
+  'thankyou-msg': 'Thank you for your business!',
+  'invoice-terms':'Payment due within 30 days. Interest @18% p.a. on overdue amounts.',
+  'department':   'Accounts & Billing',
+  'sig-name':     'Rohit Menon',
+  'sig-company':  'Zayro Infotech Pvt. Ltd.',
+};
+const PVW_SAMPLE_COMPANY = 'Zayro Infotech Pvt. Ltd.';
+const PVW_SAMPLE_ITEMS = [
+  { desc: 'Cotton Blend Fabric Roll (60 m) · HSN 5208', qty: 12, price: 2450, disc: 0 },
+  { desc: 'Polyester Lining Fabric (40 m) · HSN 5407',  qty: 8,  price: 1875, disc: 0 },
+  { desc: 'Custom Dyeing & Finishing Service · SAC 9988', qty: 1, price: 5600, disc: 0 },
+];
+// sub 29,400 + 15,000 + 5,600 = 50,000 → CGST 9% 4,500 + SGST 9% 4,500 → 59,000
+
+// Reads a form input, or its sample stand-in while the preview modal is open.
+function _val(id) {
+  if (window._pvwSampleMode && id in PVW_SAMPLE) return PVW_SAMPLE[id];
+  return document.getElementById(id)?.value || '';
+}
+
+function _setReqField(id, val, fallback) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const empty = !val;
+  el.textContent = empty ? fallback : val;
+  el.classList.toggle('pvw-required-empty', empty);
+  return empty;
+}
+
 function updatePvw() {
+
   // header
-  const coName = document.getElementById('from-address')?.value
-      ? (localStorage.getItem('user_username') || 'YOUR COMPANY').toUpperCase()
-      : 'YOUR COMPANY';
-  _t('pvw-co-name', localStorage.getItem('co_name') || 'YOUR COMPANY');
-  _t('pvw-co-gst',  document.getElementById('from-gst')?.value ? 'GSTIN: ' + document.getElementById('from-gst').value : '');
-  _t('pvw-co-addr', document.getElementById('from-address')?.value || '');
-  // meta
-  _t('pvw-inv-no', document.getElementById('inv-number')?.value || '—');
-  _t('pvw-date',   fmtDate(document.getElementById('invoice_date')?.value));
+
+  const sample = !!window._pvwSampleMode;
+
+  // Task templates (staffing/payroll) share one document engine with
+  // task-specific labels — see _sec_staffing's builder.
+  const taskTpl = (window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll')
+                  ? window._selectedTemplate : null;
+  const staffing = !!taskTpl;
+  const payroll = taskTpl === 'payroll';
+
+  // Task templates' header prints the company name + CIN only (see
+  // _sec_staffing's header()), so the masthead/FROM identity line carries CIN
+  // instead of GSTIN.
+  const idLine = staffing
+    ? (_val('from-cin') ? 'CIN: ' + _val('from-cin') : '')
+    : (_val('from-gst') ? 'GSTIN: ' + _val('from-gst') : '');
+
+  _t('pvw-co-name', sample ? PVW_SAMPLE_COMPANY : (_val('from-name').toUpperCase() || 'YOUR COMPANY'));
+
+  _t('pvw-co-gst',  idLine);
+
+  _t('pvw-co-addr', _val('from-address'));
+
+  // meta — required fields
+  const missingFields = [];
+
+  const invNo = _val('inv-number');
+  if (_setReqField('pvw-inv-no', invNo, '⚠ Invoice No. required')) missingFields.push('Invoice No.');
+
+  const invDate = _val('invoice_date');
+  if (_setReqField('pvw-date', invDate ? fmtDate(invDate) : '', '⚠ Date required')) missingFields.push('Invoice Date');
+
+  // Task-template meta block — mirrors _sec_staffing's meta(): the invoice
+  // number is relabelled per task and the two dates render as a period.
+  if (staffing) {
+    // %d-%b-%y to match the PDF exactly — en-GB renders September as "Sept",
+    // so build it from a fixed 3-letter month table instead of toLocaleDateString.
+    const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dshort = v => { if (!v) return '—'; const d = new Date(v + 'T00:00:00');
+      return String(d.getDate()).padStart(2,'0') + '-' + MON[d.getMonth()] +
+             '-' + String(d.getFullYear()).slice(-2); };
+    _t('pvw-cust-id-lbl', payroll ? 'Payroll ID' : 'Number / Customer ID');
+    _t('pvw-period-lbl',  payroll ? 'Pay Period'   : 'Billing Period');
+    _t('pvw-cust-id', invNo || '—');
+    _t('pvw-bp-from', dshort(invDate));
+    _t('pvw-bp-to',   dshort(_val('due_date')));
+  }
+
   // FROM
-  _t('pvw-from-name', window._profileName || '—');
-  _t('pvw-from-addr', document.getElementById('from-address')?.value || '');
-  _t('pvw-from-gst',  document.getElementById('from-gst')?.value ? 'GSTIN: '+document.getElementById('from-gst').value : '');
-  // BILL TO
-  _t('pvw-to-name',  document.getElementById('cust-name')?.value  || '—');
-  _t('pvw-to-addr',  document.getElementById('cust-addr')?.value  || '');
-  _t('pvw-to-email', document.getElementById('cust-email')?.value || '');
-  _t('pvw-to-gst',   document.getElementById('cust-gst')?.value ? 'GSTIN: '+document.getElementById('cust-gst').value : '');
+
+  _t('pvw-from-name', sample ? PVW_SAMPLE_COMPANY : (_val('from-name') || '—'));
+
+  _t('pvw-from-addr', _val('from-address'));
+
+  // Staffing's header masthead already carries the CIN, so the FROM block does
+  // not repeat it; PAN stays here for every template. GSTIN is filled but only
+  // shown when the header GSTIN toggle is off (see applyLayoutToPreview).
+  _t('pvw-from-gst', _val('from-gst') ? 'GSTIN: ' + _val('from-gst') : '');
+
+  _t('pvw-from-pan', staffing && _val('from-pan') ? 'PAN: ' + _val('from-pan') : '');
+
+  // BILL TO — required fields
+
+  const custName = _val('cust-name');
+  if (_setReqField('pvw-to-name', custName, '⚠ Customer name required')) missingFields.push('Customer');
+
+  const custAddr = _val('cust-addr');
+  if (_setReqField('pvw-to-addr', custAddr, '⚠ Address required')) missingFields.push('Address');
+
+  const custEmail = _val('cust-email');
+  if (_setReqField('pvw-to-email', custEmail, '⚠ Email required')) missingFields.push('Email');
+
+  // Recipient / phone / CIN / PAN are collected by the form and printed in the
+  // PDF's Bill-to block, but had no preview rows — so four fields you can type
+  // were invisible here. Blank values render as empty divs and take no space.
+  _t('pvw-to-recipient', _val('cust-contact'));
+
+  _t('pvw-to-phone', _val('cust-phone'));
+
+  _t('pvw-to-cin',   _val('cust-cin') ? 'CIN: '+_val('cust-cin') : '');
+
+  _t('pvw-to-gst',   _val('cust-gst') ? 'GSTIN: '+_val('cust-gst') : '');
+
+  _t('pvw-to-pan',   _val('cust-pan') ? 'PAN: '+_val('cust-pan') : '');
+
+  // Required banner
+  const banner = document.getElementById('pvw-required-banner');
+  if (banner) {
+    if (missingFields.length) {
+      banner.classList.add('show');
+      document.getElementById('pvw-required-banner-text').textContent =
+        missingFields.length === 1
+          ? `Required: ${missingFields[0]}`
+          : `${missingFields.length} required fields missing`;
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+
 
   // items
+
   const tbody = document.getElementById('pvw-items-body');
+
   tbody.innerHTML = '';
+
   let pvwSub = 0;
-  document.querySelectorAll('#items-wrap .item-row').forEach(row => {
-    const i     = row.id.replace('row-','');
-    const desc  = document.getElementById(`desc-${i}`)?.value ||
-                  document.getElementById(`prod-${i}`)?.selectedOptions[0]?.textContent || '—';
-    const qty   = parseFloat(document.getElementById(`qty-${i}`)?.value||0);
-    const price = parseFloat(document.getElementById(`price-${i}`)?.value||0);
-    const disc  = parseFloat(document.getElementById(`disc-${i}`)?.value||0);
+
+  const rows = sample
+    ? PVW_SAMPLE_ITEMS.map(it => ({ ...it }))
+    : Array.from(document.querySelectorAll('#items-wrap .item-row')).map(row => {
+        const i = row.id.replace('row-','');
+        return {
+          desc:  document.getElementById(`desc-${i}`)?.value ||
+                 document.getElementById(`prod-${i}`)?.selectedOptions[0]?.textContent || '—',
+          role:  document.getElementById(`role-${i}`)?.value || '',
+          hsn:   document.getElementById(`hsn-${i}`)?.value || '',
+          qty:   parseFloat(document.getElementById(`qty-${i}`)?.value||0),
+          price: parseFloat(document.getElementById(`price-${i}`)?.value||0),
+          disc:  parseFloat(document.getElementById(`disc-${i}`)?.value||0),
+        };
+      });
+
+  const showHsn = window._pvwShowHsn !== false;
+  const showDisc = window._pvwShowDiscount !== false;
+  const gridCols = document.getElementById('pvw-items-hdr')?.style.gridTemplateColumns;
+
+  rows.forEach(({ desc, role, hsn, qty, price, disc }, idx) => {
+
     const after = price * qty * (1 - disc/100);
+
     pvwSub += after;
+
     const r = document.createElement('div');
+
     r.className = 'pvw-item-row';
-    r.innerHTML = `<span>${desc}</span><span>${qty||''}</span><span>${price?fmtRs(price):''}</span><span>${disc?disc+'%':''}</span><span>${fmtRs(after)}</span>`;
+    if (gridCols) r.style.gridTemplateColumns = gridCols;
+
+    if (staffing) {
+      r.innerHTML = `<span>${String(idx+1).padStart(2,'0')}</span><span>${escHtml(fmtItemDate(hsn))}</span>` +
+                    `<span>${desc}</span><span>${role||''}</span>` +
+                    `<span>${qty||''}</span><span>${fmtRs(after)}</span>`;
+    } else {
+      const hsnCol = showHsn ? `<span>${hsn||''}</span>` : '';
+      const discCol = showDisc ? `<span>${disc?disc+'%':''}</span>` : '';
+      r.innerHTML = `<span>${desc}</span>${hsnCol}<span>${qty||''}</span><span>${price?fmtRs(price):''}</span>${discCol}<span>${fmtRs(after)}</span>`;
+    }
+
     tbody.appendChild(r);
+
   });
-  const cgstR = parseFloat(document.getElementById('cgst-rate')?.value||0);
-  const sgstR = parseFloat(document.getElementById('sgst-rate')?.value||0);
+
+  const cgstR = parseFloat(_val('cgst-rate')||0);
+
+  const sgstR = parseFloat(_val('sgst-rate')||0);
+
+  const igstR = parseFloat(_val('igst-rate')||0);
+
   const cgst  = pvwSub * cgstR / 100;
+
   const sgst  = pvwSub * sgstR / 100;
-  const gst   = cgst + sgst;
+
+  const igst  = pvwSub * igstR / 100;
+
+  const gst   = cgst + sgst + igst;
+
   _t('pvw-cgst-lbl', `CGST @${cgstR}%`);
+
   _t('pvw-sgst-lbl', `SGST @${sgstR}%`);
+
+  _t('pvw-igst-lbl', `IGST @${igstR}%`);
+
   _t('pvw-sub',      fmtRs(pvwSub));
+
   _t('pvw-cgst',     fmtRs(cgst));
+
   _t('pvw-sgst',     fmtRs(sgst));
-  _t('pvw-gst-total',fmtRs(gst));
+
+  _t('pvw-igst',     fmtRs(igst));
+
+  // Only the applying GST rows show in the preview — CGST/SGST and IGST are
+  // mutually exclusive (see setTaxMode).
+  const intra = (window._taxMode || 'intra') === 'intra';
+  ['pvw-row-cgst', 'pvw-row-sgst'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = intra ? '' : 'none'; });
+  const igstRow = document.getElementById('pvw-row-igst'); if (igstRow) igstRow.style.display = intra ? 'none' : '';
+
   _t('pvw-grand',    fmtRs(pvwSub + gst));
+
+  // Staffing shows the reference document's extra ladder rows: a "Total GST"
+  // line and an "Amount in Words" strip, with "Total" / "Grand Total
+  // (Including GST)" wording instead of the generic labels.
+  const gstTotRow = document.getElementById('pvw-gsttot-row');
+  const wordsRow  = document.getElementById('pvw-words');
+  // Task templates show the Total GST ladder row — but not on a zero-tax document.
+  if (gstTotRow) gstTotRow.style.display = (staffing && gst > 0) ? '' : 'none';
+  if (wordsRow)  wordsRow.style.display  = staffing ? '' : 'none';
+  _t('pvw-sub-lbl',   staffing ? 'Total' : 'Subtotal');
+  _t('pvw-grand-lbl', staffing ? 'Grand Total (Including GST)' : 'GRAND TOTAL');
+  if (staffing) {
+    const effRate = pvwSub ? Math.round(gst / pvwSub * 10000) / 100 : 0;
+    _t('pvw-gsttot-lbl', `Total GST @${effRate}%`);
+    _t('pvw-gsttot',     fmtRs(gst));
+    _t('pvw-words-txt',  amountToWords(pvwSub + gst));
+  }
+
   // footer
-  _t('pvw-notes', document.getElementById('thankyou-msg')?.value || 'Thank you for your business!');
-  _t('pvw-dept',  document.getElementById('department')?.value || '');
-  _t('pvw-sig-name', document.getElementById('sig-name')?.value || '');
-  _t('pvw-bar', document.getElementById('sig-company')?.value || window._profileName || 'Zayron Infotech Pvt. Ltd.');
+
+  _t('pvw-notes', _val('thankyou-msg') || 'Thank you for your business!');
+
+  _t('pvw-terms', _val('invoice-terms') || 'Payment due within 30 days.');
+
+  _t('pvw-dept',  _val('department'));
+
+  _t('pvw-sig-name', _val('sig-name'));
+
+  _t('pvw-bar', _val('sig-company') || (sample ? PVW_SAMPLE_COMPANY : (_val('from-name') || 'Zayron Infotech Pvt. Ltd.')));
+
+  // Staffing replaces the solid bottom bar with the reference document's
+  // centered thank-you / address / website / contact block.
+  if (staffing) {
+    const phone = _val('from-phone'), email = _val('from-email');
+    _t('pvw-foot-thanks', _val('thankyou-msg') || 'Thank you for your business!');
+    _t('pvw-foot-dept',   _val('department'));
+    _t('pvw-foot-addr',   _val('from-address').replace(/\n+/g, ', '));
+    _t('pvw-foot-web',    _val('from-website'));
+    // Mirrors the PDF's mixed-color contact run: phone black, pipe blue, email cyan.
+    const con = document.getElementById('pvw-foot-con');
+    if (con) {
+      con.innerHTML = (phone ? 'Mobile: ' + escHtml(phone) + ' ' : '')
+        + (phone && email ? '<span class="pf-pipe">|</span>' : '')
+        + (email ? '<span class="pf-mail">' + escHtml(email) + '</span>' : '');
+    }
+  }
+  document.getElementById('pvw-sub-lbl')?.parentElement
+    ?.classList.toggle('strong', staffing);
+
   // signature preview
+
   updateSigPreview();
+
+}
+
+
+
+function getSignatureImageForPayload() {
+  const tab = document.querySelector('.sig-tab.active')?.id?.replace('tab-','');
+  const pvwImg = document.getElementById('pvw-sig-img');
+  if ((tab === 'upload' || tab === 'draw') && pvwImg && pvwImg.style.display !== 'none' && pvwImg.src) {
+    return pvwImg.src;
+  }
+  return '';
 }
 
 function updateSigPreview() {
+
   const pvwImg = document.getElementById('pvw-sig-img');
+
   if (!pvwImg) return;
+
   const tab = document.querySelector('.sig-tab.active')?.id?.replace('tab-','');
+
   if (tab === 'upload') {
+
     const up = document.getElementById('sig-preview-img');
+
     if (up && up.src && up.style.display !== 'none') { pvwImg.src = up.src; pvwImg.style.display = 'block'; return; }
+
   }
+
   if (tab === 'draw') {
+
     const c = document.getElementById('sig-canvas');
+
     if (c) {
+
       const ctx = c.getContext('2d');
+
       const d = ctx.getImageData(0,0,c.width,c.height).data;
+
       const hasInk = Array.from(d).some((v,i) => i%4===3 && v>0);
+
       if (hasInk) { pvwImg.src = c.toDataURL(); pvwImg.style.display = 'block'; return; }
+
     }
+
   }
+
   if (tab === 'type') {
+
     const name = document.getElementById('sig-typed')?.value;
+
     if (name) {
+
       const oc = document.createElement('canvas'); oc.width=200; oc.height=60;
+
       const ctx = oc.getContext('2d');
+
       ctx.font = "italic 32px 'Dancing Script',cursive,serif";
+
       ctx.fillStyle = '#1E293B';
+
       ctx.fillText(name, 8, 44);
+
       pvwImg.src = oc.toDataURL(); pvwImg.style.display = 'block'; return;
+
     }
+
   }
+
   pvwImg.src = ''; pvwImg.style.display = 'none';
+
 }
+
+
 
 /* ── Logo ── */
-function onLogo(inp) {
-  if (!inp.files[0]) return;
-  const r = new FileReader();
-  r.onload = e => {
-    const img = document.getElementById('logo-preview');
-    img.src = e.target.result; img.style.display = 'block';
-    document.getElementById('logo-ph').style.display = 'none';
-  };
-  r.readAsDataURL(inp.files[0]);
+
+/* Paint a logo into the live preview's circle. Without this the preview keeps
+   showing the literal "Rs" placeholder no matter what you upload. */
+function setPreviewLogo(src) {
+  const circle = document.getElementById('pvw-logo-circle');
+  if (!circle) return;
+  if (src) {
+    circle.innerHTML = '<img src="' + src + '" alt="" ' +
+      'style="width:100%;height:100%;object-fit:contain;border-radius:50%">';
+  } else {
+    circle.textContent = 'Rs';
+  }
 }
+
+async function onLogo(inp) {
+
+  const file = inp.files[0];
+
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) { toast('Logo must be under 2 MB.', 'error'); inp.value = ''; return; }
+
+  // 1. Instant feedback in the form thumbnail AND the live preview.
+  const r = new FileReader();
+
+  r.onload = e => {
+
+    const img = document.getElementById('logo-preview');
+
+    img.src = e.target.result; img.style.display = 'block';
+
+    document.getElementById('logo-ph').style.display = 'none';
+
+    setPreviewLogo(e.target.result);
+
+  };
+
+  r.readAsDataURL(file);
+
+  // 2. Persist it. The picker used to only set the thumbnail, so the file was
+  //    discarded and never reached the PDF — the logo cell rendered empty.
+  const fd = new FormData();
+
+  fd.append('logo', file);
+
+  try {
+
+    const resp = await fetch('/api/auth/business-profile/logo/', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') },
+      body: fd,
+    });
+
+    const j = await resp.json();
+
+    if (j.success) toast('Logo saved.');
+
+    else toast(j.message || 'Logo upload failed.', 'error');
+
+  } catch (e) {
+
+    console.error('logo upload failed', e);
+
+    toast('Logo upload failed.', 'error');
+
+  }
+
+}
+
+
 
 /* ── Signature canvas ── */
+
 const canvas = document.getElementById('sig-canvas');
+
 const ctx    = canvas?.getContext('2d');
+
 let drawing  = false;
+
 function getPos(e) {
+
   const r = canvas.getBoundingClientRect();
-  if (e.touches) return { x: e.touches[0].clientX-r.left, y: e.touches[0].clientY-r.top };
-  return { x: e.clientX-r.left, y: e.clientY-r.top };
+
+  // The canvas is capped at max-width:100% so it fits narrow screens, which
+  // makes its CSS size smaller than its drawing buffer. Scale pointer coords
+  // into buffer space or the stroke lands away from the fingertip.
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
+
+  if (e.touches) return { x: (e.touches[0].clientX-r.left)*sx, y: (e.touches[0].clientY-r.top)*sy };
+
+  return { x: (e.clientX-r.left)*sx, y: (e.clientY-r.top)*sy };
+
 }
+
 if (canvas) {
+
   canvas.addEventListener('mousedown',  e => { drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+
   canvas.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
+
   canvas.addEventListener('mouseup',    () => { drawing=false; updatePvw(); });
+
   canvas.addEventListener('mouseleave', () => { drawing=false; });
+
   canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+
   canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
+
   canvas.addEventListener('touchend',   () => { drawing=false; updatePvw(); });
+
 }
+
 function clearCanvas() {
+
   if (ctx) { ctx.clearRect(0,0,canvas.width,canvas.height); updatePvw(); }
+
 }
+
+
 
 /* ── Signature tabs ── */
+
 function switchSig(tab) {
+
   document.querySelectorAll('.sig-tab').forEach(b => b.classList.remove('active'));
+
   document.getElementById('tab-'+tab).classList.add('active');
+
   document.getElementById('sig-draw-area').style.display   = tab==='draw'   ? '' : 'none';
+
   document.getElementById('sig-upload-area').style.display = tab==='upload' ? '' : 'none';
+
   document.getElementById('sig-type-area').style.display   = tab==='type'   ? '' : 'none';
+
   updatePvw();
+
 }
+
 function onSigUpload(inp) {
+
   if (!inp.files[0]) return;
+
   const r = new FileReader();
+
   r.onload = e => {
+
     const img = document.getElementById('sig-preview-img');
+
     img.src = e.target.result; img.style.display = 'block';
+
     updatePvw();
+
   };
+
   r.readAsDataURL(inp.files[0]);
+
 }
+
 function updateTypedSig() {
+
   _t('sig-typed-preview', document.getElementById('sig-typed')?.value);
+
   updatePvw();
+
 }
+
+
 
 /* ── Profile (FROM block) ── */
+
 async function loadProfile() {
+
   try {
+
     const res = await API.get('/api/auth/business-profile/');
+
     if (!res.success) return;
+
     const u = res.data;
+
     const uname = localStorage.getItem('user_username') || '';
+
     window._profileName = u.company_name || uname || 'Your Company';
+
+    document.getElementById('from-name').value    = window._profileName;
+
     document.getElementById('from-gst').value     = u.gst     || '';
+
     document.getElementById('from-email').value   = u.email   || '';
+
     document.getElementById('from-address').value = [u.address, u.city, u.state, u.pincode].filter(Boolean).join(', ');
+
     document.getElementById('from-phone').value   = u.phone   || '';
+
     document.getElementById('from-website').value = u.website || '';
+
+    // These two render but were never populated — BusinessProfile now carries them.
+    document.getElementById('from-cin').value     = u.cin || '';
+
+    document.getElementById('from-pan').value     = u.pan || '';
+
+    // Restore an already-uploaded logo into the form thumbnail and the preview.
+    if (u.logo_url) {
+      const li = document.getElementById('logo-preview');
+      if (li) { li.src = u.logo_url; li.style.display = 'block'; }
+      const lp = document.getElementById('logo-ph');
+      if (lp) lp.style.display = 'none';
+      setPreviewLogo(u.logo_url);
+    }
+
     document.getElementById('sig-company').value  = u.company_name || '';
+
+    if (!document.getElementById('sig-name').value) document.getElementById('sig-name').value = uname || '';
+
     _t('pvw-co-name',   window._profileName.toUpperCase());
+
     _t('pvw-from-name', window._profileName);
+
     _t('pvw-from-addr', document.getElementById('from-address').value);
+
     _t('pvw-from-gst',  u.gst ? 'GSTIN: ' + u.gst : '');
+
     _t('pvw-bar',       u.company_name || uname || 'Zayron Infotech Pvt. Ltd.');
+
     updatePvw();
+
   } catch(e) { console.error('profile load failed', e); }
+
 }
+
+
+
+/* ── Persist the company (from-*) block to the business profile ──
+   loadProfile() rebuilds the single address line as
+   [address, city, state, pincode].join(', '), so write the whole typed string
+   back into `address` and clear the three parts — otherwise the next load
+   would append them again and duplicate the tail of the address. */
+async function saveCompanyBlock() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  const body = {
+    company_name: v('from-name'),
+    address:      v('from-address'),
+    city: '', state: '', pincode: '',
+    phone:        v('from-phone'),
+    email:        v('from-email'),
+    gst:          v('from-gst'),
+    cin:          v('from-cin'),
+    pan:          v('from-pan'),
+    website:      v('from-website'),
+  };
+  // Nothing typed yet — don't blank out an existing profile.
+  if (!Object.values(body).some(Boolean)) return;
+  try {
+    await API.put('/api/auth/business-profile/', body);
+  } catch (e) {
+    console.error('company block save failed', e);   // never block the invoice save
+  }
+}
+
 
 /* ── Load existing invoice for edit ── */
+
 async function loadInvoice() {
+
   if (ACTION !== 'edit' || !INVOICE_ID) return;
+
   const res = await API.get(`/api/invoices/${INVOICE_ID}/`);
+
   if (!res.success) return;
+
   const inv = res.data;
+
   document.getElementById('inv-number').value  = inv.invoice_number || '';
+
   document.getElementById('invoice_date').value = inv.invoice_date?.split('T')[0] || '';
+
   const cSel = document.getElementById('customer_id');
+
   for (let o of cSel.options) { if (o.value === inv.customer_id) { cSel.value = inv.customer_id; break; } }
+
   onCustomerChange();
+
   if (inv.customer_name)    document.getElementById('cust-name').value  = inv.customer_name;
+
   if (inv.customer_email)   document.getElementById('cust-email').value = inv.customer_email;
+
   if (inv.customer_address) document.getElementById('cust-addr').value  = inv.customer_address;
+
   if (inv.customer_gst)     document.getElementById('cust-gst').value   = inv.customer_gst;
-  document.getElementById('notes')?.value && (document.getElementById('notes').value = inv.notes || '');
+
+  if (inv.customer_phone)     document.getElementById('cust-phone').value   = inv.customer_phone;
+
+  if (inv.customer_pan)       document.getElementById('cust-pan').value     = inv.customer_pan;
+
+  if (inv.customer_cin)       document.getElementById('cust-cin').value     = inv.customer_cin;
+
+  if (inv.customer_recipient) document.getElementById('cust-contact').value = inv.customer_recipient;
+
+  if (inv.department)         document.getElementById('department').value   = inv.department;
+
+  if (inv.cgst_rate != null)  document.getElementById('cgst-rate').value = inv.cgst_rate;
+
+  if (inv.sgst_rate != null)  document.getElementById('sgst-rate').value = inv.sgst_rate;
+
+  if (inv.igst_rate != null)  document.getElementById('igst-rate').value = inv.igst_rate;
+
+  setTaxMode((parseFloat(inv.igst_rate) || 0) > 0 ? 'inter' : 'intra');
+
+  document.getElementById('thankyou-msg').value  = inv.notes || 'Thank you for your business!';
+
+  document.getElementById('invoice-terms').value = (inv.terms && inv.terms !== 'Payment due within 30 days.') ? inv.terms : (inv.terms || '');
+
   inv.items.forEach(item => addItem(item));
+
+  // Restore template style + accent colour. Colour is set BEFORE the skin so
+  // applyPreviewSkin()'s override picks it up.
+  if (inv.template_color) {
+    window._selectedColor = inv.template_color;
+    const ai = document.getElementById('accent-color');
+    if (ai) { ai.value = inv.template_color; const al = document.getElementById('accent-color-val'); if (al) al.textContent = inv.template_color.toUpperCase(); }
+  }
+  if (inv.template_style) selectTemplate(inv.template_style);
+
+  // Restore layout config (new nested format with legacy flat-key fallback)
+  const lc = inv.layout_config || {};
+  if (Array.isArray(lc.section_order) && lc.section_order.length) {
+    const valid = lc.section_order.filter(s => DEFAULT_SECTIONS.includes(s));
+    DEFAULT_SECTIONS.forEach(s => { if (!valid.includes(s)) valid.push(s); });
+    layoutState.section_order = valid;
+  }
+  layoutState.hidden_sections = Array.isArray(lc.hidden_sections)
+    ? lc.hidden_sections.filter(s => DEFAULT_SECTIONS.includes(s))
+    : [];
+  if (!Array.isArray(lc.hidden_sections)) {
+    // Legacy flat toggles
+    if (lc.show_terms === false && !layoutState.hidden_sections.includes('terms')) layoutState.hidden_sections.push('terms');
+    if (!lc.show_signature && !layoutState.hidden_sections.includes('signature')) layoutState.hidden_sections.push('signature');
+  }
+  const ssIn = lc.section_settings || {};
+  if (ssIn.items_table) Object.assign(layoutState.section_settings.items_table, ssIn.items_table);
+  if (ssIn.header)      Object.assign(layoutState.section_settings.header, ssIn.header);
+  if (ssIn.bill_to)     Object.assign(layoutState.section_settings.bill_to, ssIn.bill_to);
+  if (!ssIn.items_table && !Array.isArray(lc.hidden_sections)) {
+    layoutState.section_settings.items_table.show_hsn      = lc.show_hsn !== false;
+    layoutState.section_settings.items_table.show_discount = lc.show_discount !== false;
+  }
+  renderSectionEditor();
+  applyLayoutToPreview();
+
 }
+
+
 
 /* ── Default dates ── */
+
 const today = new Date().toISOString().split('T')[0];
+
 document.getElementById('invoice_date').value = today;
 
+const dueDefault = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+
+document.getElementById('due_date').value = dueDefault;
+
+
+
 /* ── Auto invoice number ── */
+
 async function genInvNumber() {
+
   if (ACTION === 'edit') return;
+
   const res = await API.get('/api/invoices/?page_size=1');
+
   const count = res.success ? (res.data.count || 0) : 0;
+
   const d = new Date();
+
   const ym = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}`;
+
   document.getElementById('inv-number').value = `INV-${ym}-${String(count+1).padStart(3,'0')}`;
+
+  updatePvw();
+
+}
+
+
+
+/* ── Template picker (dynamic, plan-gated) ── */
+
+const SECTION_LABELS_FALLBACK = {
+  header:'Header', invoice_meta:'Invoice Details', bill_to:'From & Bill To',
+  items_table:'Items Table', totals:'Totals', notes:'Notes', terms:'Terms',
+  signature:'Signature', footer:'Footer'
+};
+const DEFAULT_SECTIONS = ['header','invoice_meta','bill_to','items_table','totals','notes','terms','signature','footer'];
+const SECTIONS_WITH_SETTINGS = { items_table:true, header:true, bill_to:true };
+
+const TPL_THUMBS = {
+  classic:      '<div style="height:8px;background:#C1121F;border-radius:2px;width:60%"></div><div style="height:2px;background:#E2E8F0;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#FDF0F1;border-radius:2px"></div><div style="flex:1;background:#FDF0F1;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
+  minimal:      '<div style="height:8px;background:#1E293B;border-radius:2px;width:55%"></div><div style="height:1px;background:#1E293B;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#F1F5F9;border-radius:2px"></div><div style="flex:1;background:#F1F5F9;border-radius:2px"></div></div><div style="height:5px;background:#1E293B;border-radius:2px;width:38%;align-self:flex-end"></div>',
+  modern:       '<div style="height:10px;background:#C1121F;border-radius:2px;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#1E293B;border-radius:2px"></div><div style="flex:1;background:#1E293B;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
+  professional: '<div style="display:flex;gap:3px"><div style="width:4px;background:#C1121F;border-radius:1px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:7px;background:#C1121F;border-radius:2px;width:70%"></div><div style="height:3px;background:#FED7AA;width:100%"></div></div></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#FDF0F1;border-radius:2px"></div><div style="flex:1;background:#FDF0F1;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
+  bold:         '<div style="height:14px;background:rgba(255,255,255,.25);border-radius:2px;width:100%;display:flex;align-items:center;padding:0 4px"><div style="height:6px;background:#fff;border-radius:1px;width:40%"></div></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:rgba(255,255,255,.15);border-radius:2px"></div><div style="flex:1;background:rgba(255,255,255,.15);border-radius:2px"></div></div><div style="height:6px;background:#fff;border-radius:2px;width:100%"></div>',
+  compact:      '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:6px;background:#0F172A;border-radius:1px;width:45%"></div><div style="height:6px;background:#C1121F;border-radius:1px;width:22%"></div></div><div style="height:4px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:1px;margin-top:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:3px;background:#0F172A"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div></div><div style="height:5px;display:flex;gap:2px"><div style="flex:1;background:#F1F5F9;border-radius:1px"></div><div style="width:34%;background:#C1121F;border-radius:1px"></div></div>',
+  sidebar:      '<div style="display:flex;gap:3px;height:100%"><div style="width:30%;background:#16243D;border-radius:2px;display:flex;flex-direction:column;gap:2px;padding:3px"><div style="height:4px;background:#C1121F;border-radius:1px;width:80%"></div><div style="height:2px;background:rgba(255,255,255,.35)"></div><div style="height:2px;background:rgba(255,255,255,.35);width:70%"></div></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:8px;background:#16243D;border-radius:1px;width:50%"></div><div style="flex:1;background:#F4F7FB;border-radius:2px"></div><div style="height:5px;background:#16243D;border-radius:1px;width:40%;align-self:flex-end"></div></div></div>',
+  boxed:        '<div style="height:12px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:2px;display:flex;align-items:center;justify-content:center"><div style="height:4px;background:#065F46;border-radius:1px;width:45%"></div></div><div style="flex:1;display:flex;gap:3px;margin-top:2px"><div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:3px"></div><div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:3px"></div></div><div style="height:6px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:2px;width:44%;margin-left:auto;margin-top:2px"></div>',
+  statement:    '<div style="font-size:17px;font-weight:900;color:#0F172A;line-height:1;letter-spacing:-.5px">INV</div><div style="display:flex;justify-content:flex-end"><div style="width:46%;background:#C1121F;border-radius:2px;padding:2px 3px"><div style="height:3px;background:rgba(255,255,255,.7);border-radius:1px;width:60%"></div></div></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:3px;background:#0F172A"></div><div style="height:2px;background:#0F172A"></div><div style="height:2px;background:#E2E8F0"></div></div>',
+  staffing:     '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:7px;background:#901709;border-radius:1px;width:52%"></div><div style="height:7px;background:#F97316;border-radius:1px;width:18%"></div></div><div style="height:2.5px;background:#F97316;margin-top:2px"></div><div style="height:4px;background:#9CC2E4;border-radius:1px;margin-top:3px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:2.5px;background:#515151"></div><div style="height:2.5px;background:#E5E7EB"></div><div style="height:2.5px;background:#515151"></div></div><div style="height:5px;background:#0F172A;border-radius:1px;width:40%;margin-top:2px"></div>',
+  payroll:      '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:7px;background:#0F766E;border-radius:1px;width:52%"></div><div style="height:7px;background:#0F766E;border-radius:1px;width:18%"></div></div><div style="height:2.5px;background:#0F766E;margin-top:2px"></div><div style="height:4px;background:#99F6E4;border-radius:1px;margin-top:3px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:2.5px;background:#515151"></div><div style="height:2.5px;background:#E5E7EB"></div><div style="height:2.5px;background:#515151"></div></div><div style="height:5px;background:#0F766E;border-radius:1px;width:34%;margin-top:2px"></div>',
+};
+
+window._selectedTemplate = 'classic';
+window._tplList = [];
+window._planUnlocked = {};
+
+let layoutState = {
+  section_order: [...DEFAULT_SECTIONS],
+  hidden_sections: [],
+  section_settings: {
+    items_table: { show_hsn: true, show_discount: true },
+    header:      { show_gstin: true },
+    bill_to:     { show_gst: true },
+  },
+  logo_width: 110,
+};
+
+async function loadTemplates() {
+  ZayroLoader.show('#tpl-grid', 'Loading templates…');
+  try {
+    const r = await API.get('/api/invoices/templates/');
+    if (!r.success) return;
+    window._tplList = r.data.templates || [];
+    if (r.data.sections) Object.assign(SECTION_LABELS_FALLBACK, r.data.sections);
+    window._tplList.forEach(t => window._planUnlocked[t.id] = !!t.unlocked);
+  } catch(_) {}
+  finally { ZayroLoader.hide('#tpl-grid'); }
+  buildTplGrid();
+}
+
+function tplBadgeClass(plan) {
+  if (plan === 'free') return 'free';
+  if (plan === 'plus') return 'plus';
+  return 'pro';
+}
+function tplBadgeLabel(plan) {
+  return plan === 'free' ? 'Free' : plan === 'plus' ? 'Plus+' : plan === 'pro' ? 'Pro+' : 'All plans';
+}
+
+function buildTplGrid() {
+  const grid = document.getElementById('tpl-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  window._tplList.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'tpl-card' + (t.unlocked ? '' : ' locked') + (t.id === window._selectedTemplate ? ' active' : '');
+    card.id = 'tpl-' + t.id;
+    card.innerHTML = `
+      ${t.blocked ? '<i class="bi bi-slash-circle tpl-lock" title="Blocked by admin"></i>' : (!t.unlocked ? '<i class="bi bi-lock-fill tpl-lock"></i>' : '')}
+      <button type="button" class="tpl-preview-btn" title="Preview ${t.name}" onclick="event.stopPropagation();openTemplatePreview('${t.id}')"><i class="bi bi-eye-fill"></i></button>
+      <div class="tpl-thumb" style="background:${t.id==='bold' ? '#C1121F' : t.badge || '#F8FAFC'};border:1px solid #E2E8F0;display:flex;flex-direction:column;gap:3px;padding:6px">${TPL_THUMBS[t.id] || TPL_THUMBS.classic}</div>
+      <div class="tpl-name">${t.name}</div>
+      <span class="tpl-badge ${tplBadgeClass(t.min_plan)}" ${t.blocked ? 'style="background:var(--color-danger-bg);color:var(--color-danger)"' : ''}>${t.blocked ? 'Blocked' : tplBadgeLabel(t.min_plan)}</span>
+      ${t.task && t.task !== 'billing' ? `<span style="display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;font-size:.62rem;font-weight:700;background:#E6FFFA;color:#0F766E;border:1px solid #99F6E4;vertical-align:middle">${t.task_label || t.task}</span>` : ''}
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:5px;line-height:1.4">${t.desc}</div>`;
+    card.onclick = () => selectTemplate(t.id);
+    grid.appendChild(card);
+  });
+}
+
+/* ── Per-template item-field schema ───────────────────────────────────────────
+   Which controls each template shows on an invoice line. `_default` is the
+   existing product/generic behaviour and is what every template except
+   'staffing' resolves to, so adding an entry here is the ONLY way a template's
+   line editor changes. Field ids and the submit payload are unchanged — this
+   governs visibility, labels and input types only. */
+const ITEM_SCHEMAS = {
+  _default: {
+    rowClass: '',
+    header:   ['#  DESCRIPTION', 'HSN/SAC', 'QTY', 'RATE (₹)', 'SET%', 'AMOUNT (₹)', ''],
+    product: true, role: false, discount: true, dateInput: false,
+    descPh: 'Description', hsnPh: '—', rolePh: 'Role',
+  },
+  // Employee / on-boarding billing: no product catalogue, no discount column,
+  // and the date column is a real date picker.
+  staffing: {
+    rowClass: 'items-employee',
+    header:   ['#  EMPLOYEE NAME', 'PROJECT ON-BOARDED DATE', 'WORKING DAYS',
+               'RATE (₹)', 'AMOUNT (₹)', ''],
+    product: false, role: true, discount: false, dateInput: true,
+    descPh: 'Employee Name', hsnPh: 'dd-mm-yy', rolePh: 'Role',
+  },
+  // Payroll: same row engine as staffing, salary-specific wording.
+  payroll: {
+    rowClass: 'items-employee',
+    header:   ['#  EMPLOYEE NAME', 'DESIGNATION', 'PAY PERIOD',
+               'RATE (₹)', 'AMOUNT (₹)', ''],
+    product: false, role: true, discount: false, dateInput: true,
+    descPh: 'Employee Name', hsnPh: 'dd-mm-yy', rolePh: 'Designation',
+  },
+};
+const itemSchema = id => ITEM_SCHEMAS[id] || ITEM_SCHEMAS._default;
+
+/* An <input type="date"> yields YYYY-MM-DD; the employee template prints
+   DD-MM-YY. Anything not ISO (older free-text rows) passes through untouched. */
+function fmtItemDate(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v || '').trim());
+  return m ? `${m[3]}-${m[2]}-${m[1].slice(2)}` : (v || '');
+}
+
+function updateItemsLabels(id) {
+  const sc = itemSchema(id);
+
+  const hdr = document.querySelector('.items-hdr');
+  if (hdr) {
+    hdr.classList.toggle('items-employee', !!sc.rowClass);
+    hdr.innerHTML = sc.header.map(h => `<span>${h}</span>`).join('');
+  }
+  document.querySelectorAll('#items-wrap .item-row').forEach(
+    r => r.classList.toggle('items-employee', !!sc.rowClass));
+
+  document.querySelectorAll('[id^="desc-"]').forEach(el => el.placeholder = sc.descPh);
+  document.querySelectorAll('[id^="role-"]').forEach(el => el.placeholder = sc.rolePh || 'Role');
+  document.querySelectorAll('[id^="hsn-"]').forEach(el => {
+    el.placeholder = sc.hsnPh;
+    // Swap text <-> date. Clear a value the other type can't represent so the
+    // control never sits in an invalid state.
+    const want = sc.dateInput ? 'date' : 'text';
+    if (el.type !== want) {
+      if (want === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(el.value)) el.value = '';
+      el.type = want;
+    }
+  });
+  // Controls this template does not use are removed from the grid entirely
+  // (display:none, so they take up no track) rather than left visible.
+  document.querySelectorAll('[id^="role-"]').forEach(
+    el => el.style.display = sc.role ? '' : 'none');
+  document.querySelectorAll('[id^="prod-"]').forEach(
+    el => el.style.display = sc.product ? '' : 'none');
+  document.querySelectorAll('[id^="disc-"]').forEach(
+    el => el.style.display = sc.discount ? '' : 'none');
+}
+
+function selectTemplate(id) {
+  const t = window._tplList.find(x => x.id === id);
+  if (t && !t.unlocked) {
+    toast(t.blocked
+      ? `"${t.name}" template is currently unavailable. Please contact support.`
+      : `The "${t.name}" template needs an upgrade. Upgrade your plan to unlock it.`, 'error');
+    if (!t.blocked && confirm(`The "${t.name}" template is available on higher plans. Go to pricing page?`)) {
+      window.location = '/pricing/';
+    }
+    return;
+  }
+  window._selectedTemplate = id;
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('tpl-' + id)?.classList.add('active');
+  applyPreviewSkin(id);
+  updateItemsLabels(id);
+  applyLayoutToPreview();   // rebuilds the preview items header for this template
+  updatePvw();
+  goToStage(2);
+}
+
+const ALL_SKIN_CLASSES = ['tpl-classic','tpl-minimal','tpl-modern','tpl-professional','tpl-bold',
+                          'tpl-compact','tpl-sidebar','tpl-boxed','tpl-statement','tpl-staffing',
+                          'tpl-payroll'];
+
+// Single source of visual truth, mirrored from apps/invoices/template_registry.py
+// TEMPLATE_SPECS. Do not hardcode template colors anywhere else in this file —
+// the .tpl-* CSS rules below read these via CSS custom properties instead.
+const TEMPLATE_SPECS = {{ template_specs_json|default:"{}"|safe }};
+
+function applyPreviewSkin(id) {
+  const pvw = document.querySelector('.inv-preview');
+  if (!pvw) return;
+  pvw.classList.remove(...ALL_SKIN_CLASSES);
+  if (id !== 'classic') pvw.classList.add('tpl-' + id);
+
+  const spec = TEMPLATE_SPECS[id] || TEMPLATE_SPECS['classic'];
+  if (spec) {
+    pvw.style.setProperty('--tpl-accent', spec.accent);
+    pvw.style.setProperty('--tpl-secondary', spec.secondary);
+    pvw.style.setProperty('--tpl-text', spec.text);
+    pvw.style.setProperty('--tpl-muted', spec.muted);
+    pvw.style.setProperty('--tpl-border', spec.border);
+    pvw.style.setProperty('--tpl-tint', spec.tint);
+  }
+  // User-picked accent colour overrides the template default — it is sent as
+  // template_color and used by pdf_generator._accent() in the final PDF.
+  if (window._selectedColor) pvw.style.setProperty('--tpl-accent', window._selectedColor);
+}
+
+function setAccentColor(v) {
+  window._selectedColor = v;
+  const inp = document.getElementById('accent-color');
+  if (inp && inp.value.toLowerCase() !== String(v).toLowerCase()) inp.value = v;
+  const lbl = document.getElementById('accent-color-val');
+  if (lbl) lbl.textContent = String(v).toUpperCase();
+  applyPreviewSkin(window._selectedTemplate || 'classic');
   updatePvw();
 }
 
-/* ── Submit ── */
-document.getElementById('invoice-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const custName = document.getElementById('cust-name').value.trim();
-  if (!custName) { toast('Please enter a customer name.', 'error'); return; }
-  const items = [];
-  let hasItem = false;
-  document.querySelectorAll('#items-wrap .item-row').forEach(row => {
-    const i     = row.id.replace('row-','');
-    const price = parseFloat(document.getElementById(`price-${i}`)?.value||0);
-    const qty   = parseFloat(document.getElementById(`qty-${i}`)?.value||0);
-    const desc  = document.getElementById(`desc-${i}`)?.value ||
-                  document.getElementById(`prod-${i}`)?.selectedOptions[0]?.textContent || '';
-    const pid   = document.getElementById(`prod-${i}`)?.value;
-    if (price > 0) { hasItem = true; items.push({ product_id: pid||'manual', quantity: qty, discount: parseFloat(document.getElementById(`disc-${i}`)?.value||0), description: desc, unit_price: price, hsn_code: document.getElementById(`hsn-${i}`)?.value||'' }); }
-  });
-  if (!hasItem) { toast('Add at least one item with a price.', 'error'); return; }
+/* ── Template preview modal ── */
+/* Reuses the SAME #inv-preview DOM node (moves it into the modal, then back)
+   so the modal, the sticky panel, and applyPreviewSkin()/TEMPLATE_SPECS
+   never diverge into a second renderer. */
+window._previewModalTplId = null;
+window._previewModalSelect = false;
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  document.getElementById('btn-spin').classList.remove('d-none');
-  document.getElementById('btn-text').textContent = 'Saving…';
-  document.getElementById('error-msg').classList.add('d-none');
+function openTemplatePreview(id) {
+  const t = window._tplList.find(x => x.id === id);
+  if (t && !t.unlocked) { selectTemplate(id); return; }
+  window._previewModalTplId = id;
+  window._previewModalSelect = false;
+  document.getElementById('tplPreviewModalTitle').textContent = (t ? t.name : id) + ' — Preview';
+  document.getElementById('tplPreviewModalBody').appendChild(document.getElementById('inv-preview'));
+  document.getElementById('inv-preview').classList.remove('zoomed');
+  window._pvwSampleMode = true;   // display-only sample content; cleared on hidden.bs.modal
+  updatePvw();
+  applyPreviewSkin(id);
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('tplPreviewModal')).show();
+}
 
-  const invDate = document.getElementById('invoice_date').value;
-  const payload = {
-    customer_id:      document.getElementById('customer_id').value || 'manual',
-    customer_name:    custName,
-    customer_email:   document.getElementById('cust-email').value || 'noemail@example.com',
-    customer_address: document.getElementById('cust-addr').value,
-    customer_gst:     document.getElementById('cust-gst').value,
-    invoice_date:     invDate + 'T00:00:00Z',
-    due_date:         invDate + 'T00:00:00Z',
-    currency:         'INR',
-    notes:            document.getElementById('thankyou-msg').value,
-    terms:            document.getElementById('department').value,
-    items,
-  };
-  console.log('Submitting payload:', JSON.stringify(payload));
+function toggleTemplateZoom() {
+  document.getElementById('inv-preview').classList.toggle('zoomed');
+}
 
-  try {
-    const res = ACTION === 'edit'
-      ? await API.put(`/api/invoices/${INVOICE_ID}/`, payload)
-      : await API.post('/api/invoices/', payload);
-    console.log('API response:', res);
-    if (res.success) {
-      toast(ACTION === 'edit' ? 'Invoice updated!' : 'Invoice created!');
-      setTimeout(() => window.location = `/invoices/${res.data.id}/`, 800);
+function selectFromPreviewModal() {
+  window._previewModalSelect = true;
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('tplPreviewModal')).hide();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modalEl = document.getElementById('tplPreviewModal');
+  if (!modalEl) return;
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    document.querySelector('.gen-preview .preview-wrap').appendChild(document.getElementById('inv-preview'));
+    window._pvwSampleMode = false;  // covers Close, Select, backdrop and Esc
+    updatePvw();                    // re-render from the user's real form state
+    if (window._previewModalSelect) {
+      selectTemplate(window._previewModalTplId);
     } else {
-      let msg = 'Save failed.';
-      if (res.errors) msg = Object.values(res.errors).flat().join(' | ');
-      else if (res.message) msg = res.message;
-      const errEl = document.getElementById('error-msg');
-      errEl.textContent = msg; errEl.classList.remove('d-none');
-      errEl.scrollIntoView({behavior:'smooth', block:'center'});
-      toast(msg, 'error');
+      applyPreviewSkin(window._selectedTemplate);
     }
-  } catch(err) {
-    console.error('Submit error:', err);
-    toast('Network error: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    document.getElementById('btn-spin').classList.add('d-none');
-    document.getElementById('btn-text').textContent = 'Save Invoice';
-  }
+    window._previewModalSelect = false;
+    window._previewModalTplId = null;
+  });
 });
 
-/* ── Init ── */
-(async () => {
-  await Promise.all([loadCustomers(), loadProducts()]);
-  await loadProfile();
-  await genInvNumber();
-  await loadInvoice();
-  if (ACTION === 'create') addItem();
+/* ── Section editor (drag & drop + visibility + settings) ── */
+
+let _dragSecId = null;
+
+function renderSectionEditor() {
+  const wrap = document.getElementById('sec-rows');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  layoutState.section_order.forEach(secId => {
+    const hidden = layoutState.hidden_sections.includes(secId);
+    const row = document.createElement('div');
+    row.className = 'sec-row' + (hidden ? ' hidden-sec' : '');
+    row.draggable = true;
+    row.dataset.sec = secId;
+    const hasSettings = SECTIONS_WITH_SETTINGS[secId];
+    row.innerHTML = `
+      <i class="bi bi-grip-vertical sec-grip"></i>
+      <span class="sec-name">${SECTION_LABELS_FALLBACK[secId] || secId}</span>
+      ${hasSettings ? `<button type="button" class="sec-caret" onclick="toggleSecSub('${secId}',this)"><i class="bi bi-chevron-right"></i></button>` : ''}
+      <button type="button" class="sec-eye" title="${hidden ? 'Show section' : 'Hide section'}" onclick="toggleSecVisibility('${secId}')">
+        <i class="bi ${hidden ? 'bi-eye-slash' : 'bi-eye'}"></i>
+      </button>
+      <button type="button" class="sec-move" title="Move up" onclick="moveSection('${secId}',-1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 3px"><i class="bi bi-arrow-up"></i></button>
+      <button type="button" class="sec-move" title="Move down" onclick="moveSection('${secId}',1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 3px"><i class="bi bi-arrow-down"></i></button>`;
+
+    row.addEventListener('dragstart', e => {
+      _dragSecId = secId;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', secId); } catch(_) {}
+    });
+    row.addEventListener('dragend', () => { row.classList.remove('dragging'); });
+    row.addEventListener('dragover', e => { e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (!_dragSecId || _dragSecId === secId) return;
+      const from = layoutState.section_order.indexOf(_dragSecId);
+      const to   = layoutState.section_order.indexOf(secId);
+      layoutState.section_order.splice(from, 1);
+      layoutState.section_order.splice(to, 0, _dragSecId);
+      _dragSecId = null;
+      renderSectionEditor();
+      applyLayoutToPreview();
+    });
+
+    wrap.appendChild(row);
+
+    // Settings sub-panel
+    if (hasSettings) {
+      const sub = document.createElement('div');
+      sub.className = 'sec-sub';
+      sub.dataset.subFor = secId;
+      sub.innerHTML = secSettingsHtml(secId);
+      wrap.appendChild(sub);
+    }
+  });
+}
+
+function secSettingsHtml(secId) {
+  const ss = layoutState.section_settings[secId] || {};
+  if (secId === 'items_table') {
+    return `
+      <label class="tgl-row"><input type="checkbox" ${ss.show_hsn !== false ? 'checked' : ''} onchange="setSecSetting('items_table','show_hsn',this.checked)"> Show HSN / SAC column</label>
+      <label class="tgl-row"><input type="checkbox" ${ss.show_discount !== false ? 'checked' : ''} onchange="setSecSetting('items_table','show_discount',this.checked)"> Show discount column</label>`;
+  }
+  if (secId === 'header') {
+    return `<label class="tgl-row"><input type="checkbox" ${ss.show_gstin !== false ? 'checked' : ''} onchange="setSecSetting('header','show_gstin',this.checked)"> Show business GSTIN</label>`;
+  }
+  if (secId === 'bill_to') {
+    return `<label class="tgl-row"><input type="checkbox" ${ss.show_gst !== false ? 'checked' : ''} onchange="setSecSetting('bill_to','show_gst',this.checked)"> Show customer GST</label>`;
+  }
+  return '';
+}
+
+function toggleSecSub(secId, btn) {
+  const sub = document.querySelector(`.sec-sub[data-sub-for="${secId}"]`);
+  if (!sub) return;
+  sub.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function setSecSetting(secId, key, val) {
+  if (!layoutState.section_settings[secId]) layoutState.section_settings[secId] = {};
+  layoutState.section_settings[secId][key] = val;
+  applyLayoutToPreview();
   updatePvw();
+}
+
+function toggleSecVisibility(secId) {
+  const i = layoutState.hidden_sections.indexOf(secId);
+  if (i >= 0) layoutState.hidden_sections.splice(i, 1);
+  else layoutState.hidden_sections.push(secId);
+  renderSectionEditor();
+  applyLayoutToPreview();
+}
+
+function moveSection(secId, dir) {
+  const i = layoutState.section_order.indexOf(secId);
+  const j = i + dir;
+  if (j < 0 || j >= layoutState.section_order.length) return;
+  [layoutState.section_order[i], layoutState.section_order[j]] = [layoutState.section_order[j], layoutState.section_order[i]];
+  renderSectionEditor();
+  applyLayoutToPreview();
+}
+
+function applyLayoutToPreview() {
+  const pvw = document.getElementById('inv-preview');
+  if (!pvw) return;
+  // Reorder DOM
+  layoutState.section_order.forEach(secId => {
+    const el = pvw.querySelector(`.pvw-sec[data-sec="${secId}"]`);
+    if (el) pvw.appendChild(el);
+  });
+  // Hide/show
+  pvw.querySelectorAll('.pvw-sec').forEach(el => {
+    el.style.display = layoutState.hidden_sections.includes(el.dataset.sec) ? 'none' : '';
+  });
+  // Section-level field settings
+  const ss = layoutState.section_settings;
+  const setDisp = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
+  // GSTIN prints once: in the header by default, falling back to the FROM
+  // block only when the header GSTIN toggle is off. Staffing's header line
+  // carries CIN (not GSTIN), so its FROM block always keeps the GSTIN.
+  const headerGstOn = ss.header?.show_gstin !== false;
+  setDisp('pvw-co-gst',   headerGstOn);
+  setDisp('pvw-from-gst', ((window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll') || !headerGstOn) && ss.bill_to?.show_gst !== false);
+  setDisp('pvw-to-gst',   ss.bill_to?.show_gst !== false);
+
+  // Items header columns — HSN and discount columns both toggle, matching pdf_generator.py's _items_rows()
+  const showDisc = ss.items_table?.show_discount !== false;
+  const showHsn  = ss.items_table?.show_hsn !== false;
+  const hdr = document.getElementById('pvw-items-hdr');
+  if (hdr && (window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll')) {
+    // Task templates use fixed HR columns; the HSN/discount toggles don't apply.
+    const cols = window._selectedTemplate === 'payroll'
+      ? '<span>S.No</span><span>PAY PERIOD</span><span>EMPLOYEE</span>' +
+        '<span>DESIGNATION</span><span>DAYS</span><span>AMOUNT</span>'
+      : '<span>S.No</span><span>DATE</span><span>EMPLOYEE</span>' +
+        '<span>ROLE</span><span>DAYS</span><span>AMOUNT</span>';
+    hdr.innerHTML = cols;
+    // Reference grid 700/1460/2514/2254/1080/1346 twips, as percentages.
+    hdr.style.gridTemplateColumns = '7.48% 15.61% 26.88% 24.10% 11.55% 14.39%';
+  } else if (hdr) {
+    const hsnCol = showHsn ? '<span>HSN</span>' : '';
+    const discCol = showDisc ? '<span>SET%</span>' : '';
+    hdr.innerHTML = `<span>DESCRIPTION</span>${hsnCol}<span>QTY</span><span>RATE</span>${discCol}<span>AMOUNT</span>`;
+    const hsnW = showHsn ? '32px ' : '';
+    const discW = showDisc ? '32px ' : '';
+    hdr.style.gridTemplateColumns = `1fr ${hsnW}32px 55px ${discW}55px`.replace(/\s+/g, ' ');
+  }
+  window._pvwShowDiscount = showDisc;
+  window._pvwShowHsn = showHsn;
+
+  // Logo size
+  onLogoSize(layoutState.logo_width);
+}
+
+function onLogoSize(val) {
+  const v = parseInt(val, 10) || 110;
+  layoutState.logo_width = v;
+  const label = document.getElementById('logo-size-val');
+  if (label) label.textContent = v + 'px';
+  const slider = document.getElementById('logo-size');
+  if (slider && slider.value != v) slider.value = v;
+  // Scale the preview logo placeholder proportionally (PDF uses px*0.75pt)
+  const circle = document.getElementById('pvw-logo-circle');
+  if (circle) {
+    const px = Math.round(v * 0.35);
+    circle.style.width = px + 'px';
+    circle.style.height = px + 'px';
+    circle.style.fontSize = Math.max(8, Math.round(px * 0.3)) + 'px';
+  }
+}
+
+
+
+/* ── Submit ── */
+
+document.getElementById('invoice-form').addEventListener('submit', async (e) => {
+
+  e.preventDefault();
+
+  const custName = document.getElementById('cust-name').value.trim();
+
+  if (!custName) { toast('Please enter a customer name.', 'error'); return; }
+
+  const items = [];
+
+  let hasItem = false;
+
+  document.querySelectorAll('#items-wrap .item-row').forEach(row => {
+
+    const i     = row.id.replace('row-','');
+
+    const price = parseFloat(document.getElementById(`price-${i}`)?.value||0);
+
+    const qty   = parseFloat(document.getElementById(`qty-${i}`)?.value||0);
+
+    const desc  = document.getElementById(`desc-${i}`)?.value ||
+
+                  document.getElementById(`prod-${i}`)?.selectedOptions[0]?.textContent || '';
+
+    const pid   = document.getElementById(`prod-${i}`)?.value;
+
+    if (price > 0) { hasItem = true; items.push({ product_id: pid||'manual', quantity: qty, discount: parseFloat(document.getElementById(`disc-${i}`)?.value||0), description: desc, role: document.getElementById(`role-${i}`)?.value||'', unit_price: price, hsn_code: document.getElementById(`hsn-${i}`)?.value||'', tax_rate: (parseFloat(document.getElementById('cgst-rate')?.value||0)+parseFloat(document.getElementById('sgst-rate')?.value||0)+parseFloat(document.getElementById('igst-rate')?.value||0)) }); }
+
+  });
+
+  if (!hasItem) { toast('Add at least one item with a price.', 'error'); return; }
+
+
+
+  const btn = document.getElementById('submit-btn');
+
+  btn.disabled = true;
+
+  document.getElementById('btn-spin').classList.remove('d-none');
+  ZayroLoader.show('#btn-spin', null, {inline:true});
+
+  document.getElementById('btn-text').textContent = 'Saving…';
+
+  document.getElementById('error-msg').classList.add('d-none');
+
+
+
+  const invDate = document.getElementById('invoice_date').value;
+
+  const dueDate = document.getElementById('due_date').value || invDate;
+
+  const payload = {
+
+    customer_id:      document.getElementById('customer_id').value || 'manual',
+
+    customer_name:    custName,
+
+    customer_email:   document.getElementById('cust-email').value,
+
+    customer_address: document.getElementById('cust-addr').value,
+
+    customer_gst:     document.getElementById('cust-gst').value,
+
+    // These four were collected by the form but never posted — the PDF had no
+    // way to show a recipient, phone, PAN or CIN for the customer.
+    customer_phone:     document.getElementById('cust-phone')?.value || '',
+    customer_pan:       document.getElementById('cust-pan')?.value || '',
+    customer_cin:       document.getElementById('cust-cin')?.value || '',
+    customer_recipient: document.getElementById('cust-contact')?.value || '',
+
+    // Persist the three GST rates individually. Previously only their sum
+    // survived (as each item's tax_rate), so the PDF could not show CGST /
+    // SGST / IGST as three separate lines.
+    cgst_rate: parseFloat(document.getElementById('cgst-rate')?.value || 0) || 0,
+    sgst_rate: parseFloat(document.getElementById('sgst-rate')?.value || 0) || 0,
+    igst_rate: parseFloat(document.getElementById('igst-rate')?.value || 0) || 0,
+
+    department:       document.getElementById('department')?.value || '',
+
+    invoice_date:     invDate + 'T00:00:00Z',
+
+    due_date:         dueDate + 'T00:00:00Z',
+
+    currency:         'INR',
+
+    notes:            document.getElementById('thankyou-msg').value,
+
+    terms:            document.getElementById('invoice-terms').value || 'Payment due within 30 days.',
+
+    template_color:   window._selectedColor || '#C1121F',
+
+    template_style:   window._selectedTemplate || 'classic',
+
+    layout_config: {
+      // New nested structure consumed by the PDF generator
+      section_order:     layoutState.section_order,
+      hidden_sections:   layoutState.hidden_sections,
+      section_settings:  layoutState.section_settings,
+      logo_width:        layoutState.logo_width,
+      // Legacy flat keys kept for backward compatibility with older PDFs/views
+      show_hsn:          layoutState.section_settings.items_table.show_hsn !== false,
+      show_discount:     layoutState.section_settings.items_table.show_discount !== false,
+      show_terms:        !layoutState.hidden_sections.includes('terms'),
+      show_signature:    !layoutState.hidden_sections.includes('signature'),
+    },
+
+    signature_image:   getSignatureImageForPayload(),
+    signatory_name:    document.getElementById('sig-name')?.value || '',
+    signature_company: document.getElementById('sig-company')?.value || '',
+
+    items,
+
+  };
+
+  try {
+
+    // The company block (from-*) used to be a preview-only mirror: whatever you
+    // typed here was discarded, and the PDF read BusinessProfile server-side —
+    // which stayed empty, so the letterhead and the footer address/website/
+    // contact lines came out blank. Persist it to the profile (still the single
+    // source of truth) so it survives and reaches the PDF.
+    await saveCompanyBlock();
+
+    const res = ACTION === 'edit'
+
+      ? await API.put(`/api/invoices/${INVOICE_ID}/`, payload)
+
+      : await API.post('/api/invoices/', payload);
+
+    if (res.success) {
+
+      toast(ACTION === 'edit' ? 'Invoice updated!' : 'Invoice created!');
+
+      setTimeout(() => window.location = `/invoices/${res.data.id}/`, 800);
+
+    } else {
+
+      let msg = 'Save failed.';
+
+      if (res.errors) msg = Object.values(res.errors).flat().join(' | ');
+
+      else if (res.message) msg = res.message;
+
+      const errEl = document.getElementById('error-msg');
+
+      errEl.textContent = msg; errEl.classList.remove('d-none');
+
+      errEl.scrollIntoView({behavior:'smooth', block:'center'});
+
+      toast(msg, 'error');
+
+    }
+
+  } catch(err) {
+
+    console.error('Submit error:', err);
+
+    toast('Network error: ' + err.message, 'error');
+
+  } finally {
+
+    btn.disabled = false;
+
+    document.getElementById('btn-spin').classList.add('d-none');
+    ZayroLoader.hide('#btn-spin');
+
+    document.getElementById('btn-text').textContent = 'Save Invoice';
+
+  }
+
+});
+
+
+
+/* ── Stage toggle: State 1 (template select) <-> State 2 (details entry) ── */
+function goToStage(n) {
+  document.querySelectorAll('.stage1-only').forEach(el => el.classList.toggle('stg-hidden', n !== 1));
+  document.querySelectorAll('.stage2-only').forEach(el => el.classList.toggle('stg-hidden', n !== 2));
+  const gl = document.getElementById('gen-layout');
+  gl.classList.toggle('stage-1', n === 1);
+  gl.classList.toggle('stage-2', n === 2);
+  if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+}
+
+function toggleMobilePreview() {
+  const gl = document.getElementById('gen-layout');
+  const showing = gl.classList.toggle('show-preview');
+  document.getElementById('mobile-view-toggle-label').textContent = showing ? 'Details' : 'Preview';
+  document.querySelector('#mobile-view-toggle i').className = showing ? 'bi bi-pencil-fill' : 'bi bi-eye-fill';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+/* ── Init ── */
+
+goToStage(1);
+loadTemplates();
+renderSectionEditor();
+applyPreviewSkin('classic');
+applyLayoutToPreview();
+
+(async () => {
+
+  await Promise.all([loadCustomers(), loadProducts()]);
+
+  await loadProfile();
+
+  await genInvNumber();
+
+  await loadInvoice();
+
+  if (ACTION === 'create') addItem();
+
+  updatePvw();
+
 })();
+
 </script>
+
 {% endblock %}
+

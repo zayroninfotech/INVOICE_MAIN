@@ -1,0 +1,73 @@
+{% comment %}
+Site-wide marketing navbar — single source of truth for landing/about/support.
+Context supplied by the view (MVT): nav_links = [{label, href, active}].
+{% endcomment %}
+<style>
+  .sn-nav{position:sticky;top:0;left:0;right:0;z-index:300;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(255,255,255,.85);border-bottom:1px solid #EAE6E3;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+  .sn-logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;}
+  .sn-logo-box{width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .sn-logo-box img{width:28px;height:28px;object-fit:contain;display:block;}
+  .sn-logo-text{font-size:.9rem;font-weight:700;color:#131416;letter-spacing:-.025em;}
+  .sn-center{display:flex;gap:2px;position:absolute;left:50%;transform:translateX(-50%);}
+  .sn-link{padding:6px 14px;color:#64748B;font-size:.82rem;font-weight:500;text-decoration:none;border-radius:6px;transition:color .12s,background .12s;white-space:nowrap;}
+  .sn-link:hover,.sn-link.active{color:#131416;background:rgba(19,20,22,.05);}
+  .sn-right{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+  .sn-btn-ghost{padding:7px 15px;border:1px solid #E2E8F0;border-radius:7px;color:#64748B;font-size:.82rem;font-weight:500;text-decoration:none;transition:all .12s;font-family:inherit;background:none;cursor:pointer;white-space:nowrap;}
+  .sn-btn-ghost:hover{border-color:#CBD5E1;color:#131416;}
+  .sn-btn-cta{padding:7px 18px;background:#C1121F;border-radius:7px;color:#fff;font-size:.82rem;font-weight:700;text-decoration:none;transition:background .15s,transform .1s;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .sn-btn-cta:hover{background:#8C0F1B;color:#fff;}
+  .sn-btn-cta:active{transform:scale(.97);}
+  .sn-hamburger{display:none;width:36px;height:36px;border:1px solid #E2E8F0;border-radius:7px;background:none;cursor:pointer;color:#64748B;align-items:center;justify-content:center;font-size:1.1rem;transition:color .12s,border-color .12s;}
+  .sn-hamburger:hover{color:#131416;border-color:#CBD5E1;}
+  .sn-menu{display:none;position:fixed;top:56px;left:0;right:0;z-index:299;background:rgba(255,255,255,.97);border-bottom:1px solid #EAE6E3;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:16px 20px 20px;flex-direction:column;gap:4px;}
+  .sn-menu.open{display:flex;}
+  .sn-menu-link{padding:10px 14px;color:#64748B;font-size:.9rem;font-weight:500;text-decoration:none;border-radius:7px;transition:color .12s,background .12s;}
+  .sn-menu-link:hover,.sn-menu-link.active{color:#131416;background:rgba(19,20,22,.05);}
+  .sn-menu-divider{height:1px;background:#EAE6E3;margin:8px 0;}
+  .sn-menu-btns{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  @media(max-width:900px){.sn-center{display:none;}.sn-right .sn-btn-ghost,.sn-right .sn-btn-cta{display:none;}.sn-hamburger{display:flex;}}
+</style>
+<nav class="sn-nav" role="navigation" aria-label="Main navigation">
+  <a class="sn-logo" href="/" aria-label="Zayro Invoice home">
+    <span class="sn-logo-box"><img src="/static/img/logo.png" alt="Zayro Invoice logo"></span>
+    <span class="sn-logo-text">Zayro Invoice</span>
+  </a>
+  <div class="sn-center" role="list">
+    {% for item in nav_links %}
+    <a href="{{ item.href }}" class="sn-link{% if item.active %} active{% endif %}" role="listitem">{{ item.label }}</a>
+    {% endfor %}
+  </div>
+  <div class="sn-right">
+    <a href="/?login" class="sn-btn-ghost">Sign in</a>
+    {% if nav_cta %}
+    <a href="{{ nav_cta.href }}" class="sn-btn-cta">{{ nav_cta.label }}</a>
+    {% else %}
+    <a href="/?register" class="sn-btn-cta">Start for free <i class="bi bi-arrow-right" style="font-size:.75rem"></i></a>
+    {% endif %}
+    <button class="sn-hamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sn-menu" onclick="snToggleMenu(this)">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+  </div>
+</nav>
+<div class="sn-menu" id="sn-menu" role="dialog" aria-label="Navigation menu">
+  {% for item in nav_links %}
+  <a href="{{ item.href }}" class="sn-menu-link{% if item.active %} active{% endif %}">{{ item.label }}</a>
+  {% endfor %}
+  <div class="sn-menu-divider"></div>
+  <div class="sn-menu-btns">
+    <a href="/?login" class="sn-btn-ghost" style="text-align:center">Sign in</a>
+    {% if nav_cta %}
+    <a href="{{ nav_cta.href }}" class="sn-btn-cta" style="justify-content:center">{{ nav_cta.label }}</a>
+    {% else %}
+    <a href="/?register" class="sn-btn-cta" style="justify-content:center">Start for free &rarr;</a>
+    {% endif %}
+  </div>
+</div>
+<script>
+  function snToggleMenu(btn){
+    var m=document.getElementById('sn-menu');
+    var open=m.classList.toggle('open');
+    btn.setAttribute('aria-expanded',open?'true':'false');
+  }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var m=document.getElementById('sn-menu'); if(m) m.classList.remove('open'); }});
+</script>

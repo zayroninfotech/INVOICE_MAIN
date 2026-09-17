@@ -1,11 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 from apps.authentication.authentication import MongoJWTAuthentication
 from apps.invoices.models import Invoice
 from apps.customers.models import Customer
 from apps.products.models import Product
 from apps.payments.models import Payment
 from apps.authentication.models import User
+from apps.subscriptions.entitlements import get_plan_for_request
 from utils.response import success
 from datetime import datetime
 
@@ -63,5 +65,17 @@ class DashboardStatsView(APIView):
             data['total_users'] = User.objects(is_active=True).count()
             data['total_admins'] = User.objects(role='admin', is_active=True).count()
             data['total_regular_users'] = User.objects(role='user', is_active=True).count()
+        else:
+            plan, sub = get_plan_for_request(request)
+            limits = settings.PLAN_LIMITS.get(plan, {})
+            sub._reset_if_needed() if sub else None
+            data['plan'] = {
+                'slug': plan,
+                'label': limits.get('label', plan.capitalize()),
+                'used_today': sub.invoices_used_today if sub else None,
+                'used_month': sub.invoices_used_month if sub else None,
+                'daily_limit': limits.get('invoices_per_day'),
+                'monthly_limit': limits.get('invoices_per_month'),
+            }
 
         return success(data)

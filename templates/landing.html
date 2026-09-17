@@ -1,230 +1,2297 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Zayro ₹ Invoice – Smart Smart Billing Platform</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Zayro Invoice: GST Billing for Indian Businesses</title>
+  <meta name="description" content="Professional GST invoicing, payment tracking and business management, built for Indian businesses. Create your first invoice in minutes."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
-    :root { --primary:#F97316; --primary-dark:#EA580C; --dark:#0F172A; --slate:#1E293B; }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',system-ui,sans-serif; background:#fff; color:#0F172A; }
+    :root {
+      --ember:  #C1121F;
+      --ember-d:#8C0F1B;
+      /* White-dominant surfaces — black is reserved for text/icons only */
+      --dark:   #FFFFFF;
+      --dark-2: #FAF8F7;
+      --dark-3: #F3F0EE;
+      --dark-4: #EAE6E3;
+      --dark-b: rgba(19,20,22,.08);
+      --dark-b2:rgba(19,20,22,.14);
+      --dark-b3:rgba(19,20,22,.24);
+      --text:   #131416;
+      --text-2: rgba(19,20,22,.62);
+      --text-3: rgba(19,20,22,.38);
+      --green:  #16A34A;
+      --r: 10px;
+    }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
 
-    /* ── Navbar ── */
-    .lp-nav {
-      position:fixed; top:0; left:0; right:0; z-index:100;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 40px; height:64px;
-      background:rgba(15,23,42,.95); backdrop-filter:blur(12px);
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .lp-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .lp-logo-icon { width:36px; height:36px; background:var(--primary); border-radius:8px;
-                    display:flex; align-items:center; justify-content:center; }
-    .lp-logo-text { font-size:1.2rem; font-weight:800; color:#fff; letter-spacing:-.02em; }
-    .lp-logo-sub { font-size:.68rem; color:#64748B; font-weight:500; margin-top:-2px; }
-    .lp-nav-links { display:flex; align-items:center; gap:12px; }
-    .btn-nav-outline {
-      padding:8px 20px; border:1.5px solid rgba(255,255,255,.18); border-radius:8px;
-      color:#fff; font-weight:600; font-size:.875rem; text-decoration:none; transition:all .15s;
-    }
-    .btn-nav-outline:hover { border-color:#fff; background:rgba(255,255,255,.08); color:#fff; }
-    .btn-nav-primary {
-      padding:8px 20px; background:var(--primary); border-radius:8px;
-      color:#fff; font-weight:600; font-size:.875rem; text-decoration:none; transition:background .15s;
-    }
-    .btn-nav-primary:hover { background:var(--primary-dark); color:#fff; }
+    /* This page only loads bootstrap-icons, not Bootstrap's CSS, but the
+       markup below still uses a handful of its utility classes — without
+       these, .d-none does nothing and elements it's meant to hide (the
+       result card, error/success alerts) are visible from page load. */
+    .d-none { display:none !important; }
+    .mb-3 { margin-bottom:1rem; }
+    .mb-4 { margin-bottom:1.5rem; }
+    .py-2 { padding-top:.5rem; padding-bottom:.5rem; }
+    .ms-2 { margin-left:.5rem; }
+    .alert { border-radius:8px; padding:10px 14px; font-size:.85rem; }
+    .alert-danger { background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; }
+    .alert-success { background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; }
 
-    /* ── Hero ── */
+    /* Grain texture overlay, breaks flat dark monotony */
+    body::before {
+      content:'';
+      position:fixed; inset:0; z-index:9998; pointer-events:none;
+      opacity:.028;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat:repeat; background-size:200px 200px;
+    }
+
+    body {
+      font-family:'Geist',system-ui,sans-serif;
+      background:var(--dark);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+      cursor:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDE2IDIwIj48cGF0aCBkPSJNMSAxTDEgMTVMNSAxMUw3LjUgMTcuNUwxMCAxNi41TDcuNSAxMEgxM1oiIGZpbGw9IiMxRTI5M0IiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBwYWludC1vcmRlcj0ic3Ryb2tlIi8+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjIiIGZpbGw9IiNFODdBM0QiLz48L3N2Zz4=") 1 1, auto;
+    }
+
+    ::-webkit-scrollbar { display:none; }
+    * { scrollbar-width:none; }
+
+    /* ── SKIP LINK ─────────────────────────────────────── */
+    .skip-link {
+      position:absolute; top:-100%; left:8px;
+      background:var(--ember); color:#fff; font-weight:700; font-size:.8rem;
+      padding:8px 16px; border-radius:0 0 8px 8px; text-decoration:none; z-index:9999;
+    }
+    .skip-link:focus { top:0; }
+
+    /* NAV styles — moved to templates/_site_nav.html (shared partial) */
+
+
+    /* ── HERO ─────────────────────────────────────────── */
     .hero {
-      min-height:100vh; padding-top:64px;
-      background:linear-gradient(135deg,#0F172A 0%,#1E293B 60%,#0F172A 100%);
-      display:flex; align-items:center; justify-content:center; text-align:center;
+      padding-top:56px;
+      display:flex; align-items:center;
       position:relative; overflow:hidden;
     }
-    .hero::before {
-      content:''; position:absolute; width:600px; height:600px;
-      background:radial-gradient(circle,rgba(249,115,22,.25) 0%,transparent 70%);
-      top:10%; left:50%; transform:translateX(-50%); pointer-events:none;
+    /* Static ember wash. Always painted — it is also the fallback when WebGL
+       is unavailable or the visitor prefers reduced motion. */
+    .hero-glow {
+      position:absolute; width:800px; height:800px;
+      background:radial-gradient(circle, rgba(193,18,31,.065) 0%, transparent 65%);
+      top:50%; left:50%; transform:translate(-50%,-58%);
+      pointer-events:none;
     }
-    .hero-inner { position:relative; z-index:1; max-width:760px; padding:40px 20px; }
-    .hero-pill {
-      display:inline-flex; align-items:center; gap:8px; background:rgba(249,115,22,.15);
-      border:1px solid rgba(249,115,22,.3); border-radius:100px;
-      padding:6px 16px; font-size:.8rem; font-weight:600; color:#FDBA74; margin-bottom:24px;
+    /* Animated ember field, layered over the static wash and faded in only
+       once the shader has actually compiled, so a failure degrades silently. */
+    #hero-fx {
+      position:absolute; inset:0; width:100%; height:100%;
+      pointer-events:none; opacity:0; transition:opacity 1.2s ease;
     }
-    .hero-h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900; color:#fff; line-height:1.1; margin-bottom:20px; letter-spacing:-.03em; }
-    .hero-h1 span { color:#FB923C; }
-    .hero-sub { font-size:1.1rem; color:#94A3B8; max-width:520px; margin:0 auto 36px; line-height:1.65; }
-    .hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
-    .btn-hero-primary {
-      padding:14px 32px; background:var(--primary); color:#fff; font-weight:700;
-      font-size:1rem; border-radius:10px; text-decoration:none; transition:all .15s;
-      display:inline-flex; align-items:center; gap:8px;
+    #hero-fx.ready { opacity:1; }
+    @media (prefers-reduced-motion: reduce) { #hero-fx { display:none; } }
+    .hero-inner {
+      position:relative; z-index:1; width:100%; max-width:1200px;
+      margin:0 auto; padding:72px 40px 64px;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
     }
-    .btn-hero-primary:hover { background:var(--primary-dark); color:#fff; transform:translateY(-1px); }
-    .btn-hero-outline {
-      padding:14px 32px; border:1.5px solid rgba(255,255,255,.2); color:#fff; font-weight:600;
-      font-size:1rem; border-radius:10px; text-decoration:none; transition:all .15s;
-      display:inline-flex; align-items:center; gap:8px;
-    }
-    .btn-hero-outline:hover { border-color:#fff; background:rgba(255,255,255,.05); color:#fff; }
 
-    /* ── Stats strip ── */
-    .stats-strip {
-      background:#F8FAFC; border-top:1px solid #E2E8F0; border-bottom:1px solid #E2E8F0;
-      padding:32px 40px;
+    /* Eyebrow pill */
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:7px;
+      background:rgba(193,18,31,.09); border:1px solid rgba(193,18,31,.2);
+      border-radius:100px; padding:4px 13px 4px 9px;
+      font-size:.68rem; font-weight:700; color:#F0576B;
+      letter-spacing:.05em; text-transform:uppercase; margin-bottom:24px;
     }
-    .stat-item { text-align:center; }
-    .stat-num { font-size:2rem; font-weight:900; color:var(--primary); letter-spacing:-.04em; }
-    .stat-lbl { font-size:.8rem; color:#64748B; font-weight:600; margin-top:2px; }
+    .eyebrow .dot { width:5px; height:5px; border-radius:50%; background:var(--ember); animation:pulse 2.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    /* ── Features ── */
-    .features { padding:80px 40px; max-width:1100px; margin:0 auto; }
-    .sec-label { font-size:.75rem; font-weight:700; letter-spacing:.12em; color:var(--primary); text-transform:uppercase; margin-bottom:12px; }
-    .sec-title { font-size:2.2rem; font-weight:900; color:#0F172A; letter-spacing:-.03em; margin-bottom:14px; }
-    .sec-sub { color:#64748B; font-size:1rem; max-width:500px; line-height:1.65; }
-    .feat-card {
-      background:#fff; border:1.5px solid #E2E8F0; border-radius:14px; padding:28px;
-      transition:all .2s; height:100%;
+    .hero-h1 {
+      font-size:clamp(2.2rem,4vw,3.5rem); font-weight:900;
+      color:#131416; line-height:1.07; letter-spacing:-.048em; margin-bottom:22px;
+      text-wrap:balance;
     }
-    .feat-card:hover { border-color:var(--primary); transform:translateY(-2px); box-shadow:0 8px 32px rgba(249,115,22,.1); }
-    .feat-icon {
-      width:48px; height:48px; border-radius:12px; display:flex; align-items:center;
-      justify-content:center; margin-bottom:16px; font-size:1.3rem;
+    .hero-h1 em {
+      font-style:normal;
+      background:linear-gradient(120deg, var(--ember) 0%, #E23A4E 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
-    .feat-title { font-weight:700; color:#0F172A; margin-bottom:6px; font-size:.95rem; }
-    .feat-desc { color:#64748B; font-size:.85rem; line-height:1.6; }
+    .hero-sub {
+      font-size:.97rem; color:var(--text-2); line-height:1.82;
+      margin-bottom:36px; max-width:430px;
+    }
 
-    /* ── CTA ── */
-    .cta-section {
-      background:linear-gradient(135deg,#C2410C,#F97316);
-      padding:72px 40px; text-align:center;
+    .hero-btns { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:40px; }
+    .btn-primary-lg {
+      padding:13px 28px; background:linear-gradient(135deg,#C1121F 0%,#8C0F1B 100%); color:#fff; font-weight:700;
+      font-size:.9rem; border-radius:9px; text-decoration:none;
+      display:inline-flex; align-items:center; gap:7px; border:none; cursor:pointer;
+      font-family:inherit; transition:all .2s;
     }
-    .cta-title { font-size:2.2rem; font-weight:900; color:#fff; margin-bottom:12px; letter-spacing:-.03em; }
-    .cta-sub { color:rgba(255,255,255,.75); font-size:1rem; margin-bottom:32px; }
-
-    /* ── Footer ── */
-    .lp-footer { background:#0F172A; padding:28px 40px; text-align:center; color:#475569; font-size:.85rem; }
-
-    @media (max-width:600px) {
-      .lp-nav { padding:0 20px; }
-      .features { padding:60px 20px; }
-      .stats-strip { padding:24px 20px; }
+    .btn-primary-lg:hover { background:linear-gradient(135deg,#E23A4E 0%,#C1121F 100%); color:#fff; transform:translateY(-2px); box-shadow:0 10px 28px rgba(193,18,31,.45); }
+    .btn-primary-lg:active { transform:scale(.96); }
+    .btn-outline-lg {
+      padding:12px 24px; border:1px solid var(--dark-b2); color:var(--text-2);
+      font-weight:500; font-size:.9rem; border-radius:9px; text-decoration:none;
+      display:inline-flex; align-items:center; gap:7px; transition:all .15s;
     }
-  </style>
+    .btn-outline-lg:hover { border-color:var(--dark-b3); color:#131416; }
+    .btn-outline-ember { border-color:#C1121F; color:#C1121F; }
+    .btn-outline-ember:hover { border-color:#C1121F; background:rgba(193,18,31,.1); color:#C1121F; }
+    /* ── Free trial promo overlay ── */
+    #free-promo-overlay{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;padding:20px;}
+    #free-promo-overlay.open{display:flex;}
+    #free-promo-overlay::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);}
+    .promo-card{position:relative;background:#fff;border:1px solid rgba(193,18,31,.35);border-radius:20px;padding:40px 36px;max-width:520px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(193,18,31,.1);animation:promoIn .25s ease;}
+    @keyframes promoIn{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:none}}
+    .promo-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(193,18,31,.12);border:1px solid rgba(193,18,31,.3);border-radius:100px;padding:5px 14px;font-size:.72rem;font-weight:700;color:#C1121F;letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px;}
+    .promo-title{font-size:1.65rem;font-weight:900;color:#131416;letter-spacing:-.03em;line-height:1.2;margin-bottom:10px;}
+    .promo-title span{color:#C1121F;}
+    .promo-sub{color:#64748B;font-size:.9rem;line-height:1.6;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto;}
+    .promo-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;text-align:left;}
+    .promo-feat{display:flex;align-items:flex-start;gap:8px;background:rgba(19,20,22,.04);border:1px solid rgba(19,20,22,.08);border-radius:10px;padding:10px 12px;}
+    .promo-feat i{color:#C1121F;font-size:.9rem;margin-top:1px;flex-shrink:0;}
+    .promo-feat-txt{font-size:.78rem;color:#475569;line-height:1.45;}
+    .promo-feat-txt strong{display:block;color:#131416;font-size:.8rem;margin-bottom:1px;}
+    .promo-cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .promo-btn-main{padding:12px 28px;background:#C1121F;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit;transition:background .15s;display:inline-flex;align-items:center;gap:8px;}
+    .promo-btn-main:hover{background:#8C0F1B;}
+    .promo-btn-dl{padding:12px 22px;border:1.5px solid rgba(19,20,22,.15);border-radius:10px;color:#475569;font-weight:600;font-size:.9rem;cursor:pointer;font-family:inherit;background:none;transition:all .15s;display:inline-flex;align-items:center;gap:7px;text-decoration:none;}
+    .promo-btn-dl:hover{border-color:rgba(19,20,22,.3);color:#131416;}
+    .promo-note{margin-top:16px;font-size:.75rem;color:#475569;}
+    .promo-headline{font-size:1.55rem;font-weight:900;color:#131416;letter-spacing:-.03em;line-height:1.2;margin-bottom:10px;}
+    .promo-close-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#64748B;font-size:1.4rem;cursor:pointer;line-height:1;padding:4px 6px;}
+    .promo-close-x:hover{color:#131416;}
+    .promo-features li{display:flex;align-items:center;gap:8px;background:rgba(19,20,22,.04);border:1px solid rgba(19,20,22,.08);border-radius:10px;padding:10px 12px;font-size:.82rem;color:#475569;list-style:none;}
+    .promo-features li i{color:#C1121F;font-size:.88rem;flex-shrink:0;}
+    .promo-features{list-style:none;padding:0;}
+    .promo-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    @media(max-width:500px){.promo-features{grid-template-columns:1fr;}.promo-card{padding:28px 20px;}}
+
+    .trust-row { display:flex; gap:20px; flex-wrap:wrap; }
+    .trust-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--text-2); font-weight:500; }
+    .trust-item i { color:var(--green); font-size:.68rem; }
+
+    /* ── HERO VISUAL ─────────────────────────────────── */
+    /* Deliberate contained dark accent — the one "black" element in an
+       otherwise white/red hero, styled as a device-window screenshot. */
+    .hero-visual {
+      position:relative; flex-shrink:0;
+      --dark-2: #1A1917; --dark-3: #131416; --dark-4: #201F1C;
+      --dark-b: rgba(255,255,255,.07); --dark-b2: rgba(255,255,255,.12); --dark-b3: rgba(255,255,255,.2);
+      --text-2: rgba(255,255,255,.55); --text-3: rgba(255,255,255,.3);
+    }
+    .app-window {
+      background:var(--dark-3); border:1px solid var(--dark-b);
+      border-radius:16px; overflow:hidden;
+      box-shadow:0 40px 100px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .app-topbar {
+      background:var(--dark-2); border-bottom:1px solid var(--dark-b);
+      padding:10px 16px; display:flex; align-items:center; gap:7px;
+    }
+    .app-dot { width:8px; height:8px; border-radius:50%; }
+    .app-topbar-title { flex:1; text-align:center; font-size:.68rem; color:var(--text-3); font-weight:500; letter-spacing:-.01em; }
+    .app-body { padding:16px; }
+
+    /* Dashboard stats row */
+    .app-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+    .app-kpi {
+      background:rgba(255,255,255,.035); border:1px solid var(--dark-b);
+      border-radius:9px; padding:11px 12px;
+    }
+    .app-kpi-lbl { font-size:.56rem; color:#4B5563; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+    .app-kpi-val { font-size:1.1rem; font-weight:900; letter-spacing:-.025em; font-variant-numeric:tabular-nums; line-height:1; }
+    .c-green { color:var(--green); } .c-ember { color:var(--ember); } .c-red { color:#F87171; }
+
+    /* Mini chart inside KPI */
+    .app-chart-row { display:flex; align-items:flex-end; gap:2px; height:20px; margin-top:6px; }
+    .app-chart-bar { flex:1; border-radius:2px 2px 0 0; background:var(--ember); opacity:.35; }
+    .app-chart-bar.hi { opacity:.9; }
+
+    .app-tbl-hdr {
+      display:grid; grid-template-columns:1fr 74px 60px 64px;
+      padding:6px 10px; background:rgba(255,255,255,.02); border-radius:5px; margin-bottom:4px;
+    }
+    .app-tbl-hdr span { font-size:.55rem; color:#4B5563; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+    .app-tbl-hdr span:not(:first-child) { text-align:right; }
+    .app-row {
+      display:grid; grid-template-columns:1fr 74px 60px 64px;
+      padding:9px 10px; border-radius:6px; align-items:center;
+    }
+    .app-row-num { font-size:.7rem; color:var(--ember); font-weight:700; }
+    .app-row-who { font-size:.64rem; color:var(--text-2); margin-top:2px; }
+    .app-row-amt { font-size:.76rem; font-weight:700; color:#fff; text-align:right; font-variant-numeric:tabular-nums; }
+    .app-row-date { font-size:.62rem; color:#4B5563; text-align:right; }
+    .badge {
+      display:inline-block; padding:2px 8px; border-radius:20px;
+      font-size:.57rem; font-weight:700; text-align:center; white-space:nowrap;
+    }
+    .badge-paid   { background:rgba(74,222,128,.12); color:var(--green); }
+    .badge-sent   { background:rgba(193,18,31,.12);  color:#F0576B; }
+    .badge-draft  { background:rgba(148,163,184,.09); color:#94A3B8; }
+    .badge-overdue{ background:rgba(248,113,113,.12); color:#F87171; }
+    .badge-partial{ background:rgba(250,204,21,.12);  color:#FBBF24; }
+
+    /* Floating stat card */
+    .float-card {
+      position:absolute; right:-28px; bottom:28px;
+      background:var(--dark-2); border:1px solid var(--dark-b2);
+      border-radius:12px; padding:14px 16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.6); min-width:164px;
+    }
+    .fc-lbl { font-size:.58rem; color:#4B5563; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; }
+    .fc-val { font-size:1.3rem; font-weight:900; color:var(--green); letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+    .fc-sub { font-size:.63rem; color:rgba(255,255,255,.3); margin-top:3px; }
+    .fc-bar-bg { margin-top:10px; background:rgba(255,255,255,.07); border-radius:99px; height:4px; }
+    .fc-bar { height:4px; border-radius:99px; background:linear-gradient(90deg,var(--green),#22C55E); width:72%; }
+
+    /* ── SECTION SHARED ──────────────────────────────── */
+    .section-label {
+      font-size:.62rem; font-weight:700; letter-spacing:.13em; color:var(--ember);
+      text-transform:uppercase; display:block; margin-bottom:14px;
+    }
+    .section-h {
+      font-size:clamp(1.7rem,3.2vw,2.5rem); font-weight:900; color:#131416;
+      letter-spacing:-.04em; line-height:1.1; margin-bottom:12px; text-wrap:balance;
+    }
+    .section-p { font-size:.9rem; color:var(--text-2); line-height:1.82; }
+
+    /* ── WORKFLOW ─────────────────────────────────────── */
+    .workflow-section { padding:112px 40px 0; border-top:1px solid var(--dark-b); }
+    .workflow-inner { max-width:1120px; margin:0 auto; }
+    .workflow-head { margin-bottom:64px; }
+    .workflow-title {
+      font-size:clamp(1.8rem,3.5vw,2.8rem); font-weight:900; color:#131416;
+      letter-spacing:-.045em; line-height:1.08; margin-bottom:0;
+    }
+    .workflow-title span { color:var(--text-2); }
+
+    .workflow-steps {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+      border:1px solid var(--dark-b); border-radius:16px; overflow:hidden;
+    }
+    .wf-step {
+      padding:32px 26px; border-right:1px solid var(--dark-b);
+      position:relative; transition:background .25s;
+    }
+    .wf-step:last-child { border-right:none; }
+    .wf-step:hover { background:rgba(19,20,22,.035); }
+    .wf-step:hover .wf-icon {
+      background:rgba(193,18,31,.16);
+      border-color:rgba(193,18,31,.3);
+    }
+
+    .wf-num {
+      font-size:.58rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--text-3); margin-bottom:20px; display:flex; align-items:center; gap:8px;
+    }
+    .wf-num::after { content:''; flex:1; height:1px; background:var(--dark-b); }
+    .wf-icon {
+      width:36px; height:36px; border-radius:9px;
+      background:rgba(193,18,31,.09); border:1px solid rgba(193,18,31,.18);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--ember); font-size:.88rem; margin-bottom:16px;
+    }
+    .wf-h { font-size:.92rem; font-weight:800; color:#131416; margin-bottom:8px; letter-spacing:-.012em; }
+    .wf-p { font-size:.79rem; color:var(--text-2); line-height:1.72; }
+
+    /* ── FEATURES ─────────────────────────────────────── */
+    .features-section { padding:0 40px; }
+    .features-inner { max-width:1120px; margin:0 auto; }
+
+    .feat-article {
+      display:grid; grid-template-columns:1fr 1fr; gap:80px;
+      align-items:center; padding:96px 0;
+      border-top:1px solid var(--dark-b);
+    }
+    .feat-article:first-child { border-top:none; }
+    .feat-article.flip > :first-child { order:2; }
+    .feat-article.flip > :last-child { order:1; }
+
+    .fa-eyebrow {
+      display:inline-flex; align-items:center; gap:7px;
+      font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--ember); margin-bottom:20px;
+    }
+    .fa-h {
+      font-size:clamp(1.4rem,2.6vw,1.9rem); font-weight:900; color:#131416;
+      letter-spacing:-.035em; line-height:1.14; margin-bottom:16px; text-wrap:balance;
+    }
+    .fa-p { font-size:.88rem; color:var(--text-2); line-height:1.82; margin-bottom:28px; }
+    .fa-list { list-style:none; display:flex; flex-direction:column; gap:11px; }
+    .fa-list li {
+      display:flex; align-items:flex-start; gap:10px;
+      font-size:.83rem; color:var(--text-2); line-height:1.6;
+    }
+    .fa-list li::before {
+      content:''; width:5px; height:5px; border-radius:50%;
+      background:var(--ember); flex-shrink:0; margin-top:7px;
+    }
+
+    /* ── TEMPLATE SHOWCASE (live colour preview) ─────────── */
+    .tpl-section { padding:100px 40px; border-top:1px solid var(--dark-b); }
+    .tpl-inner {
+      max-width:1120px; margin:0 auto;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+    }
+    .tpl-swatches { display:flex; gap:10px; margin-top:28px; }
+    .tpl-swatch {
+      width:30px; height:30px; border-radius:50%; padding:0;
+      border:2px solid transparent; box-shadow:0 0 0 2px transparent;
+      cursor:pointer; transition:transform .15s, box-shadow .15s;
+    }
+    .tpl-swatch:hover { transform:scale(1.1); }
+    .tpl-swatch.is-active { box-shadow:0 0 0 2px var(--dark), 0 0 0 4px currentColor; }
+    .tpl-live-inv { max-width:360px; margin:0 auto; box-shadow:0 24px 70px rgba(0,0,0,.16); }
+    #tpl-live-logo, #tpl-live-total { transition:background-color .25s ease; }
+    #tpl-live-brand { transition:color .25s ease; }
+    @media (max-width:900px) {
+      .tpl-inner { grid-template-columns:1fr; gap:48px; }
+      .tpl-live-inv { order:-1; }
+    }
+
+    /* Full-width stat band, breaks the image/text zigzag rhythm */
+    .feat-stat-band {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+      background:var(--dark-b); border:1px solid var(--dark-b); border-radius:14px;
+      overflow:hidden; margin:0 0 96px;
+    }
+    .feat-stat {
+      background:var(--dark-2); padding:28px 24px; text-align:center;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .feat-stat-val { font-size:1.8rem; font-weight:900; color:var(--ember); letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+    .feat-stat-lbl { font-size:.78rem; color:var(--text-2); line-height:1.4; max-width:200px; }
+    @media (max-width:640px){ .feat-stat-band { grid-template-columns:1fr; } }
+
+    /* Hero product shot on small screens: 74+60+64px of fixed table columns
+       leave too little for the invoice number and customer name, so drop the
+       date column and let the name breathe. */
+    @media (max-width:560px){
+      .app-tbl-hdr, .app-row { grid-template-columns:1fr 64px 58px; padding-left:8px; padding-right:8px; }
+      .app-tbl-hdr span:nth-child(3), .app-row .app-row-date { display:none; }
+      .app-body { padding:12px; }
+      .app-kpis { gap:6px; }
+    }
+
+    /* Feature visual panels — another deliberate contained dark accent,
+       same reasoning as .hero-visual: keeps a little black without letting
+       it spread across the (now white) page background. */
+    .fa-visual {
+      --dark-2: #1A1917; --dark-3: #131416; --dark-4: #201F1C;
+      --dark-b: rgba(255,255,255,.07); --dark-b2: rgba(255,255,255,.12); --dark-b3: rgba(255,255,255,.2);
+      --text-2: rgba(255,255,255,.55); --text-3: rgba(255,255,255,.3);
+      background:var(--dark-3); border:1px solid var(--dark-b);
+      border-radius:16px; overflow:hidden; padding:22px;
+      box-shadow:0 24px 80px rgba(0,0,0,.55);
+    }
+    .fa-visual-header {
+      font-size:.57rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      color:#4B5563; margin-bottom:14px; display:flex; align-items:center; gap:6px;
+    }
+    .fa-visual-header::before {
+      content:''; width:6px; height:6px; border-radius:50%; background:var(--ember); flex-shrink:0;
+    }
+
+    /* Mini invoice */
+    .mini-inv { background:#fff; border-radius:10px; padding:18px; }
+    .mi-hd { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+    .mi-brand { font-size:1.1rem; font-weight:900; color:var(--ember); letter-spacing:-.03em; }
+    .mi-inv-num { font-size:.58rem; color:#94A3B8; margin-top:2px; }
+    .mi-logo-box { width:34px; height:34px; border-radius:7px; background:#FDF0F1; display:flex; align-items:center; justify-content:center; }
+    .mi-logo-box i { color:var(--ember); font-size:.9rem; }
+    .mi-parties { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    .mi-pl { font-size:.52rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:.07em; margin-bottom:3px; }
+    .mi-pn { font-size:.7rem; font-weight:700; color:#0F172A; }
+    .mi-ps { font-size:.6rem; color:#64748B; }
+    .mi-tbl-hdr { display:grid; grid-template-columns:1fr 40px 60px; padding:5px 7px; background:#F8F6F4; border-radius:4px; margin-bottom:4px; }
+    .mi-tbl-hdr span { font-size:.52rem; font-weight:700; color:#94A3B8; text-transform:uppercase; }
+    .mi-tbl-hdr span:not(:first-child) { text-align:right; }
+    .mi-item { display:grid; grid-template-columns:1fr 40px 60px; padding:5px 7px; }
+    .mi-in { font-size:.65rem; color:#334155; }
+    .mi-in sub { font-size:.54rem; color:#94A3B8; display:block; margin-top:2px; }
+    .mi-iq { font-size:.65rem; color:#64748B; text-align:right; }
+    .mi-ia { font-size:.65rem; font-weight:700; color:#0F172A; text-align:right; font-variant-numeric:tabular-nums; }
+    .mi-div { height:1px; background:#F3F0EE; margin:8px 0; }
+    .mi-gst { display:flex; justify-content:space-between; padding:2px 7px; font-size:.63rem; color:#64748B; }
+    .mi-total-bar { display:flex; justify-content:space-between; padding:9px 9px; background:var(--ember); border-radius:7px; margin-top:6px; }
+    .mi-tl { font-size:.68rem; color:rgba(255,255,255,.8); font-weight:600; }
+    .mi-tv { font-size:.9rem; font-weight:900; color:#fff; font-variant-numeric:tabular-nums; }
+
+    /* Payment ledger */
+    .pay-ledger { display:flex; flex-direction:column; gap:8px; }
+    .pay-ldr-title { font-size:.57rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#4B5563; margin-bottom:6px; }
+    .pay-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:11px 13px; background:rgba(255,255,255,.04);
+      border:1px solid var(--dark-b); border-radius:8px;
+    }
+    .pay-row-left { display:flex; align-items:center; gap:10px; }
+    .pay-row-icon { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:.78rem; flex-shrink:0; }
+    .pi-green { background:rgba(74,222,128,.12); color:var(--green); }
+    .pi-amber { background:rgba(193,18,31,.12); color:var(--ember); }
+    .pi-red   { background:rgba(248,113,113,.12); color:#F87171; }
+    .pay-row-name { font-size:.75rem; font-weight:700; color:#fff; }
+    .pay-row-sub { font-size:.63rem; color:var(--text-2); margin-top:2px; }
+    .pay-amt-pos { font-size:.82rem; font-weight:800; color:var(--green); font-variant-numeric:tabular-nums; }
+    .pay-amt-due { font-size:.82rem; font-weight:800; color:#F87171; font-variant-numeric:tabular-nums; }
+    .pay-amt-inv { font-size:.82rem; font-weight:800; color:var(--ember); font-variant-numeric:tabular-nums; }
+    .pay-footer-bar {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 14px; background:rgba(74,222,128,.07);
+      border:1px solid rgba(74,222,128,.15); border-radius:8px; margin-top:4px;
+    }
+    .pf-lbl { font-size:.68rem; font-weight:700; color:var(--green); }
+    .pf-val { font-size:.9rem; font-weight:900; color:var(--green); font-variant-numeric:tabular-nums; }
+
+    /* Reports mini visual */
+    .rpt-visual { display:flex; flex-direction:column; gap:10px; }
+    .rpt-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .rpt-kpi { background:rgba(255,255,255,.04); border:1px solid var(--dark-b); border-radius:8px; padding:12px; }
+    .rpt-kpi-lbl { font-size:.56rem; color:#4B5563; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+    .rpt-kpi-val { font-size:1.05rem; font-weight:900; letter-spacing:-.025em; font-variant-numeric:tabular-nums; }
+    .rpt-chart-wrap { background:rgba(255,255,255,.03); border:1px solid var(--dark-b); border-radius:8px; padding:14px; }
+    .rpt-chart-lbl { font-size:.58rem; color:#4B5563; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px; }
+    .rpt-bars { display:flex; align-items:flex-end; gap:4px; height:58px; }
+    .rpt-bar { flex:1; border-radius:3px 3px 0 0; background:var(--ember); opacity:.45; transition:opacity .2s; }
+    .rpt-bar.hi { opacity:1; }
+    .rpt-bar-labels { display:flex; justify-content:space-between; margin-top:5px; }
+    .rpt-bar-labels span { font-size:.52rem; color:#4B5563; text-align:center; flex:1; }
+
+    /* Business management visual */
+    .biz-visual { display:flex; flex-direction:column; gap:8px; }
+    .biz-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 12px; background:rgba(255,255,255,.03); border:1px solid var(--dark-b);
+      border-radius:8px; margin-bottom:4px;
+    }
+    .biz-hdr-title { font-size:.72rem; font-weight:700; color:#fff; }
+    .biz-hdr-count { font-size:.62rem; color:var(--text-2); }
+    .biz-row {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; background:rgba(255,255,255,.04); border:1px solid var(--dark-b);
+      border-radius:8px; transition:background .15s;
+    }
+    .biz-avatar {
+      width:30px; height:30px; border-radius:50%; background:rgba(193,18,31,.15);
+      border:1px solid rgba(193,18,31,.25); flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.65rem; font-weight:800; color:var(--ember);
+    }
+    .biz-name { font-size:.75rem; font-weight:700; color:#fff; }
+    .biz-gst { font-size:.6rem; color:#4B5563; margin-top:1px; font-family:monospace; }
+    .biz-stat { margin-left:auto; text-align:right; flex-shrink:0; }
+    .biz-stat-val { font-size:.72rem; font-weight:700; color:var(--green); font-variant-numeric:tabular-nums; }
+    .biz-stat-sub { font-size:.58rem; color:#4B5563; margin-top:1px; }
+    .biz-divider { height:1px; background:var(--dark-b); margin:4px 0; }
+    .prod-row {
+      display:grid; grid-template-columns:1fr auto auto;
+      gap:8px; align-items:center;
+      padding:9px 12px; background:rgba(255,255,255,.04); border:1px solid var(--dark-b);
+      border-radius:8px;
+    }
+    .prod-name { font-size:.73rem; font-weight:700; color:#fff; }
+    .prod-hsn { font-size:.58rem; color:#4B5563; margin-top:1px; }
+    .prod-gst-badge {
+      font-size:.58rem; font-weight:700; color:var(--ember);
+      background:rgba(193,18,31,.09); border:1px solid rgba(193,18,31,.18);
+      border-radius:4px; padding:2px 7px; white-space:nowrap;
+    }
+    .prod-price { font-size:.75rem; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+    /* ── QUICK START ─────────────────────────────────── */
+    .qs-section {
+      padding:112px 40px; border-top:1px solid var(--dark-b);
+    }
+    .qs-inner {
+      max-width:760px; margin:0 auto; text-align:center;
+    }
+    .qs-title {
+      font-size:clamp(1.6rem,3vw,2.4rem); font-weight:900; color:#131416;
+      letter-spacing:-.045em; line-height:1.1; margin-bottom:12px; text-wrap:balance;
+    }
+    .qs-sub { font-size:.9rem; color:var(--text-2); line-height:1.8; margin-bottom:48px; }
+    .qs-steps { display:flex; flex-direction:column; gap:10px; text-align:left; margin-bottom:40px; }
+    .qs-step {
+      display:flex; align-items:center; gap:18px;
+      background:rgba(19,20,22,.035); border:1px solid var(--dark-b);
+      border-radius:11px; padding:16px 20px; transition:border-color .2s, background .2s;
+    }
+    .qs-step:hover { border-color:var(--dark-b2); background:rgba(19,20,22,.05); }
+    .qs-n {
+      width:30px; height:30px; border-radius:50%; background:rgba(193,18,31,.12);
+      border:1px solid rgba(193,18,31,.22); color:var(--ember);
+      font-size:.72rem; font-weight:900; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .qs-text { font-size:.87rem; color:var(--text-2); line-height:1.5; }
+    .qs-text strong { color:#131416; font-weight:700; display:block; margin-bottom:2px; }
+
+    /* ── FAQ ─────────────────────────────────────────── */
+    .faq-section { padding:0 40px 112px; }
+    .faq-inner { max-width:960px; margin:0 auto; }
+    .faq-head { text-align:center; margin-bottom:48px; }
+    .faq-cols { columns:2; column-gap:48px; }
+    .faq-item { border-bottom:1px solid var(--dark-b); break-inside:avoid; }
+    @media(max-width:640px){ .faq-cols { columns:1; } }
+    .faq-btn {
+      width:100%; text-align:left; padding:18px 0 18px 10px; background:none;
+      border:none; border-left:2px solid transparent;
+      cursor:pointer; font-family:inherit; font-size:.88rem; font-weight:600;
+      color:var(--text); display:flex; align-items:center; justify-content:space-between; gap:16px;
+      transition:color .12s, border-left-color .18s;
+    }
+    .faq-btn:hover { color:var(--ember); }
+    .faq-btn[aria-expanded="true"] { color:var(--ember); border-left-color:var(--ember); }
+    .faq-icon { font-size:.72rem; color:var(--text-3); transition:transform .22s,color .12s; flex-shrink:0; }
+    .faq-btn[aria-expanded="true"] .faq-icon { transform:rotate(45deg); color:var(--ember); }
+    .faq-body {
+      display:grid; grid-template-rows:0fr; overflow:hidden;
+      transition:grid-template-rows .3s ease;
+    }
+    .faq-body-inner {
+      font-size:.85rem; color:var(--text-2); line-height:1.82;
+      padding-bottom:18px; min-height:0;
+    }
+    .faq-body.open { grid-template-rows:1fr; }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    .footer {
+      border-top:1px solid var(--dark-b);
+      background:var(--dark-2);
+    }
+    .footer-inner {
+      max-width:1200px; margin:0 auto; padding:48px 40px 36px;
+      display:grid; grid-template-columns:2fr 1fr 1fr; gap:48px;
+    }
+    .footer-brand-col { }
+    .footer-logo { display:flex; align-items:center; gap:8px; text-decoration:none; margin-bottom:12px; }
+    .footer-logo span { font-size:.9rem; font-weight:700; color:rgba(255,255,255,.55); }
+    .footer-desc { font-size:.8rem; color:var(--text-3); line-height:1.7; max-width:280px; }
+    .footer-col-title { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); margin-bottom:16px; }
+    .footer-col-links { display:flex; flex-direction:column; gap:10px; }
+    .footer-col-links a {
+      font-size:.8rem; color:rgba(255,255,255,.3); text-decoration:none;
+      transition:color .12s;
+    }
+    .footer-col-links a:hover { color:rgba(255,255,255,.7); }
+    .footer-bottom {
+      border-top:1px solid var(--dark-b); padding:20px 40px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    }
+    .footer-copy { font-size:.72rem; color:rgba(255,255,255,.18); }
+    .footer-tagline { font-size:.72rem; color:rgba(255,255,255,.18); }
+
+    /* ── SCROLL REVEAL ───────────────────────────────── */
+    .reveal {
+      opacity:0; transform:translateY(28px);
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-delay-1 { transition-delay:.1s; }
+    .reveal-delay-2 { transition-delay:.2s; }
+    .reveal-delay-3 { transition-delay:.3s; }
+    .reveal-delay-4 { transition-delay:.4s; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width:1100px){
+      .hero-inner { gap:52px; }
+      .feat-article { gap:52px; }
+    }
+
+    @media (max-width:900px){
+      .hero-inner { grid-template-columns:1fr; gap:40px; padding:64px 20px 52px; }
+      /* The product shot used to be display:none here, so the hero lost its
+         only visual on every phone and tablet. Keep it, stacked under the
+         copy, sharing the copy's exact left/right edges. */
+      .hero-visual { width:100%; min-width:0; }
+      .app-window  { width:100%; }
+      /* .float-card intentionally spills past the app-window's right edge
+         on desktop, where there's surrounding whitespace to spill into.
+         .hero-visual is edge-to-edge here, so the same offset clipped the
+         card against the viewport. */
+      .float-card { right:8px; bottom:16px; min-width:0; max-width:44%; }
+      /* On one column the copy is full-bleed, so a 430px cap on just the
+         sub-headline left it visibly short of everything above and below it. */
+      .hero-sub { max-width:none; }
+
+      .workflow-section,
+      .features-section,
+      .qs-section,
+      .faq-section { padding-left:20px; padding-right:20px; }
+
+      .workflow-steps { grid-template-columns:1fr 1fr; border-radius:12px; }
+      .wf-step:nth-child(2) { border-right:none; }
+      .wf-step:nth-child(3) { border-top:1px solid var(--dark-b); }
+      .wf-step:nth-child(4) { border-top:1px solid var(--dark-b); border-right:none; }
+
+      .feat-article { grid-template-columns:1fr; gap:36px; padding:64px 0; }
+      .feat-article.flip > :first-child { order:unset; }
+      .feat-article.flip > :last-child { order:unset; }
+
+      .footer-inner { grid-template-columns:1fr 1fr; gap:32px; }
+      .footer-brand-col { grid-column:1/-1; }
+      .footer-bottom { padding:18px 20px; }
+    }
+
+    @media (max-width:640px){
+      .hero-btns { flex-direction:column; }
+      .btn-primary-lg, .btn-outline-lg { justify-content:center; }
+
+      .workflow-steps { grid-template-columns:1fr; }
+      .wf-step { border-right:none; border-top:1px solid var(--dark-b); }
+      .wf-step:first-child { border-top:none; }
+
+      .footer-inner { grid-template-columns:1fr; gap:28px; }
+      .footer-inner { padding:36px 20px 28px; }
+
+      .faq-section { padding-bottom:80px; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after {
+        animation-duration:.01ms !important;
+        transition-duration:.01ms !important;
+      }
+      .reveal { opacity:1; transform:none; }
+    }
+  a,button,[onclick],label,select,input[type=submit],input[type=button],input[type=checkbox],input[type=radio],[role=button]{cursor:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIyMiIgdmlld0JveD0iMCAwIDE4IDIyIj48cGF0aCBkPSJNNiAxQzYgMC40IDUuNiAwIDUgMCA1IDAgNCAwLjQgNCAxTDQgMTJDMyAxMS41IDIgMTEuOCAyIDEyLjggMiAxMy4zIDIuMyAxMy43IDIuMyAxMy43IDEuNiAxMy41IDEgMTQuMSAxIDE0LjkgMSAxNS41IDEuNCAxNS45IDEuNCAxNS45IDAuOCAxNi4xIDAgMTYuNyAwIDE3LjUgMCAxOSAxLjMgMjAgMi44IDIwTDkgMjBDMTEuOCAyMCAxNCAxNy44IDE0IDE1TDE0IDEwLjVDMTQgOS43IDEzLjMgOSAxMi41IDkgMTEuNyA5IDExIDkuNyAxMSAxMC41TDExIDlDMTEgOC4yIDEwLjMgNy41IDkuNSA3LjUgOC43IDcuNSA4IDguMiA4IDlMOCA3LjVDOCA2LjcgNy4zIDYgNi41IDYgNS43IDYgNSA2LjcgNSA3LjVMNSAxQzUgMC40IDQuNiAwIDQgMFoiIGZpbGw9IiMxRTI5M0IiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgcGFpbnQtb3JkZXI9InN0cm9rZSIvPjxjaXJjbGUgY3g9IjUiIGN5PSIwIiByPSIyIiBmaWxsPSIjRTg3QTNEIi8+PC9zdmc+") 5 0, pointer}
+    
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;}
+    .overlay.open{display:flex;}
+    .auth-modal{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:400px;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:modalIn .2s ease;}
+    @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
+    .modal-close{position:absolute;top:14px;right:14px;background:#F8F6F4;border:1px solid #E8E7E5;border-radius:8px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:.8rem;transition:all .12s;}
+    .modal-close:hover{background:#F3F0EE;color:#475569;}
+    .modal-logo{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+    .modal-logo-icon{width:32px;height:32px;border-radius:7px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+    .modal-logo-name{font-size:1.1rem;font-weight:800;color:#0F172A;letter-spacing:-.02em;}
+    .modal-sub{color:#64748B;font-size:.85rem;margin-bottom:20px;}
+    .m-label{font-size:.78rem;font-weight:600;color:#475569;margin-bottom:4px;display:block;}
+    .m-input{width:100%;border:1px solid #E8E7E5;border-radius:7px;padding:9px 12px;font-size:.875rem;font-family:'Geist',system-ui,sans-serif;outline:none;transition:border-color .12s,box-shadow .12s;color:#0F172A;}
+    .m-input:focus{border-color:#C1121F;box-shadow:0 0 0 3px rgba(193,18,31,.1);}
+    .btn-modal-submit{width:100%;padding:11px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Geist',system-ui,sans-serif;transition:background .15s;margin-top:4px;}
+    .btn-modal-submit:hover{background:#8C0F1B;}
+    .btn-modal-submit:disabled{opacity:.6;}
+    .modal-foot{text-align:center;margin-top:16px;font-size:.8rem;color:#64748B;}
+    .modal-foot a{color:#C1121F;font-weight:600;text-decoration:none;cursor:pointer;}
+    .pwd-eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.85rem;padding:0;}
+    .strength-bar{height:2px;border-radius:2px;background:#E8E7E5;margin-top:5px;overflow:hidden;}
+    .strength-fill{height:100%;width:100%;border-radius:2px;transform-origin:left;transform:scaleX(0);transition:transform .3s,background .3s;}
+
+    /* ─── FREE INVOICE GENERATOR ─── */
+    .free-zone{max-width:1400px;margin:0 auto;padding:0 20px 80px;}
+    .gen-card{background:#fff;border-radius:16px;padding:0;margin-top:32px;box-shadow:0 8px 48px rgba(0,0,0,.35);overflow:hidden;}
+    .gen-layout{display:grid;grid-template-columns:1fr 440px;align-items:stretch;min-height:600px;}
+    #mobile-view-toggle{display:none;}
+    .gen-main{min-width:0;overflow:auto;}
+    .gen-preview{position:sticky;top:0;height:100vh;overflow-y:auto;background:#F3F0EE;border-left:1px solid #E8E7E5;display:flex;flex-direction:column;}
+    .gen-preview-header{padding:12px 16px;background:#C1121F;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .gen-preview-header span{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.08em;}
+    .preview-wrap{flex:1;padding:16px;overflow-y:auto;}
+    .inv-preview{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.12);font-family:Arial,sans-serif;font-size:10px;color:#0F172A;}
+    .pvw-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;}
+    .pvw-logo{width:42px;height:42px;border-radius:50%;background:#C1121F;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;flex-shrink:0;overflow:hidden;}
+    .pvw-logo img{width:100%;height:100%;object-fit:contain;}
+    .pvw-co{margin-left:8px;}
+    .pvw-co-name{font-size:11px;font-weight:800;color:#0F172A;}
+    .pvw-co-sub{font-size:8.5px;color:#64748B;margin-top:1px;}
+    .pvw-inv-title{font-size:22px;font-weight:900;color:#C1121F;letter-spacing:-.02em;}
+    .pvw-divider{height:3px;background:#C1121F;margin:0;}
+    .pvw-meta{display:grid;grid-template-columns:1fr 1fr;padding:10px 16px 8px;gap:6px;}
+    .pvw-meta-lbl{font-size:7.5px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px;}
+    .pvw-meta-val{font-size:9.5px;font-weight:700;color:#0F172A;display:block;}
+    .pvw-addr{display:grid;grid-template-columns:1fr 1fr;margin:0 10px 10px;border:1px solid #E8E7E5;border-radius:4px;overflow:hidden;}
+    .pvw-addr-hdr{background:#C1121F;color:#fff;font-weight:700;font-size:8px;padding:4px 8px;text-transform:uppercase;letter-spacing:.06em;}
+    .pvw-addr-body{padding:8px;font-size:8.5px;line-height:1.65;color:#374151;min-height:56px;}
+    .pvw-addr-name{font-weight:700;color:#0F172A;font-size:9px;margin-bottom:1px;}
+    .pvw-addr-muted{color:#64748B;}
+    .pvw-items{margin:0 10px 6px;border:1px solid #E8E7E5;border-radius:4px;overflow:hidden;}
+    .pvw-items-hdr{display:grid;grid-template-columns:1fr 44px 56px 28px 36px 56px;background:#C1121F;color:#fff;font-size:7.5px;font-weight:700;}
+    .pvw-items-hdr span{padding:5px 4px;text-align:right;}
+    .pvw-items-hdr span:nth-child(1){text-align:left;}
+    .pvw-items-hdr span:nth-child(2){text-align:center;}
+    .pvw-item-row{display:grid;grid-template-columns:1fr 44px 56px 28px 36px 56px;border-top:1px solid #F3F0EE;font-size:8px;}
+    .pvw-item-row:nth-child(even){background:#FAFAFA;}
+    .pvw-item-row span{padding:5px 4px;text-align:right;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pvw-item-row span:nth-child(1){text-align:left;font-weight:600;color:#0F172A;}
+    .pvw-item-row span:nth-child(2){text-align:center;color:#64748B;}
+    .pvw-item-row span:nth-child(6){font-weight:700;}
+    .pvw-totals{display:flex;justify-content:flex-end;padding:0 10px 8px;}
+    .pvw-totals-box{width:200px;}
+    .pvw-tot-row{display:flex;justify-content:space-between;font-size:8px;padding:3px 0;color:#374151;border-bottom:1px solid #F3F0EE;}
+    .pvw-tot-row.grand{background:#C1121F;color:#fff;font-weight:700;font-size:8.5px;padding:5px 6px;border-radius:3px;margin-top:4px;border:none;}
+    .pvw-tot-row.gst-total{font-weight:700;color:#8C0F1B;}
+    .pvw-words{margin:0 10px 8px;padding:6px 10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;font-size:7.5px;color:#92400E;font-weight:600;}
+    .pvw-words-lbl{font-size:7px;text-transform:uppercase;color:#B45309;font-weight:700;letter-spacing:.05em;margin-bottom:1px;}
+    .pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:8px 10px;border-top:1px solid #E8E7E5;align-items:center;}
+    .pvw-notes{font-size:7.5px;color:#64748B;line-height:1.5;}
+    .pvw-notes-lbl{font-weight:700;color:#0F172A;margin-bottom:2px;font-size:8px;}
+    .pvw-stamp{width:52px;height:52px;border-radius:50%;border:2.5px solid #C1121F;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;}
+    .pvw-stamp span:first-child{font-size:7.5px;font-weight:700;color:#C1121F;}
+    .pvw-stamp span:last-child{font-size:11px;font-weight:900;color:#C1121F;}
+    .pvw-sig{text-align:center;font-size:7.5px;color:#374151;}
+    .pvw-sig-lbl{font-weight:700;color:#C1121F;font-size:7px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+    .pvw-sig-line{border-top:1px solid #0F172A;width:80px;margin:0 auto 2px;}
+    .pvw-sig-img{max-width:80px;max-height:32px;object-fit:contain;display:block;margin:0 auto 3px;}
+    .pvw-bar{background:#C1121F;color:#fff;font-size:7px;font-weight:700;text-align:center;padding:5px 8px;letter-spacing:.04em;}
+    @media(max-width:960px){
+      .gen-layout{grid-template-columns:1fr;}
+      .gen-preview{display:none;}
+      #gen-layout.show-preview .gen-main{display:none;}
+      #gen-layout.show-preview .gen-preview{display:flex;position:static;height:auto;}
+      #mobile-view-toggle{display:flex;position:fixed;bottom:20px;right:20px;z-index:60;align-items:center;gap:8px;padding:12px 20px;background:#C1121F;color:#fff;border:none;border-radius:999px;font-weight:700;font-size:.85rem;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;}
+    }
+    .gen-body{padding:28px 28px 16px;}
+    .gen-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
+    .logo-upload-box{width:130px;height:85px;border:2px dashed #D1D0CC;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;overflow:hidden;flex-shrink:0;transition:all .15s;}
+    .logo-upload-box:hover{border-color:#C1121F;background:#FDF0F1;}
+    .logo-placeholder-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
+    .logo-upload-box span{font-size:.7rem;color:#94A3B8;font-weight:600;}
+    .seller-company-input{font-size:1.1rem;font-weight:800;color:#0F172A;border:none;outline:none;background:transparent;width:100%;margin-bottom:4px;}
+    .seller-company-input::placeholder{color:#D1D0CC;}
+    .seller-meta-row{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:6px;}
+    .seller-meta-item{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#64748B;}
+    .seller-meta-item span{font-weight:700;color:#374151;}
+    .seller-meta-input{border:none;border-bottom:1px solid #E8E7E5;outline:none;font-size:.75rem;color:#374151;font-weight:700;background:transparent;min-width:60px;max-width:180px;padding:1px 2px;}
+    .seller-meta-input::placeholder{color:#D1D0CC;font-weight:400;}
+    .seller-meta-input:focus{border-bottom-color:#C1121F;}
+    .from-to-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px;}
+    .gen-section-title{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748B;margin-bottom:12px;padding-bottom:6px;border-bottom:1.5px solid #E8E7E5;}
+    .gen-field{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .gen-field-lbl{font-size:.78rem;font-weight:700;color:#64748B;min-width:88px;flex-shrink:0;}
+    .gen-input{flex:1;border:1px solid #E8E7E5;border-radius:6px;outline:none;font-size:.82rem;color:#0F172A;padding:6px 9px;background:#fff;transition:border-color .15s;width:100%;}
+    .gen-input:focus{border-color:#C1121F;box-shadow:0 0 0 2px rgba(193,18,31,.1);}
+    .gen-input::placeholder{color:#D1D0CC;}
+    .gen-input.required-field{border-color:#FCA5A5;}
+    .inv-meta-section{border-top:1px solid #E8E7E5;padding-top:18px;margin-bottom:18px;}
+    .inv-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+    .inv-meta-field{display:flex;align-items:center;gap:10px;}
+    .inv-meta-lbl{font-size:.78rem;font-weight:700;color:#64748B;width:96px;flex-shrink:0;}
+    .inv-meta-input{flex:1;border:1px solid #E8E7E5;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
+    .inv-meta-input:focus{border-color:#C1121F;}
+    .inv-meta-input.error{border-color:#EF4444;}
+    .inv-err{color:#EF4444;font-size:.72rem;grid-column:1/-1;margin-top:-6px;}
+    .items-section{border-top:1px solid #E8E7E5;padding-top:18px;}
+    .items-thead{display:grid;grid-template-columns:28px 1fr 52px 86px 52px 90px 28px;gap:5px;padding:8px 6px;border-bottom:2px solid #0F172A;margin-bottom:2px;}
+    .items-thead span{font-size:.65rem;font-weight:800;color:#0F172A;letter-spacing:.06em;text-transform:uppercase;}
+    .items-thead span.right{text-align:right;}
+    .item-block{border-bottom:1px solid #F3F0EE;padding:6px 0;}
+    .item-main-row{display:grid;grid-template-columns:28px 1fr 52px 86px 52px 90px 28px;gap:5px;align-items:center;}
+    .item-amt-cell{font-size:.82rem;font-weight:700;color:#0F172A;text-align:right;white-space:nowrap;padding-right:2px;}
+    .item-x-btn{width:28px;height:28px;border:1px solid #E8E7E5;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748B;font-size:.8rem;flex-shrink:0;transition:all .15s;}
+    .item-x-btn:hover{border-color:#EF4444;color:#EF4444;}
+    .item-sno{font-size:.78rem;font-weight:700;color:#64748B;text-align:center;}
+    .item-desc-input{width:100%;border:1px solid #E8E7E5;border-radius:4px;padding:6px 7px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
+    .item-desc-input:focus{border-color:#C1121F;}
+    .item-desc-input::placeholder{color:#D1D0CC;}
+    .item-num-input{width:100%;border:1px solid #E8E7E5;border-radius:4px;padding:6px 7px;font-size:.82rem;color:#0F172A;outline:none;text-align:right;background:#fff;}
+    .item-num-input:focus{border-color:#C1121F;}
+    .gen-totals{margin-top:16px;display:flex;justify-content:flex-end;}
+    .totals-box{width:320px;}
+    .tot-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;color:#374151;}
+    .tot-row.gst-row{color:#475569;background:#F8F6F4;padding:5px 8px;border-radius:4px;margin:2px 0;}
+    .tot-row.total-gst-row{font-weight:700;color:#0F172A;border-top:1px solid #E8E7E5;padding-top:7px;margin-top:4px;}
+    .tot-row.bal{font-weight:900;font-size:1rem;color:#fff;background:#C1121F;padding:10px 12px;border-radius:8px;margin-top:8px;}
+    .gst-rate-input{width:44px;border:1px solid #E8E7E5;border-radius:4px;padding:2px 5px;font-size:.78rem;text-align:right;outline:none;background:#fff;}
+    .gst-rate-input:focus{border-color:#C1121F;}
+    .tax-mode-btn{flex:1;padding:7px 8px;border:1px solid #E8E7E5;background:#fff;color:#64748B;font-size:.72rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all .15s;}
+    .tax-mode-btn.active{background:#C1121F;border-color:#C1121F;color:#fff;}
+    .amount-words{margin-top:12px;padding:10px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;font-size:.78rem;color:#92400E;font-weight:600;line-height:1.5;}
+    .amount-words strong{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:2px;}
+    .gen-section-block{border-top:1px solid #E8E7E5;padding-top:14px;margin-top:14px;}
+    .thankyou-input{width:100%;border:1px solid #E8E7E5;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;margin-bottom:6px;}
+    .thankyou-input:focus{border-color:#C1121F;}
+    .dept-input{width:100%;border:1px solid #E8E7E5;border-radius:6px;padding:7px 10px;font-size:.82rem;color:#374151;font-weight:600;outline:none;background:#fff;}
+    .dept-input:focus{border-color:#C1121F;}
+    .sig-tabs{display:flex;gap:0;border:1px solid #E8E7E5;border-radius:8px;overflow:hidden;margin-bottom:12px;width:fit-content;}
+    .sig-tab{padding:7px 16px;font-size:.78rem;font-weight:700;color:#64748B;background:#F8F6F4;border:none;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+    .sig-tab:not(:last-child){border-right:1px solid #E8E7E5;}
+    .sig-tab.active{background:#C1121F;color:#fff;}
+    .sig-panel{display:none;}
+    .sig-panel.active{display:block;}
+    .sig-canvas-wrap{position:relative;border:2px dashed #D1D0CC;border-radius:8px;background:#FAFAFA;overflow:hidden;width:100%;max-width:420px;}
+    #fi-sig-canvas{display:block;width:100%;height:120px;cursor:crosshair;touch-action:none;}
+    .sig-canvas-actions{display:flex;gap:8px;margin-top:8px;}
+    .sig-clear-btn{padding:6px 14px;border:1.5px solid #E8E7E5;border-radius:6px;background:#fff;font-size:.75rem;font-weight:700;color:#64748B;cursor:pointer;transition:all .15s;}
+    .sig-clear-btn:hover{border-color:#EF4444;color:#EF4444;}
+    .sig-upload-box{width:100%;max-width:420px;height:100px;border:2px dashed #D1D0CC;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA;overflow:hidden;transition:all .15s;}
+    .sig-upload-box:hover{border-color:#C1121F;background:#FDF0F1;}
+    .sig-type-inp{width:100%;max-width:420px;border:1px solid #E8E7E5;border-radius:8px;padding:10px 14px;font-size:1.6rem;font-family:'Segoe Script','Brush Script MT',cursive;color:#1E293B;outline:none;background:#fff;transition:border-color .15s;}
+    .sig-type-inp:focus{border-color:#C1121F;}
+    .sig-type-preview{margin-top:8px;padding:8px 14px;background:#F8F6F4;border-radius:6px;font-size:1.4rem;font-family:'Segoe Script','Brush Script MT',cursive;color:#1E293B;min-height:48px;border:1px solid #E8E7E5;}
+    .gen-actions{display:flex;gap:12px;padding:16px 28px;background:#F8F6F4;border-top:1px solid #E8E7E5;flex-wrap:wrap;}
+    .btn-gen-primary{padding:10px 28px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;}
+    .btn-gen-primary:hover{background:#8C0F1B;}
+    .btn-gen-primary:disabled{opacity:.6;}
+    .btn-gen-sec{padding:10px 20px;border:1.5px solid #E8E7E5;border-radius:8px;color:#374151;font-weight:600;font-size:.9rem;cursor:pointer;background:#fff;display:flex;align-items:center;gap:8px;transition:all .15s;}
+    .btn-gen-sec:hover{border-color:#94A3B8;}
+    .result-card{background:#fff;border:1.5px solid #E8E7E5;border-radius:16px;padding:28px;margin-top:24px;}
+    .btn-result-primary{padding:11px 24px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:background .15s;}
+    .btn-result-primary:hover{background:#8C0F1B;}
+    .btn-result-sec{padding:11px 20px;border:1.5px solid #E8E7E5;border-radius:8px;color:#374151;font-weight:600;font-size:.9rem;cursor:pointer;background:none;display:inline-flex;align-items:center;gap:8px;transition:all .15s;}
+    .btn-result-sec:hover{border-color:#94A3B8;}
+    #preview-modal .auth-modal{max-width:560px;background:#F3F0EE;padding:20px;}
+    #preview-modal .preview-wrap{padding:0;}
+    .result-inv-number{font-size:1.3rem;font-weight:900;color:#C1121F;}
+    .result-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.82rem;}
+    .result-table th{color:#64748B;font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.06em;padding:8px 0;border-bottom:1px solid #E8E7E5;}
+    .result-table td{padding:8px 0;color:#374151;border-bottom:1px solid #F3F0EE;}
+    .result-total-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#8C0F1B,#C1121F);border-radius:10px;margin-top:16px;}
+    .upsell{background:rgba(193,18,31,.08);border:1px solid rgba(193,18,31,.28);border-radius:12px;padding:20px 24px;margin-top:20px;text-align:center;}
+    .btn-add-item-round{width:36px;height:36px;border-radius:50%;background:#C1121F;border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:12px;transition:background .15s;}
+    .btn-add-item-round:hover{background:#8C0F1B;}
+    @media(max-width:600px){
+      .from-to-grid,.inv-meta-grid{grid-template-columns:1fr;}
+      .totals-box{width:100%;}
+      .gen-body{padding:16px 16px 10px;}
+      .gen-actions{padding:12px 16px;}
+      .items-thead,.item-main-row{grid-template-columns:20px 1fr 40px 40px 28px;}
+    }
+    /* ── Numbered step sections ── */
+    .fi-step{border:1.5px solid #E8E7E5;border-radius:12px;margin-bottom:14px;overflow:hidden;background:#fff;}
+    .fi-step-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#F8F6F4;border-bottom:1.5px solid #E8E7E5;}
+    .fi-step-num{width:26px;height:26px;border-radius:50%;background:#C1121F;color:#fff;font-weight:800;font-size:.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fi-step-title{font-size:.85rem;font-weight:700;color:#0F172A;}
+    .fi-step-sub{font-size:.7rem;color:#94A3B8;margin-top:1px;}
+    .fi-step-body{padding:16px;}
+    .fi-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;}
+    .fi-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px;}
+    .fi-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px;}
+    .fi-field{margin-bottom:10px;}
+    .fi-field label{display:block;font-size:.7rem;font-weight:700;color:#64748B;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+    .fi-field input,.fi-field select,.fi-field textarea{width:100%;border:1.5px solid #E8E7E5;border-radius:7px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
+    .fi-field input:focus,.fi-field select:focus,.fi-field textarea:focus{border-color:#C1121F;box-shadow:0 0 0 2px rgba(193,18,31,.1);}
+    .fi-field input::placeholder,.fi-field textarea::placeholder{color:#D1D0CC;}
+    .fi-field input.fi-req{border-color:#FCA5A5;}
+    .fi-field textarea{resize:vertical;min-height:62px;font-family:inherit;}
+    .fi-chk-row{display:flex;align-items:center;gap:6px;margin-top:5px;}
+    .fi-chk-row input[type=checkbox]{width:14px;height:14px;accent-color:#C1121F;cursor:pointer;flex-shrink:0;}
+    .fi-chk-row label{font-size:.78rem;color:#64748B;cursor:pointer;margin:0;}
+    .btn-add-item{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:1.5px dashed #D1D0CC;border-radius:8px;background:#F8F6F4;color:#64748B;font-size:.82rem;font-weight:600;cursor:pointer;margin-top:10px;transition:all .15s;}
+    .btn-add-item:hover{border-color:#C1121F;color:#C1121F;background:#FDF0F1;}
+    /* preview template bar */
+    .pvw-tpl-bar{padding:10px 14px;background:#C1121F;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+    .pvw-tpl-sel{flex:1;min-width:120px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.75rem;padding:5px 8px;outline:none;cursor:pointer;}
+    /* The dropdown popup itself is native-rendered on a white background
+       regardless of the select's own (translucent) styling, so options need
+       their own dark text or they're invisible white-on-white. */
+    .pvw-tpl-sel option{color:#131416;background:#fff;}
+    .pvw-tpl-btn{padding:6px 11px;background:#C1121F;border:none;border-radius:6px;color:#fff;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;}
+    .pvw-tpl-btn:hover{background:#8C0F1B;}
+    .pvw-live-badge{display:flex;align-items:center;gap:4px;font-size:.65rem;color:#4ADE80;font-weight:700;white-space:nowrap;}
+    .pvw-live-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;flex-shrink:0;animation:pvw-pulse 1.5s infinite;}
+    @keyframes pvw-pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    /* items with HSN/SAC */
+    .items-thead{grid-template-columns:28px 1fr 72px 52px 86px 52px 90px 28px!important;}
+    .item-main-row{grid-template-columns:28px 1fr 72px 52px 86px 52px 90px 28px!important;}
+    .pvw-items-hdr,.pvw-item-row{grid-template-columns:1fr 44px 56px 28px 36px 56px!important;}
+    /* Hide the HSN/SAC column on the final invoice entirely when no item has one filled in */
+    .pvw-items.no-hsn .pvw-items-hdr,.pvw-items.no-hsn .pvw-item-row{grid-template-columns:1fr 56px 28px 36px 56px!important;}
+    .pvw-items.no-hsn .pvw-items-hdr span:nth-child(2),.pvw-items.no-hsn .pvw-item-row span:nth-child(2){display:none;}
+    @media(max-width:600px){
+      .items-thead,.item-main-row{grid-template-columns:20px 1fr 52px 40px 40px 28px!important;}
+      .items-thead span:nth-child(3),.item-main-row input:nth-child(3){display:none;}
+      .fi-grid-2,.fi-grid-3,.fi-grid-4{grid-template-columns:1fr!important;}
+    }
+    /* ══════════ ZayroLoader — branded "ink fill" loader ══════════ */
+    .zl-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;}
+    .zl-wrap.zl-inline{display:inline-flex;flex-direction:row;gap:8px;padding:0;vertical-align:middle;}
+    .zl-svg{width:56px;height:56px;overflow:visible;}
+    .zl-inline .zl-svg{width:18px;height:18px;}
+    .zl-svg .zl-outline{fill:none;stroke:var(--ember);stroke-width:6;stroke-linejoin:round;stroke-linecap:round;}
+    .zl-svg .zl-ink{fill:var(--ember);clip-path:inset(100% 0 0 0);animation:zl-fill 1.35s cubic-bezier(.65,0,.35,1) infinite;transform-origin:center;}
+    .zl-svg .zl-nib{fill:var(--ember);opacity:0;animation:zl-nib-pulse 1.35s cubic-bezier(.65,0,.35,1) infinite;}
+    @keyframes zl-fill{0%{clip-path:inset(100% 0 0 0);}55%{clip-path:inset(0% 0 0 0);}100%{clip-path:inset(0% 0 100% 0);}}
+    @keyframes zl-nib-pulse{0%,100%{opacity:0;}50%{opacity:1;}}
+    .zl-msg{font-size:.82rem;font-weight:600;color:#94A3B8;letter-spacing:-.01em;}
+    .zl-inline .zl-msg{font-size:.78rem;}
+    @media (prefers-reduced-motion: reduce){.zl-ink,.zl-nib{animation:none!important;clip-path:inset(0 0 0 0)!important;opacity:.55!important;}}
+</style>
 </head>
 <body>
+<script>
+  window.ZayroLoader = (function() {
+    const svg = () => `
+      <svg class="zl-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <path class="zl-outline" d="M32 6 L52 46 Q52 56 32 58 Q12 56 12 46 Z"/>
+        <path class="zl-ink" d="M32 6 L52 46 Q52 56 32 58 Q12 56 12 46 Z"/>
+        <circle class="zl-nib" cx="32" cy="14" r="3"/>
+      </svg>`;
+    function show(container, message, opts) {
+      const el = typeof container === 'string' ? document.querySelector(container) : container;
+      if (!el) return;
+      if (el.dataset.zlActive === '1') { const m = el.querySelector('.zl-msg'); if (m && message != null) m.textContent = message; return; }
+      el.dataset.zlPrevHtml = el.innerHTML;
+      el.dataset.zlActive = '1';
+      const inline = !!(opts && opts.inline);
+      el.innerHTML = `<div class="zl-wrap${inline ? ' zl-inline' : ''}">${svg()}${message ? `<span class="zl-msg">${message}</span>` : ''}</div>`;
+    }
+    function hide(container) {
+      const el = typeof container === 'string' ? document.querySelector(container) : container;
+      if (!el || el.dataset.zlActive !== '1') return;
+      el.innerHTML = el.dataset.zlPrevHtml || '';
+      delete el.dataset.zlActive;
+      delete el.dataset.zlPrevHtml;
+    }
+    return { show, hide };
+  })();
+</script>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
-<!-- Navbar -->
-<nav class="lp-nav">
-  <a class="lp-logo" href="/">
-    <div class="lp-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div>
-    <div>
-      <div class="lp-logo-text">Zayro ₹ Invoice</div>
-      <div class="lp-logo-sub">Smart Billing Platform</div>
-    </div>
-  </a>
-  <div class="lp-nav-links">
-    <a href="/auth/login/" class="btn-nav-outline">Login</a>
-    <a href="/auth/register/" class="btn-nav-primary">Register</a>
-  </div>
-</nav>
+<!-- ══════════════ NAV (shared partial — see apps/authentication/web_views.py for nav context) ══════════════ -->
+{% include '_site_nav.html' %}
 
-<!-- Hero -->
-<section class="hero">
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero" aria-label="Hero" id="main-content">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <canvas id="hero-fx" aria-hidden="true"></canvas>
   <div class="hero-inner">
-    <div class="hero-pill"><i class="bi bi-stars"></i> Smart Smart Billing Platform</div>
-    <h1 class="hero-h1">Create, Send &amp; Track<br><span>Invoices with Ease</span></h1>
-    <p class="hero-sub">Manage customers, products, payments and reports — all in one place. Built for Indian businesses with GST support.</p>
-    <div class="hero-btns">
-      <a href="/auth/register/" class="btn-hero-primary"><i class="bi bi-person-plus-fill"></i> Get Started Free</a>
-      <a href="/auth/login/" class="btn-hero-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+    <div>
+      <div class="eyebrow" aria-hidden="true">
+        <span class="dot"></span> GST-ready &middot; Built for India
+      </div>
+      <h1 class="hero-h1">
+        Billing that works <br>as hard as <em>you do.</em>
+      </h1>
+      <p class="hero-sub">
+        Professional GST invoicing, payment tracking and business management, built for Indian businesses.
+      </p>
+      <div class="hero-btns">
+        <a href="#" onclick="showFreeForm();return false;" class="btn-primary-lg"><i class="bi bi-lightning-charge-fill me-1"></i>Try free invoice</a>
+        <a href="#how-it-works" class="btn-outline-lg">See how it works</a>
+      </div>
+      <div class="trust-row" aria-label="Key benefits">
+        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> No credit card</div>
+        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Free plan available</div>
+        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> GST-ready</div>
+        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> PDF invoices</div>
+      </div>
+    </div>
+
+    <!-- Dashboard mock -->
+    <div class="hero-visual" aria-hidden="true">
+      <div class="app-window">
+        <div class="app-topbar">
+          <div class="app-dot" style="background:#F87171"></div>
+          <div class="app-dot" style="background:#FBBF24"></div>
+          <div class="app-dot" style="background:#4ADE80"></div>
+          <div class="app-topbar-title">Zayro Invoice Dashboard</div>
+        </div>
+        <div class="app-body">
+          <!-- KPI row with sparklines -->
+          <div class="app-kpis">
+            <div class="app-kpi">
+              <div class="app-kpi-lbl">Total Revenue</div>
+              <div class="app-kpi-val c-ember">&#8377;2.4L</div>
+              <div class="app-chart-row">
+                <div class="app-chart-bar" style="height:40%"></div>
+                <div class="app-chart-bar" style="height:55%"></div>
+                <div class="app-chart-bar" style="height:45%"></div>
+                <div class="app-chart-bar" style="height:70%"></div>
+                <div class="app-chart-bar hi" style="height:88%"></div>
+              </div>
+            </div>
+            <div class="app-kpi">
+              <div class="app-kpi-lbl">Collected</div>
+              <div class="app-kpi-val c-green">&#8377;1.93L</div>
+              <div class="app-chart-row">
+                <div class="app-chart-bar" style="height:38%;background:#4ADE80"></div>
+                <div class="app-chart-bar" style="height:52%;background:#4ADE80"></div>
+                <div class="app-chart-bar" style="height:42%;background:#4ADE80"></div>
+                <div class="app-chart-bar" style="height:65%;background:#4ADE80"></div>
+                <div class="app-chart-bar hi" style="height:80%;background:#4ADE80"></div>
+              </div>
+            </div>
+            <div class="app-kpi">
+              <div class="app-kpi-lbl">Overdue</div>
+              <div class="app-kpi-val c-red">&#8377;18K</div>
+              <div class="app-chart-row">
+                <div class="app-chart-bar" style="height:60%;background:#F87171"></div>
+                <div class="app-chart-bar" style="height:80%;background:#F87171"></div>
+                <div class="app-chart-bar hi" style="height:95%;background:#F87171"></div>
+                <div class="app-chart-bar" style="height:50%;background:#F87171"></div>
+                <div class="app-chart-bar" style="height:30%;background:#F87171"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Recent invoices table -->
+          <div class="app-tbl-hdr">
+            <span>Invoice</span><span>Amount</span><span>Date</span><span>Status</span>
+          </div>
+          <div class="app-row">
+            <div>
+              <div class="app-row-num">INV-0048</div>
+              <div class="app-row-who">Ravi Sharma &amp; Co</div>
+            </div>
+            <div class="app-row-amt">&#8377;24,500</div>
+            <div class="app-row-date">15 Jul</div>
+            <div style="text-align:right"><span class="badge badge-paid">Paid</span></div>
+          </div>
+          <div class="app-row">
+            <div>
+              <div class="app-row-num">INV-0047</div>
+              <div class="app-row-who">Meena Textiles</div>
+            </div>
+            <div class="app-row-amt">&#8377;68,200</div>
+            <div class="app-row-date">12 Jul</div>
+            <div style="text-align:right"><span class="badge badge-sent">Sent</span></div>
+          </div>
+          <div class="app-row">
+            <div>
+              <div class="app-row-num">INV-0046</div>
+              <div class="app-row-who">Ankit Enterprises</div>
+            </div>
+            <div class="app-row-amt">&#8377;12,750</div>
+            <div class="app-row-date">8 Jul</div>
+            <div style="text-align:right"><span class="badge badge-paid">Paid</span></div>
+          </div>
+          <div class="app-row">
+            <div>
+              <div class="app-row-num">INV-0045</div>
+              <div class="app-row-who">Priya Solutions</div>
+            </div>
+            <div class="app-row-amt">&#8377;18,000</div>
+            <div class="app-row-date">1 Jul</div>
+            <div style="text-align:right"><span class="badge badge-overdue">Overdue</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Floating stat card -->
+      <div class="float-card" aria-hidden="true">
+        <div class="fc-lbl">Collected this month</div>
+        <div class="fc-val">&#8377;1,92,750</div>
+        <div class="fc-sub">72% of invoiced amount</div>
+        <div class="fc-bar-bg"><div class="fc-bar"></div></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Stats -->
-<div class="stats-strip">
-  <div class="row g-3 text-center" style="max-width:800px;margin:0 auto">
-    <div class="col-6 col-md-3 stat-item"><div class="stat-num">GST</div><div class="stat-lbl">Ready</div></div>
-    <div class="col-6 col-md-3 stat-item"><div class="stat-num">PDF</div><div class="stat-lbl">Export</div></div>
-    <div class="col-6 col-md-3 stat-item"><div class="stat-num">∞</div><div class="stat-lbl">Customers</div></div>
-    <div class="col-6 col-md-3 stat-item"><div class="stat-num">3</div><div class="stat-lbl">User Roles</div></div>
+<!-- ══════════════ TEMPLATE SHOWCASE (live colour preview) ══════════════ -->
+<section class="tpl-section" aria-labelledby="tpl-heading">
+  <div class="tpl-inner">
+    <div>
+      <span class="fa-eyebrow"><i class="bi bi-palette-fill"></i> Templates</span>
+      <h2 class="fa-h" id="tpl-heading">Every invoice, on brand.</h2>
+      <p class="fa-p">Pick an accent colour and Zayro applies it across the logo mark, section bar and total &#8212; on screen and in the downloaded PDF. No design work, no re-uploading anything.</p>
+      <ul class="fa-list" aria-label="Template features">
+        <li>Recolour any invoice in one click, no re-upload needed</li>
+        <li>Consistent branding across every invoice you send</li>
+        <li>Looks the same on screen, in PDF and in print</li>
+      </ul>
+      <div class="tpl-swatches" role="group" aria-label="Preview accent colour">
+        <button type="button" class="tpl-swatch is-active" data-color="#C1121F" style="background:#C1121F;color:#C1121F" aria-label="Red" aria-pressed="true"></button>
+        <button type="button" class="tpl-swatch" data-color="#131416" style="background:#131416;color:#131416" aria-label="Black" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#2563EB" style="background:#2563EB;color:#2563EB" aria-label="Blue" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#16A34A" style="background:#16A34A;color:#16A34A" aria-label="Green" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#7C3AED" style="background:#7C3AED;color:#7C3AED" aria-label="Purple" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div class="mini-inv tpl-live-inv" id="tpl-live-inv" aria-hidden="true">
+      <div class="mi-hd">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mi-logo-box" id="tpl-live-logo"><i class="bi bi-receipt"></i></div>
+          <div>
+            <div class="mi-brand" id="tpl-live-brand">Zayro</div>
+            <div class="mi-inv-num">Acme Exports Pvt Ltd</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="mi-inv-num" style="margin-top:0">#INV-0048</div>
+          <div class="mi-inv-num">15 Jul 2026</div>
+        </div>
+      </div>
+      <div class="mi-parties">
+        <div>
+          <div class="mi-pl">Bill To</div>
+          <div class="mi-pn">Ravi Sharma &amp; Co</div>
+        </div>
+        <div>
+          <div class="mi-pl">GSTIN</div>
+          <div class="mi-pn">29ABCDE1234F1Z5</div>
+        </div>
+      </div>
+      <div class="mi-tbl-hdr"><span>Item</span><span>Qty</span><span>Amount</span></div>
+      <div class="mi-item"><div class="mi-in">Web design services</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;20,000</div></div>
+      <div class="mi-item"><div class="mi-in">SEO audit report</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;5,000</div></div>
+      <div class="mi-div"></div>
+      <div class="mi-gst"><span>CGST + SGST</span><span>&#8377;4,500</span></div>
+      <div class="mi-total-bar" id="tpl-live-total">
+        <span class="mi-tl">Total Due</span><span class="mi-tv">&#8377;29,500</span>
+      </div>
+    </div>
   </div>
-</div>
+</section>
+<script>
+  (function(){
+    var swatches = document.querySelectorAll('.tpl-swatches .tpl-swatch');
+    var logo = document.getElementById('tpl-live-logo');
+    var brand = document.getElementById('tpl-live-brand');
+    var totalBar = document.getElementById('tpl-live-total');
+    swatches.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        swatches.forEach(function(b){ b.classList.remove('is-active'); b.setAttribute('aria-pressed','false'); });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed','true');
+        var color = btn.getAttribute('data-color');
+        if (logo) logo.style.background = color;
+        if (brand) brand.style.color = color;
+        if (totalBar) totalBar.style.background = color;
+      });
+    });
+  })();
+</script>
 
-<!-- Features -->
-<section class="features">
-  <div style="margin-bottom:48px">
-    <div class="sec-label">Everything you need</div>
-    <h2 class="sec-title">Built for Modern Businesses</h2>
-    <p class="sec-sub">From invoice creation to payment tracking — Zayro ₹ Invoice covers the complete billing lifecycle.</p>
+<!-- FREE INVOICE GENERATOR -->
+<section id="free-section" style="background:linear-gradient(180deg,var(--dark) 0%,var(--dark-3) 100%);display:none;padding-bottom:60px">
+  <div class="free-zone">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:40px;margin-bottom:16px">
+      <div style="color:#F0576B;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em"><i class="bi bi-lightning-charge-fill me-2"></i>Free Invoice Generator &#8212; No account needed</div>
+      <button onclick="hideFreeForm()" style="background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.85rem"><i class="bi bi-x-lg"></i> Close</button>
+    </div>
+    <div class="gen-card" id="free-form-card">
+      <div class="gen-layout" id="gen-layout">
+        <div class="gen-main">
+          <div class="gen-body">
+
+            <!-- ① Company & Invoice Details -->
+            <div class="fi-step">
+              <div class="fi-step-hdr">
+                <div class="fi-step-num">1</div>
+                <div><div class="fi-step-title">Company &amp; Invoice Details</div><div class="fi-step-sub">Your business and invoice information</div></div>
+              </div>
+              <div class="fi-step-body">
+                <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px;">
+                  <div style="flex-shrink:0;">
+                    <div class="logo-upload-box" onclick="document.getElementById('fi-logo-file').click()" style="width:90px;height:70px;">
+                      <img id="fi-logo-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain">
+                      <div class="logo-placeholder-wrap" id="fi-logo-placeholder"><i class="bi bi-image" style="font-size:1.2rem;color:#D1D0CC"></i><span>+ Logo</span></div>
+                    </div>
+                    <input type="file" id="fi-logo-file" accept="image/*" style="display:none" onchange="previewLogo(this)">
+                    <div id="logo-remove-wrap" style="display:none;text-align:center;margin-top:3px"><button onclick="removeLogo()" style="background:none;border:none;color:#EF4444;font-size:.68rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove</button></div>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <input class="seller-company-input" id="fi-from-name" placeholder="YOUR COMPANY NAME" maxlength="100" oninput="updatePreview()">
+                    <div class="fi-grid-3" style="margin-top:8px;">
+                      <div class="fi-field" style="margin-bottom:0"><label>GSTIN</label><input id="fi-from-gst" placeholder="29AABCP1234D1Z5" oninput="updatePreview()"></div>
+                      <div class="fi-field" style="margin-bottom:0"><label>PAN</label><input id="fi-from-pan" placeholder="AABCP1234D" oninput="updatePreview()"></div>
+                      <div class="fi-field" style="margin-bottom:0"><label>CIN</label><input id="fi-from-cin" placeholder="CIN Number" oninput="updatePreview()"></div>
+                    </div>
+                    <div class="fi-grid-2" style="margin-top:8px;">
+                      <div class="fi-field" style="margin-bottom:0"><label>Phone</label><input id="fi-from-phone" placeholder="+91 XXXXX XXXXX" oninput="updatePreview()"></div>
+                      <div class="fi-field" style="margin-bottom:0"><label>Email</label><input id="fi-from-email" type="email" placeholder="email@company.com" oninput="updatePreview()"></div>
+                    </div>
+                    <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Address</label><input id="fi-from-address" placeholder="Address, City, State - Pincode" oninput="updatePreview()"></div>
+                    <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Website</label><input id="fi-from-website" placeholder="www.company.com" oninput="updatePreview()"></div>
+                  </div>
+                </div>
+                <div class="fi-grid-4">
+                  <div class="fi-field" style="margin-bottom:0">
+                    <label>Company <span style="color:#EF4444">*</span></label>
+                    <input id="fi-company-sel" placeholder="Zayro Infotech Pvt Ltd" oninput="syncCompanyName(this.value)">
+                  </div>
+                  <div class="fi-field" style="margin-bottom:0">
+                    <label>Invoice No. <span style="color:#EF4444">*</span></label>
+                    <input class="inv-meta-input" id="fi-inv-number" placeholder="INV-2026-001" oninput="updatePreview()">
+                    <div class="inv-err" id="inv-num-err" style="display:none;font-size:.68rem;color:#EF4444;margin-top:2px;"><i class="bi bi-exclamation-circle me-1"></i>Required</div>
+                  </div>
+                  <div class="fi-field" style="margin-bottom:0">
+                    <label>Invoice Date <span style="color:#EF4444">*</span></label>
+                    <input class="inv-meta-input" id="fi-inv-date" type="date" oninput="updatePreview()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ② Customer Details -->
+            <div class="fi-step">
+              <div class="fi-step-hdr">
+                <div class="fi-step-num">2</div>
+                <div><div class="fi-step-title">Customer Details</div><div class="fi-step-sub">Enter your customer information</div></div>
+              </div>
+              <div class="fi-step-body">
+                <div class="fi-grid-2">
+                  <div class="fi-field"><label>Customer <span style="color:#EF4444">*</span></label><input id="fi-name" placeholder="Client Company Name" class="fi-req" oninput="updatePreview()"></div>
+                  <div class="fi-field"><label>GSTIN</label><input id="fi-cust-gst" placeholder="29AABCP1234D1Z5" oninput="updatePreview()"></div>
+                </div>
+                <div class="fi-grid-2">
+                  <div>
+                    <div class="fi-field" style="margin-bottom:0"><label>Billing Address <span style="color:#EF4444">*</span></label><textarea id="fi-cust-address" placeholder="Enter customer billing address" rows="3" oninput="updatePreview();syncShipping()"></textarea></div>
+                  </div>
+                  <div>
+                    <div class="fi-field" style="margin-bottom:4px"><label>Shipping Address</label><textarea id="fi-ship-address" placeholder="Enter shipping address" rows="3" oninput="updatePreview()"></textarea></div>
+                    <div class="fi-chk-row"><input type="checkbox" id="fi-same-address" onchange="toggleSameAddress(this)"><label for="fi-same-address">Same as billing address</label></div>
+                  </div>
+                </div>
+                <div class="fi-grid-3" style="margin-top:6px;">
+                  <div class="fi-field" style="margin-bottom:0"><label>Email <span style="color:#EF4444">*</span></label><input id="fi-email" type="email" placeholder="client@company.com" class="fi-req" oninput="updatePreview()"></div>
+                  <div class="fi-field" style="margin-bottom:0"><label>Phone</label><input id="fi-cust-phone" placeholder="+91 XXXXX XXXXX" oninput="updatePreview()"></div>
+                  <div class="fi-field" style="margin-bottom:0"><label>PAN</label><input id="fi-cust-pan" placeholder="AABCP1234D"></div>
+                </div>
+                <input type="hidden" id="fi-recipient" value="">
+              </div>
+            </div>
+
+            <!-- ③ Items / Services -->
+            <div class="fi-step">
+              <div class="fi-step-hdr">
+                <div class="fi-step-num">3</div>
+                <div><div class="fi-step-title">Items / Services</div><div class="fi-step-sub">Add the products or services for this invoice</div></div>
+              </div>
+              <div class="fi-step-body" style="padding:12px 16px;">
+                <div class="items-thead">
+                  <span style="text-align:center">#</span><span>Description <span style="color:#EF4444">*</span></span><span style="text-align:center">HSN/SAC</span><span class="right">Qty</span><span class="right">Rate (&#8377;) <span style="color:#EF4444">*</span></span><span class="right">GST %</span><span class="right">Amount (&#8377;)</span><span></span>
+                </div>
+                <div id="fi-items"></div>
+                <button class="btn-add-item" onclick="addFreeItem()"><i class="bi bi-plus-lg"></i> Add Item</button>
+              </div>
+              <div class="gen-totals" style="padding:0 16px 16px;">
+                <div class="totals-box">
+                  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+                    <button type="button" id="fi-mode-intra" class="tax-mode-btn active" onclick="setFreeTaxMode('intra')">CGST + SGST <span style="font-weight:400;opacity:.8">(Intra-state)</span></button>
+                    <button type="button" id="fi-mode-inter" class="tax-mode-btn" onclick="setFreeTaxMode('inter')">IGST <span style="font-weight:400;opacity:.8">(Inter-state)</span></button>
+                    <button type="button" id="fi-mode-all" class="tax-mode-btn" onclick="setFreeTaxMode('all')" title="Show CGST, SGST and IGST together for cases that need all three">All three</button>
+                  </div>
+                  <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">&#8377;0.00</span></div>
+                  <div class="tot-row gst-row" id="fi-row-cgst"><span style="display:flex;align-items:center;gap:6px">CGST @ <input class="gst-rate-input" type="number" id="fi-cgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-cgst-amt">&#8377;0.00</span></div>
+                  <div class="tot-row gst-row" id="fi-row-sgst"><span style="display:flex;align-items:center;gap:6px">SGST @ <input class="gst-rate-input" type="number" id="fi-sgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-sgst-amt">&#8377;0.00</span></div>
+                  <div class="tot-row gst-row" id="fi-row-igst" style="display:none"><span style="display:flex;align-items:center;gap:6px">IGST @ <input class="gst-rate-input" type="number" id="fi-igst-rate" value="0" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-igst-amt">&#8377;0.00</span></div>
+                  <div class="tot-row total-gst-row"><span>Total GST (@ <span id="fi-gst-pct">27</span>%)</span><span id="fi-gst-total">&#8377;0.00</span></div>
+                  <div class="tot-row bal"><span>Grand Total (incl. GST)</span><span id="fi-total">&#8377;0.00</span></div>
+                </div>
+              </div>
+              <div class="amount-words" id="fi-words-box" style="display:none;margin:0 16px 16px;"><strong>Amount in Words</strong><span id="fi-words-text"></span></div>
+            </div>
+
+            <!-- ④ Additional Notes -->
+            <div class="fi-step">
+              <div class="fi-step-hdr">
+                <div class="fi-step-num">4</div>
+                <div><div class="fi-step-title">Additional Notes <span style="font-weight:400;font-size:.75rem;color:#94A3B8">(Optional)</span></div><div class="fi-step-sub">Add any additional information</div></div>
+              </div>
+              <div class="fi-step-body">
+                <div class="fi-grid-2" style="margin-bottom:16px;">
+                  <div class="fi-field" style="margin-bottom:0"><label>Terms &amp; Conditions</label><textarea id="fi-terms" placeholder="e.g. Payment due within 30 days..." rows="4"></textarea></div>
+                  <div class="fi-field" style="margin-bottom:0"><label>Bank Details</label><textarea id="fi-bank-details" placeholder="Bank Name, A/C No, IFSC..." rows="4"></textarea></div>
+                </div>
+                <div class="fi-grid-2" style="margin-bottom:14px;">
+                  <div class="fi-field" style="margin-bottom:0"><label>Thank You Message</label><input id="fi-thankyou" placeholder="Thank you for your business!" value="Thank you for your business!" oninput="updatePreview()"></div>
+                  <div class="fi-field" style="margin-bottom:0"><label>Department</label><input id="fi-dept" placeholder="Department" value="Sales &amp; Procurement Department"></div>
+                </div>
+                <div style="font-size:.78rem;font-weight:700;color:#64748B;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">Authorized Signatory</div>
+                <div class="sig-tabs">
+                  <button class="sig-tab active" onclick="switchSigTab('draw',this)"><i class="bi bi-pencil-fill"></i> Draw</button>
+                  <button class="sig-tab" onclick="switchSigTab('upload',this)"><i class="bi bi-upload"></i> Upload</button>
+                  <button class="sig-tab" onclick="switchSigTab('type',this)"><i class="bi bi-fonts"></i> Type Name</button>
+                </div>
+                <div class="sig-panel active" id="sig-panel-draw">
+                  <div class="sig-canvas-wrap"><canvas id="fi-sig-canvas" width="800" height="160"></canvas></div>
+                  <div class="sig-canvas-actions"><button class="sig-clear-btn" onclick="clearCanvas()"><i class="bi bi-arrow-counterclockwise me-1"></i>Clear</button><span style="font-size:.72rem;color:#94A3B8;align-self:center">Draw your signature above</span></div>
+                </div>
+                <div class="sig-panel" id="sig-panel-upload">
+                  <div class="sig-upload-box" onclick="document.getElementById('fi-sig-file').click()">
+                    <img id="fi-sig-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;padding:8px;">
+                    <div id="fi-sig-ph" style="display:flex;flex-direction:column;align-items:center;gap:5px;"><i class="bi bi-cloud-upload" style="font-size:1.4rem;color:#D1D0CC"></i><span style="font-size:.75rem;color:#94A3B8;font-weight:600">Click to upload signature image</span></div>
+                  </div>
+                  <input type="file" id="fi-sig-file" accept="image/*" style="display:none" onchange="previewSignature(this)">
+                  <div id="sig-remove-wrap" style="display:none;margin-top:6px"><button onclick="removeSignature()" style="background:none;border:none;color:#EF4444;font-size:.75rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove image</button></div>
+                </div>
+                <div class="sig-panel" id="sig-panel-type">
+                  <input class="sig-type-inp" id="fi-sig-typed" placeholder="e.g. Authorized Signatory" oninput="document.getElementById('sig-type-preview').textContent=this.value||'Signature Preview'">
+                  <div class="sig-type-preview" id="sig-type-preview" style="color:#D1D0CC">Signature Preview</div>
+                </div>
+                <div class="fi-grid-2" style="margin-top:14px;">
+                  <div class="fi-field" style="margin-bottom:0"><label>Signatory Name</label><input id="fi-sig-name" placeholder="e.g. Authorized Signatory" oninput="updatePreview()"></div>
+                  <div class="fi-field" style="margin-bottom:0"><label>Company (on signature block)</label><input id="fi-sig-company" placeholder="e.g. Your Company Name" oninput="updatePreview()"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="fi-error" style="color:#EF4444;font-size:.82rem;margin:12px 0;display:none;background:#FEF2F2;border-radius:8px;padding:10px 14px;border:1px solid #FCA5A5"></div>
+          </div>
+          <div class="gen-actions">
+            <button class="btn-gen-primary" id="fi-btn" onclick="createFreeInvoice()"><i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF</button>
+            <button class="btn-gen-sec" onclick="hideFreeForm()">Cancel</button>
+            <div style="margin-left:auto;font-size:.78rem;color:#94A3B8;display:flex;align-items:center;gap:6px"><i class="bi bi-info-circle"></i> Want unlimited? <a onclick="openModal('reg-modal')" style="color:#C1121F;cursor:pointer;font-weight:600">Register free &rarr;</a></div>
+          </div>
+          <button id="mobile-view-toggle" onclick="toggleMobilePreview()"><i class="bi bi-eye-fill"></i> <span id="mobile-view-toggle-label">Preview</span></button>
+        </div>
+        <div class="gen-preview">
+          <div class="gen-preview-header"><span><i class="bi bi-eye-fill me-1"></i> Live Invoice Preview</span><div class="pvw-live-badge"><div class="pvw-live-dot"></div>Live Update</div></div>
+          <div class="pvw-tpl-bar">
+            <select class="pvw-tpl-sel" id="fi-tpl-sel" onchange="applyFreeTemplate(this.value)">
+              <option value="orange">Modern (Red)</option>
+              <option value="blue">Professional (Blue)</option>
+              <option value="clean">Minimal (Clean)</option>
+              <option value="green">Classic (Green)</option>
+              <option value="purple">Elegant (Purple)</option>
+            </select>
+          </div>
+          <div class="preview-wrap">
+            <div class="inv-preview" id="inv-preview">
+              <div class="pvw-hdr">
+                <div style="display:flex;align-items:center;gap:8px;"><div class="pvw-logo" id="pvw-logo-circle">Rs</div><div class="pvw-co"><div class="pvw-co-name" id="pvw-co-name">YOUR COMPANY NAME</div><div class="pvw-co-sub" id="pvw-co-gst"></div></div></div>
+                <div class="pvw-inv-title">INVOICE</div>
+              </div>
+              <div class="pvw-divider"></div>
+              <div class="pvw-meta"><div><span class="pvw-meta-lbl">NUMBER</span><span class="pvw-meta-val" id="pvw-inv-no">&#8212;</span></div><div><span class="pvw-meta-lbl">DATE</span><span class="pvw-meta-val" id="pvw-inv-date">&#8212;</span></div></div>
+              <div class="pvw-addr">
+                <div class="pvw-addr-col" style="border-right:1px solid #fff;"><div class="pvw-addr-hdr">FROM</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-from-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-from-addr"></div><div class="pvw-addr-muted" id="pvw-from-email"></div><div class="pvw-addr-muted" id="pvw-from-phone"></div><div class="pvw-addr-muted" id="pvw-from-cin"></div><div class="pvw-addr-muted" id="pvw-from-pan"></div></div></div>
+                <div class="pvw-addr-col"><div class="pvw-addr-hdr">BILL TO</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-to-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-to-addr"></div><div class="pvw-addr-muted" id="pvw-to-email"></div><div class="pvw-addr-muted" id="pvw-to-phone"></div><div class="pvw-addr-muted" id="pvw-to-gst"></div></div></div>
+              </div>
+              <div class="pvw-items" id="pvw-items-wrap"><div class="pvw-items-hdr"><span>DESCRIPTION</span><span>HSN/SAC</span><span>RATE</span><span>QTY</span><span>DISC%</span><span>AMOUNT</span></div><div id="pvw-items-body"></div></div>
+              <div class="pvw-words" id="pvw-words-wrap"><div class="pvw-words-lbl">Amount in Words</div><div id="pvw-words-text">&#8212;</div></div>
+              <div class="pvw-totals"><div class="pvw-totals-box"><div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST @ 18%</span><span id="pvw-igst">&#8377;0.00</span></div><div class="pvw-tot-row grand"><span>GRAND TOTAL</span><span id="pvw-grand">&#8377;0.00</span></div></div></div>
+              <div class="pvw-footer"><div class="pvw-notes"><div class="pvw-notes-lbl">Notes</div><div id="pvw-note-1">&#8226; Thank you for your business.</div><div>&#8226; Please make payment on or before the due date.</div></div><div class="pvw-stamp"><span>Thank</span><span>YOU!</span></div><div class="pvw-sig"><div class="pvw-sig-lbl">Authorized Signatory</div><img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none"><div style="height:24px;" id="pvw-sig-spacer"></div><div class="pvw-sig-line"></div><div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div><div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div></div></div>
+              <div class="pvw-bar" id="pvw-bar">www.zayron.in</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="result-card d-none" id="free-result-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px"><div><div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em">Invoice Created</div><div class="result-inv-number" id="res-number"></div><div style="color:#94A3B8;font-size:.82rem;margin-top:4px" id="res-customer"></div></div><div style="text-align:right"><div style="color:#64748B;font-size:.75rem;margin-bottom:4px">Balance Due</div><div style="font-size:1.6rem;font-weight:900;color:#F0576B" id="res-total"></div></div></div>
+      <table class="result-table"><thead><tr><th>Description</th><th style="text-align:right">QTY</th><th style="text-align:right">Rate (&#8377;)</th><th style="text-align:right">Amount (&#8377;)</th></tr></thead><tbody id="res-items"></tbody></table>
+      <div class="result-total-bar"><span style="color:rgba(255,255,255,.8);font-weight:600">Balance Due</span><span style="color:#fff;font-weight:900;font-size:1.2rem" id="res-total2"></span></div>
+      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap"><a id="res-pdf-btn" href="#" target="_blank" class="btn-result-primary"><i class="bi bi-file-earmark-pdf-fill"></i> Download PDF</a><button onclick="openPreviewModal()" class="btn-result-sec"><i class="bi bi-eye-fill"></i> Preview</button><button onclick="createAnotherFree()" class="btn-result-sec"><i class="bi bi-arrow-repeat"></i> New Invoice</button></div>
+      <div class="upsell"><div style="font-size:1rem;font-weight:800;color:#C4B5FD;margin-bottom:6px"><i class="bi bi-stars me-2"></i>Want unlimited invoices + customer management?</div><div style="color:#94A3B8;font-size:.85rem;margin-bottom:16px">Register free to save invoices, manage customers, track payments, and download anytime.</div><button onclick="openModal('reg-modal')" style="padding:10px 24px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer"><i class="bi bi-person-plus-fill me-1"></i> Register Free</button></div>
+    </div>
   </div>
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-receipt-cutoff" style="color:#F97316"></i></div>
-        <div class="feat-title">Smart Invoicing</div>
-        <div class="feat-desc">Create professional invoices with GST, HSN codes, discounts, and multi-currency support in seconds.</div>
-      </div>
+</section>
+
+<!-- ══════════════ WORKFLOW ══════════════ -->
+<section class="workflow-section" id="how-it-works" aria-label="How it works">
+  <div class="workflow-inner">
+    <div class="workflow-head">
+      <h2 class="workflow-title reveal">
+        Create. <span>Send.</span> Track. <span>Repeat.</span>
+      </h2>
     </div>
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#F5F3FF"><i class="bi bi-people-fill" style="color:#7C3AED"></i></div>
-        <div class="feat-title">Customer Management</div>
-        <div class="feat-desc">Maintain a complete customer database with addresses, GST numbers, and billing history.</div>
+    <div class="workflow-steps">
+      <div class="wf-step reveal">
+        <div class="wf-num">01</div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></div>
+        <div class="wf-h">Add your customers</div>
+        <p class="wf-p">Store customer details, GSTIN and billing information. Reused automatically every time you create an invoice.</p>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#ECFDF5"><i class="bi bi-cash-coin" style="color:#059669"></i></div>
-        <div class="feat-title">Payment Tracking</div>
-        <div class="feat-desc">Record partial and full payments, track outstanding dues, and get instant status updates.</div>
+      <div class="wf-step reveal reveal-delay-1">
+        <div class="wf-num">02</div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-file-earmark-text-fill"></i></div>
+        <div class="wf-h">Create an invoice</div>
+        <p class="wf-p">Add products or services and let Zayro handle GST calculations. CGST, SGST and subtotals computed automatically.</p>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#FFF7ED"><i class="bi bi-box-seam-fill" style="color:#EA580C"></i></div>
-        <div class="feat-title">Product Catalogue</div>
-        <div class="feat-desc">Manage your products with categories, HSN codes, tax rates, and price snapshots on invoices.</div>
+      <div class="wf-step reveal reveal-delay-2">
+        <div class="wf-num">03</div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-send-fill"></i></div>
+        <div class="wf-h">Send the PDF</div>
+        <p class="wf-p">Generate a professional GST invoice PDF and send it directly to your customer. One click from the app.</p>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#FEF2F2"><i class="bi bi-file-earmark-pdf-fill" style="color:#DC2626"></i></div>
-        <div class="feat-title">PDF Generation</div>
-        <div class="feat-desc">Download professional PDF invoices and send them directly to customers via email.</div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:#F0FDF4"><i class="bi bi-bar-chart-fill" style="color:#16A34A"></i></div>
-        <div class="feat-title">Reports &amp; Analytics</div>
-        <div class="feat-desc">Monthly revenue charts, sales reports, CSV exports — complete visibility into your business.</div>
+      <div class="wf-step reveal reveal-delay-3">
+        <div class="wf-num">04</div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-currency-rupee"></i></div>
+        <div class="wf-h">Record payment</div>
+        <p class="wf-p">Track paid, pending and overdue invoices. Log partial payments and watch outstanding balances update in real time.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section">
-  <h2 class="cta-title">Ready to get started?</h2>
-  <p class="cta-sub">Create your free account and start managing invoices in minutes.</p>
-  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-    <a href="/auth/register/" class="btn-hero-primary" style="background:#fff;color:#F97316"><i class="bi bi-person-plus-fill"></i> Create Free Account</a>
-    <a href="/auth/login/" class="btn-hero-outline"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+<!-- ══════════════ FEATURES ══════════════ -->
+<section class="features-section" id="features" aria-label="Product features">
+  <div class="features-inner">
+
+    <!-- Invoicing -->
+    <article class="feat-article" aria-labelledby="feat-invoicing">
+      <div class="feat-article-text reveal reveal-delay-1">
+        <span class="fa-eyebrow" aria-hidden="true"><i class="bi bi-file-earmark-text"></i> Invoicing</span>
+        <h2 class="fa-h" id="feat-invoicing">Professional invoices in seconds.</h2>
+        <p class="fa-p">Create GST-ready invoices with automatic calculations, HSN/SAC codes, discounts and professional PDF output. Everything your client and CA need on a single page.</p>
+        <ul class="fa-list" aria-label="Invoicing features">
+          <li>Auto-numbered invoices, never track INV numbers manually again</li>
+          <li>Per-item tax rates: 5%, 12%, 18%, 28% GST mixed in one invoice</li>
+          <li>CGST &amp; SGST split shown clearly on every PDF</li>
+          <li>HSN/SAC codes on every line item</li>
+          <li>Email to clients directly from the app</li>
+        </ul>
+      </div>
+      <div class="fa-visual reveal reveal-delay-2" aria-hidden="true">
+        <div class="fa-visual-header">Invoice INV-0048</div>
+        <div class="mini-inv">
+          <div class="mi-hd">
+            <div>
+              <div class="mi-brand">INVOICE</div>
+              <div class="mi-inv-num">#INV-0048 &middot; 15 Jul 2026</div>
+            </div>
+            <div class="mi-logo-box"><i class="bi bi-building"></i></div>
+          </div>
+          <div class="mi-parties">
+            <div>
+              <div class="mi-pl">From</div>
+              <div class="mi-pn">Acme Exports Pvt Ltd</div>
+              <div class="mi-ps">GSTIN: 29ABCDE1234F1Z5</div>
+            </div>
+            <div>
+              <div class="mi-pl">Bill To</div>
+              <div class="mi-pn">Ravi Sharma &amp; Co</div>
+              <div class="mi-ps">GSTIN: 06BBBBB0000B1B1</div>
+            </div>
+          </div>
+          <div class="mi-tbl-hdr">
+            <span>Item</span><span>Qty</span><span>Amount</span>
+          </div>
+          <div class="mi-item">
+            <div class="mi-in">Web Design Services<sub>HSN: 998314 &middot; 18% GST</sub></div>
+            <div class="mi-iq">1</div>
+            <div class="mi-ia">&#8377;20,000</div>
+          </div>
+          <div class="mi-item">
+            <div class="mi-in">SEO Audit Report<sub>HSN: 998316 &middot; 18% GST</sub></div>
+            <div class="mi-iq">1</div>
+            <div class="mi-ia">&#8377;5,000</div>
+          </div>
+          <div class="mi-div"></div>
+          <div class="mi-gst"><span>CGST 9%</span><span>&#8377;2,250</span></div>
+          <div class="mi-gst"><span>SGST 9%</span><span>&#8377;2,250</span></div>
+          <div class="mi-total-bar">
+            <span class="mi-tl">Total Due</span>
+            <span class="mi-tv">&#8377;29,500</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Payment Tracking -->
+    <article class="feat-article flip" aria-labelledby="feat-payments">
+      <div class="fa-visual reveal reveal-delay-1" aria-hidden="true">
+        <div class="fa-visual-header">Payment tracking INV-0047</div>
+        <div class="pay-ledger">
+          <div class="pay-row">
+            <div class="pay-row-left">
+              <div class="pay-row-icon pi-amber"><i class="bi bi-file-earmark-text"></i></div>
+              <div>
+                <div class="pay-row-name">Invoice sent</div>
+                <div class="pay-row-sub">INV-0047 &middot; 12 Jul 2026</div>
+              </div>
+            </div>
+            <div class="pay-amt-inv">&#8377;68,200</div>
+          </div>
+          <div class="pay-row">
+            <div class="pay-row-left">
+              <div class="pay-row-icon pi-green"><i class="bi bi-arrow-down-left"></i></div>
+              <div>
+                <div class="pay-row-name">Part payment received</div>
+                <div class="pay-row-sub">UPI &middot; 14 Jul 2026</div>
+              </div>
+            </div>
+            <div class="pay-amt-pos">+&#8377;40,000</div>
+          </div>
+          <div class="pay-row">
+            <div class="pay-row-left">
+              <div class="pay-row-icon pi-green"><i class="bi bi-check-lg"></i></div>
+              <div>
+                <div class="pay-row-name">Balance received</div>
+                <div class="pay-row-sub">NEFT &middot; 18 Jul 2026</div>
+              </div>
+            </div>
+            <div class="pay-amt-pos">+&#8377;28,200</div>
+          </div>
+          <div class="pay-row">
+            <div class="pay-row-left">
+              <div class="pay-row-icon pi-red"><i class="bi bi-exclamation-triangle"></i></div>
+              <div>
+                <div class="pay-row-name">Overdue, no payment</div>
+                <div class="pay-row-sub">INV-0045 &middot; due 1 Jul 2026</div>
+              </div>
+            </div>
+            <div class="pay-amt-due">&#8377;18,000</div>
+          </div>
+          <div class="pay-footer-bar">
+            <span class="pf-lbl">&#10003; Fully collected, INV-0047</span>
+            <span class="pf-val">&#8377;68,200</span>
+          </div>
+        </div>
+      </div>
+      <div class="feat-article-text reveal reveal-delay-1">
+        <h2 class="fa-h" id="feat-payments">Know exactly what you're owed.</h2>
+        <p class="fa-p">Track paid, pending and overdue invoices without spreadsheets. Record full and partial payments against any invoice and see outstanding balances update in real time.</p>
+        <ul class="fa-list" aria-label="Payment tracking features">
+          <li>Log partial payments, track instalment collections accurately</li>
+          <li>Outstanding balance auto-fills the next payment form</li>
+          <li>Dashboard shows total revenue, collected and overdue at a glance</li>
+          <li>Full payment history ledger on every invoice detail page</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Full-width stat break, interrupts the image/text zigzag rhythm -->
+    <div class="feat-stat-band">
+      <div class="feat-stat"><span class="feat-stat-val">4</span><span class="feat-stat-lbl">core modules working together</span></div>
+      <div class="feat-stat"><span class="feat-stat-val">18%</span><span class="feat-stat-lbl">GST auto-calculated on every line item</span></div>
+      <div class="feat-stat"><span class="feat-stat-val">1 click</span><span class="feat-stat-lbl">from invoice to PDF download</span></div>
+    </div>
+
+    <!-- Reports -->
+    <article class="feat-article" aria-labelledby="feat-reports">
+      <div class="feat-article-text reveal reveal-delay-1">
+        <h2 class="fa-h" id="feat-reports">Your business, in numbers.</h2>
+        <p class="fa-p">Monthly revenue charts, sales summaries and CSV exports. Everything your CA needs and everything you need to make better decisions faster.</p>
+        <ul class="fa-list" aria-label="Reports features">
+          <li>Monthly revenue bar chart, compare months at a glance</li>
+          <li>Invoice-level sales report with full tax breakdown</li>
+          <li>Filter by date range, export to CSV</li>
+          <li>Total invoices, paid count and outstanding, always live</li>
+        </ul>
+      </div>
+      <div class="fa-visual reveal reveal-delay-2" aria-hidden="true">
+        <div class="fa-visual-header">Monthly revenue, 2026</div>
+        <div class="rpt-visual">
+          <div class="rpt-kpis">
+            <div class="rpt-kpi">
+              <div class="rpt-kpi-lbl">Revenue</div>
+              <div class="rpt-kpi-val c-ember">&#8377;4.8L</div>
+            </div>
+            <div class="rpt-kpi">
+              <div class="rpt-kpi-lbl">Paid</div>
+              <div class="rpt-kpi-val c-green">47</div>
+            </div>
+            <div class="rpt-kpi">
+              <div class="rpt-kpi-lbl">Tax</div>
+              <div class="rpt-kpi-val" style="color:#fff">&#8377;72K</div>
+            </div>
+          </div>
+          <div class="rpt-chart-wrap">
+            <div class="rpt-chart-lbl">Revenue by month</div>
+            <div class="rpt-bars">
+              <div class="rpt-bar" style="height:30%"></div>
+              <div class="rpt-bar" style="height:45%"></div>
+              <div class="rpt-bar" style="height:38%"></div>
+              <div class="rpt-bar" style="height:60%"></div>
+              <div class="rpt-bar" style="height:55%"></div>
+              <div class="rpt-bar" style="height:72%"></div>
+              <div class="rpt-bar hi" style="height:88%"></div>
+              <div class="rpt-bar" style="height:42%; opacity:.25"></div>
+              <div class="rpt-bar" style="height:20%; opacity:.1"></div>
+              <div class="rpt-bar" style="height:20%; opacity:.08"></div>
+              <div class="rpt-bar" style="height:20%; opacity:.06"></div>
+              <div class="rpt-bar" style="height:20%; opacity:.05"></div>
+            </div>
+            <div class="rpt-bar-labels">
+              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+              <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+              <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Business Management -->
+    <article class="feat-article flip" aria-labelledby="feat-biz">
+      <div class="fa-visual reveal reveal-delay-1" aria-hidden="true">
+        <div class="fa-visual-header">Customers &amp; Products</div>
+        <div class="biz-visual">
+          <div class="biz-header">
+            <div class="biz-hdr-title">Customers</div>
+            <div class="biz-hdr-count">2 records</div>
+          </div>
+          <div class="biz-row">
+            <div class="biz-avatar">RS</div>
+            <div>
+              <div class="biz-name">Ravi Sharma &amp; Co</div>
+              <div class="biz-gst">29ABCDE1234F1Z5</div>
+            </div>
+            <div class="biz-stat">
+              <div class="biz-stat-val">&#8377;29,500</div>
+              <div class="biz-stat-sub">4 invoices</div>
+            </div>
+          </div>
+          <div class="biz-row">
+            <div class="biz-avatar">MT</div>
+            <div>
+              <div class="biz-name">Meena Textiles</div>
+              <div class="biz-gst">06BBBBB0000B1B1</div>
+            </div>
+            <div class="biz-stat">
+              <div class="biz-stat-val">&#8377;68,200</div>
+              <div class="biz-stat-sub">2 invoices</div>
+            </div>
+          </div>
+          <div class="biz-divider"></div>
+          <div class="biz-header" style="margin-top:4px">
+            <div class="biz-hdr-title">Products</div>
+            <div class="biz-hdr-count">2 records</div>
+          </div>
+          <div class="prod-row">
+            <div>
+              <div class="prod-name">Web Design Services</div>
+              <div class="prod-hsn">HSN: 998314</div>
+            </div>
+            <div class="prod-gst-badge">18% GST</div>
+            <div class="prod-price">&#8377;20,000</div>
+          </div>
+          <div class="prod-row">
+            <div>
+              <div class="prod-name">SEO Audit Report</div>
+              <div class="prod-hsn">HSN: 998316</div>
+            </div>
+            <div class="prod-gst-badge">18% GST</div>
+            <div class="prod-price">&#8377;5,000</div>
+          </div>
+        </div>
+      </div>
+      <div class="feat-article-text reveal reveal-delay-1">
+        <h2 class="fa-h" id="feat-biz">Everything stays organized.</h2>
+        <p class="fa-p">Your customer database and product catalogue work together. Store GSTIN, addresses and billing history for customers. Attach HSN codes, tax rates and standard prices to products, reused on every invoice automatically.</p>
+        <ul class="fa-list" aria-label="Business management features">
+          <li>Customer database with GSTIN, addresses and invoice history</li>
+          <li>Product catalogue with HSN/SAC codes and tax rates</li>
+          <li>Prices and tax rates auto-populate new invoices</li>
+          <li>Search and filter across all customers and products</li>
+        </ul>
+      </div>
+    </article>
+
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="lp-footer">
-  © 2026 Zayro ₹ Invoice · Built for Indian Businesses · GST Ready
+<!-- ══════════════ QUICK START ══════════════ -->
+<section class="qs-section" aria-labelledby="qs-heading">
+  <div class="qs-inner">
+    <h2 class="qs-title reveal" id="qs-heading">Up and running in minutes.</h2>
+    <p class="qs-sub reveal reveal-delay-2">Skip the installation and setup screens. Create your first invoice today, right in the browser.</p>
+    <div class="qs-steps reveal reveal-delay-3">
+      <div class="qs-step">
+        <div class="qs-n" aria-hidden="true">1</div>
+        <div class="qs-text">
+          <strong>Create your account</strong>
+          Sign up with just your email, no card details required.
+        </div>
+      </div>
+      <div class="qs-step">
+        <div class="qs-n" aria-hidden="true">2</div>
+        <div class="qs-text">
+          <strong>Add your business details</strong>
+          Company name, GSTIN, logo, bank details, done once, applied to every invoice.
+        </div>
+      </div>
+      <div class="qs-step">
+        <div class="qs-n" aria-hidden="true">3</div>
+        <div class="qs-text">
+          <strong>Create your first invoice</strong>
+          Pick a customer, add line items, download or email the professional PDF.
+        </div>
+      </div>
+    </div>
+    <a href="#" onclick="openModal('reg-modal');return false;" class="btn-primary-lg reveal reveal-delay-4" style="margin:0 auto;display:inline-flex">
+      Create your first invoice <i class="bi bi-arrow-right" style="font-size:.78rem" aria-hidden="true"></i>
+    </a>
+  </div>
+</section>
+
+
+<!-- ══════════════ FAQ ══════════════ -->
+<section class="faq-section" id="faq" aria-labelledby="faq-heading">
+  <div class="faq-inner">
+    <div class="faq-head">
+      <span class="section-label reveal">FAQ</span>
+      <h2 class="section-h reveal reveal-delay-1" id="faq-heading">Common questions</h2>
+    </div>
+
+    <div class="faq-cols">
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Is Zayro Invoice really free to start?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. The Free plan lets you create 5 invoices per day at no cost, forever. No credit card required to sign up. Upgrade only when you need more volume or email sending.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Are the invoices actually GST-compliant?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. Every invoice includes your GSTIN, HSN/SAC codes per line item, and a proper CGST/SGST/IGST breakdown, all required under Indian GST law. Download as PDF ready to share with your clients and CA.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Can I generate CGST, SGST and IGST invoices?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. Zayro supports CGST &amp; SGST (intra-state) and IGST (inter-state) on your invoices. The correct split is calculated and displayed automatically based on the tax rate applied to each line item.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Can I download invoices as PDF?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. Every invoice can be downloaded as a professional PDF. On Plus plans and above, you can also email the PDF directly to your client from within the app.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Can I manage multiple customers and products?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. Build a full customer database with GST numbers, billing addresses and invoice history. Your product catalogue stores HSN codes, tax rates and standard prices, reused automatically when creating new invoices.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        How do I track which invoices are paid?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Every invoice has a status: Draft, Sent, Paid, Partial, Overdue or Cancelled. Record payments (full or partial) and the dashboard shows total revenue, pending and overdue amounts in real time. Each invoice has a full payment ledger.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Can I customise my invoices?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. You can add your company logo, business name, GSTIN, bank details and signature to every invoice. Your business profile is set once and applied automatically to every invoice you create.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Can I upgrade or change my plan later?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Yes. Upgrade, downgrade or cancel from your account settings at any time. You are never locked into a contract, and cancelling costs nothing. Your data stays available regardless.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-btn" aria-expanded="false" onclick="toggleFaq(this)">
+        Is my business data secure?
+        <i class="bi bi-plus-lg faq-icon" aria-hidden="true"></i>
+      </button>
+      <div class="faq-body" role="region"><div class="faq-body-inner">Your data is stored securely. All communication between your browser and the server uses HTTPS. Passwords are never stored in plain text. You can delete your account and data at any time from your profile settings.</div></div>
+    </div>
+    </div><!-- /faq-cols -->
+  </div>
+</section><!-- /faq -->
+
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand-col">
+      <a class="footer-logo" href="/" aria-label="Zayro Invoice home">
+        <div class="nav-logo-box" style="width:24px;height:24px;border-radius:5px;"><img src="/static/img/logo.png" alt="" style="width:24px;height:24px;object-fit:contain;"></div>
+        <span>Zayro Invoice</span>
+      </a>
+      <p class="footer-desc">Professional invoicing for modern Indian businesses. GST-ready, PDF-first, built to save you time.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <nav class="footer-col-links" aria-label="Product links">
+        <a href="#how-it-works">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <nav class="footer-col-links" aria-label="Company links">
+        <a href="/about/">About us</a>
+        <a href="/support/">Support</a>
+      </nav>
+    </div>
+    <div>
+      <div class="footer-col-title">Account</div>
+      <nav class="footer-col-links" aria-label="Account links">
+        <a href="#" onclick="openModal('login-modal');return false;">Sign in</a>
+        <a href="#" onclick="openModal('reg-modal');return false;">Start for free</a>
+        <a href="#" onclick="showFreeForm();return false;">Try without an account</a>
+      </nav>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2026 Zayro Invoice. Built for Indian businesses.</span>
+    <span class="footer-tagline">GST-ready &middot; PDF invoices &middot; Payment tracking</span>
+  </div>
 </footer>
 
 <script>
-  if (localStorage.getItem('access_token')) window.location = '/dashboard/';
+  /* ── Auth redirect ── */
+  if (localStorage.getItem('access_token')) window.location.href = '/dashboard/';
+
+  /* ── Mobile menu (handled by _site_nav.html partial) ── */
+
+  /* ── FAQ accordion ── */
+  function toggleFaq(btn) {
+    const body = btn.nextElementSibling;
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    // Close all others
+    document.querySelectorAll('.faq-btn[aria-expanded="true"]').forEach(b => {
+      if (b !== btn) {
+        b.setAttribute('aria-expanded', 'false');
+        b.nextElementSibling.classList.remove('open');
+      }
+    });
+    btn.setAttribute('aria-expanded', !expanded);
+    body.classList.toggle('open', !expanded);
+  }
+
+  /* ── Scroll reveal ── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  /* ── Smooth anchor scroll ── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href'); if(!href||href==='#') return; const target = document.querySelector(href);
+      if (!target) return;
+      e.preventDefault();
+      const snMenu = document.getElementById('sn-menu');
+      if (snMenu) snMenu.classList.remove('open');
+      const offset = 64;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
+</script>
+
+<div class="overlay" id="login-modal" onclick="overlayClick(event,'login-modal')">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeModal('login-modal')"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
+    <p class="modal-sub">Sign in to your account</p>
+    <div id="login-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="mb-3"><label class="m-label">Email or Username</label><input type="text" class="m-input" id="l-ident" placeholder="email or username" autocomplete="username" required></div>
+      <div class="mb-4"><label class="m-label">Password</label><div style="position:relative"><input type="password" class="m-input" id="l-pwd" placeholder="password" autocomplete="current-password" required style="padding-right:40px"><button type="button" class="pwd-eye-btn" onclick="toggleEye('l-pwd','eye-l')"><i class="bi bi-eye" id="eye-l"></i></button></div></div>
+      <button type="submit" class="btn-modal-submit" id="login-btn"><span id="login-btn-txt">Sign In</span><span id="login-spinner" class="d-none ms-2"></span></button>
+    </form>
+    <div class="modal-foot">No account? <a onclick="switchModal('login-modal','reg-modal')">Register free</a></div>
+  </div>
+</div>
+<div class="overlay" id="preview-modal" onclick="overlayClick(event,'preview-modal')">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closePreviewModal()"><i class="bi bi-x-lg"></i></button>
+    <p class="modal-sub" style="margin-bottom:12px">Invoice Preview</p>
+    <div class="preview-wrap" id="preview-modal-body"></div>
+  </div>
+</div>
+<!-- Free invoice sign-up promo overlay (shown after 2nd free invoice download) -->
+<div id="free-promo-overlay" onclick="if(event.target===this)_closePromo()">
+  <div class="promo-card" role="dialog" aria-modal="true" aria-label="Unlock more with Zayroin">
+    <button class="promo-close-x" onclick="_closePromo()" aria-label="Close">&times;</button>
+    <div class="promo-badge">Free plan limit reached</div>
+    <h2 class="promo-headline">Keep creating invoices — and so much more</h2>
+    <p class="promo-sub">Sign up free and unlock everything you need to run a professional billing workflow.</p>
+    <ul class="promo-features">
+      <li><i class="bi bi-file-earmark-richtext-fill"></i><span>More invoice templates</span></li>
+      <li><i class="bi bi-people-fill"></i><span>Customer management</span></li>
+      <li><i class="bi bi-credit-card-fill"></i><span>Payment tracking</span></li>
+      <li><i class="bi bi-graph-up-arrow"></i><span>Revenue reports</span></li>
+      <li><i class="bi bi-palette-fill"></i><span>Custom branding</span></li>
+      <li><i class="bi bi-cloud-arrow-up-fill"></i><span>Cloud storage &amp; history</span></li>
+    </ul>
+    <div class="promo-actions">
+      <button class="promo-btn-main" onclick="promoSignUp()"><i class="bi bi-person-plus-fill me-1"></i>Create free account</button>
+      <a id="promo-dl-btn" href="#" class="promo-btn-dl" onclick="promoDownloadAndClose()" target="_blank" rel="noopener">Download this invoice anyway</a>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reg-modal" onclick="overlayClick(event,'reg-modal')">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeModal('reg-modal')"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
+    <p class="modal-sub">Create your free account</p>
+    <div class="modal-hint" style="background:#FDF0F1;border:1px solid #F0C4C8;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#92400E;margin-bottom:12px;display:none"></div>
+    <div id="reg-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <div id="reg-ok" class="alert alert-success d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
+    <form id="reg-form" onsubmit="doRegister(event)">
+      <div class="mb-3"><label class="m-label">Username</label><input type="text" class="m-input" id="r-user" placeholder="johndoe" autocomplete="username" required></div>
+      <div class="mb-3"><label class="m-label">Email</label><input type="email" class="m-input" id="r-email" placeholder="you@example.com" autocomplete="email" required></div>
+      <div class="mb-4"><label class="m-label">Password</label><div style="position:relative"><input type="password" class="m-input" id="r-pwd" placeholder="Min 8 characters" autocomplete="new-password" required minlength="8" style="padding-right:40px" oninput="checkStrength(this.value)"><button type="button" class="pwd-eye-btn" onclick="toggleEye('r-pwd','eye-r')"><i class="bi bi-eye" id="eye-r"></i></button></div><div class="strength-bar"><div class="strength-fill" id="s-fill"></div></div><div id="s-text" style="font-size:.7rem;margin-top:3px;color:#94A3B8"></div></div>
+      <button type="submit" class="btn-modal-submit" id="reg-btn"><span id="reg-btn-txt">Create Account</span><span id="reg-spinner" class="d-none ms-2"></span></button>
+    </form>
+    <div class="modal-foot">Have an account? <a onclick="switchModal('reg-modal','login-modal')">Sign In</a></div>
+  </div>
+</div>
+<script>
+if (localStorage.getItem('access_token')) window.location = '/dashboard/';
+const _p = new URLSearchParams(location.search);
+if (_p.get('login') !== null)    { setTimeout(() => openModal('login-modal'), 100); }
+if (_p.get('register') !== null) { setTimeout(() => openModal('reg-modal'), 100); }
+function openModal(id, hint) {
+  document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden';
+  if (id === 'reg-modal') { const hintEl = document.querySelector('#reg-modal .modal-hint'); if (hintEl) { const msg = hint || (sessionStorage.getItem('zi_free_used') ? 'Sign up free to create up to 5 invoices/day.' : ''); hintEl.textContent = msg; hintEl.style.display = msg ? '' : 'none'; } }
+}
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function overlayClick(e, id){ if(e.target===e.currentTarget) closeModal(id); }
+function switchModal(from, to){ closeModal(from); openModal(to); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal('login-modal'); closeModal('reg-modal'); if(document.getElementById('preview-modal').classList.contains('open')) closePreviewModal(); }});
+function toggleEye(inputId, eyeId) { const inp = document.getElementById(inputId); const eye = document.getElementById(eyeId); inp.type = inp.type==='password' ? 'text' : 'password'; eye.className = inp.type==='password' ? 'bi bi-eye' : 'bi bi-eye-slash'; }
+function checkStrength(val) { let s=0; if(val.length>=8) s++; if(/[A-Z]/.test(val)) s++; if(/[0-9]/.test(val)) s++; if(/[^A-Za-z0-9]/.test(val)) s++; const L=[{w:0,c:'#EF4444',t:''},{w:.25,c:'#EF4444',t:'Weak'},{w:.5,c:'#F59E0B',t:'Fair'},{w:.75,c:'#C1121F',t:'Good'},{w:1,c:'#10B981',t:'Strong'}]; const l=L[s]; const f=document.getElementById('s-fill'); const t=document.getElementById('s-text'); f.style.transform='scaleX('+l.w+')'; f.style.background=l.c; t.textContent=l.t; t.style.color=l.c; }
+async function doLogin(e) { e.preventDefault(); const btn=document.getElementById('login-btn'); const err=document.getElementById('login-err'); err.classList.add('d-none'); btn.disabled=true; document.getElementById('login-btn-txt').textContent='Signing in...'; document.getElementById('login-spinner').classList.remove('d-none'); ZayroLoader.show('#login-spinner', null, {inline:true}); const ident=document.getElementById('l-ident').value.trim(); try { const r=await fetch('/api/auth/login/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[ident.includes('@')?'email':'username']:ident, password:document.getElementById('l-pwd').value})}); const d=await r.json(); if(d.success){ localStorage.setItem('access_token',d.data.tokens.access); localStorage.setItem('refresh_token',d.data.tokens.refresh); localStorage.setItem('user_email',d.data.user.email); localStorage.setItem('user_username',d.data.user.username); localStorage.setItem('user_role',d.data.user.role); localStorage.setItem('user_id',d.data.user.id); window.location='/dashboard/'; } else { const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message; err.textContent=msg||'Invalid credentials.'; err.classList.remove('d-none'); } } catch(ex) { err.textContent='Network error.'; err.classList.remove('d-none'); } btn.disabled=false; document.getElementById('login-btn-txt').textContent='Sign In'; document.getElementById('login-spinner').classList.add('d-none'); ZayroLoader.hide('#login-spinner'); }
+async function doRegister(e) { e.preventDefault(); const btn=document.getElementById('reg-btn'); const err=document.getElementById('reg-err'); const ok=document.getElementById('reg-ok'); err.classList.add('d-none'); ok.classList.add('d-none'); btn.disabled=true; document.getElementById('reg-btn-txt').textContent='Creating...'; document.getElementById('reg-spinner').classList.remove('d-none'); ZayroLoader.show('#reg-spinner', null, {inline:true}); try { const r=await fetch('/api/auth/register/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('r-user').value.trim(),email:document.getElementById('r-email').value.trim(),password:document.getElementById('r-pwd').value})}); const d=await r.json(); if(d.success){ localStorage.setItem('access_token',d.data.tokens.access); localStorage.setItem('refresh_token',d.data.tokens.refresh); localStorage.setItem('user_email',d.data.user.email); localStorage.setItem('user_username',d.data.user.username); localStorage.setItem('user_role',d.data.user.role); localStorage.setItem('user_id',d.data.user.id); ok.textContent='Account created! Redirecting...'; ok.classList.remove('d-none'); setTimeout(function(){window.location='/dashboard/';},900); } else { const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message; err.textContent=msg||'Registration failed.'; err.classList.remove('d-none'); } } catch(ex) { err.textContent='Network error.'; err.classList.remove('d-none'); } btn.disabled=false; document.getElementById('reg-btn-txt').textContent='Create Account'; document.getElementById('reg-spinner').classList.add('d-none'); ZayroLoader.hide('#reg-spinner'); }
+</script>
+<script>
+/* Free invoice generator */
+let freeItems = [];
+let _freeInvoiceCount = parseInt(sessionStorage.getItem('zi_free_count')||'0');
+
+function _showPromo(pdfUrl) {
+  const ov = document.getElementById('free-promo-overlay');
+  document.getElementById('promo-dl-btn').href = pdfUrl;
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function _closePromo() {
+  document.getElementById('free-promo-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function promoSignUp() {
+  _closePromo();
+  openModal('reg-modal');
+}
+function promoDownloadAndClose() {
+  _closePromo();
+}
+
+function showFreeForm() {
+  const sec = document.getElementById('free-section');
+  sec.style.display = 'block';
+  sec.scrollIntoView({behavior:'smooth'});
+  if (freeItems.length === 0) addFreeItem();
+  const _today = new Date();
+  document.getElementById('fi-inv-date').value = _today.toISOString().split('T')[0];
+  updatePreview();
+}
+function hideFreeForm() {
+  document.getElementById('free-section').style.display = 'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMobilePreview() {
+  const gl = document.getElementById('gen-layout');
+  const showing = gl.classList.toggle('show-preview');
+  document.getElementById('mobile-view-toggle-label').textContent = showing ? 'Details' : 'Preview';
+  document.querySelector('#mobile-view-toggle i').className = showing ? 'bi bi-pencil-fill' : 'bi bi-eye-fill';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function openPreviewModal() {
+  document.getElementById('preview-modal-body').appendChild(document.getElementById('inv-preview'));
+  openModal('preview-modal');
+}
+function closePreviewModal() {
+  document.querySelector('#free-section .gen-preview .preview-wrap').appendChild(document.getElementById('inv-preview'));
+  closeModal('preview-modal');
+}
+function previewLogo(input) {
+  const file=input.files[0]; if(!file) return;
+  const img=document.getElementById('fi-logo-img');
+  img.src=URL.createObjectURL(file); img.style.display='block';
+  document.getElementById('fi-logo-placeholder').style.display='none';
+  document.getElementById('logo-remove-wrap').style.display='block';
+  img.onload=updatePreview;
+}
+function removeLogo() {
+  document.getElementById('fi-logo-file').value='';
+  const img=document.getElementById('fi-logo-img');
+  img.src=''; img.style.display='none';
+  document.getElementById('fi-logo-placeholder').style.display='flex';
+  document.getElementById('logo-remove-wrap').style.display='none';
+  updatePreview();
+}
+let _sigTab='draw';
+function switchSigTab(tab,btn) {
+  _sigTab=tab;
+  document.querySelectorAll('.sig-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sig-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sig-panel-'+tab).classList.add('active');
+}
+(function(){
+  let canvas,ctx,drawing=false,lastX,lastY;
+  function init(){
+    canvas=document.getElementById('fi-sig-canvas'); if(!canvas) return;
+    ctx=canvas.getContext('2d');
+    ctx.strokeStyle='#1E293B'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+    function pos(e){const r=canvas.getBoundingClientRect();const scaleX=canvas.width/r.width;const scaleY=canvas.height/r.height;const src=e.touches?e.touches[0]:e;return[(src.clientX-r.left)*scaleX,(src.clientY-r.top)*scaleY];}
+    function start(e){e.preventDefault();drawing=true;[lastX,lastY]=pos(e);}
+    function move(e){e.preventDefault();if(!drawing)return;const[x,y]=pos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(x,y);ctx.stroke();[lastX,lastY]=[x,y];}
+    function stop(){drawing=false;if(typeof updatePreview==='function')updatePreview();}
+    canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); canvas.addEventListener('mouseup',stop); canvas.addEventListener('mouseleave',stop);
+    canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',stop);
+  }
+  document.addEventListener('DOMContentLoaded',init); setTimeout(init,400);
+})();
+function clearCanvas(){const c=document.getElementById('fi-sig-canvas');if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);}
+function getSignatureDataURL(){
+  if(_sigTab==='draw'){const c=document.getElementById('fi-sig-canvas');const px=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return px.some(v=>v!==0)?c.toDataURL('image/png'):null;}
+  if(_sigTab==='type'){const name=(document.getElementById('fi-sig-typed').value||'').trim();if(!name)return null;const oc=document.createElement('canvas');oc.width=420;oc.height=100;const octx=oc.getContext('2d');octx.font="58px 'Segoe Script','Brush Script MT',cursive";octx.fillStyle='#1E293B';octx.textBaseline='middle';octx.fillText(name,16,54);return oc.toDataURL('image/png');}
+  return null;
+}
+function previewSignature(input){const file=input.files[0];if(!file)return;const img=document.getElementById('fi-sig-img');img.src=URL.createObjectURL(file);img.style.display='block';document.getElementById('fi-sig-ph').style.display='none';document.getElementById('sig-remove-wrap').style.display='block';img.onload=updatePreview;}
+function removeSignature(){document.getElementById('fi-sig-file').value='';const img=document.getElementById('fi-sig-img');img.src='';img.style.display='none';document.getElementById('fi-sig-ph').style.display='flex';document.getElementById('sig-remove-wrap').style.display='none';clearCanvas();const typed=document.getElementById('fi-sig-typed');if(typed){typed.value='';document.getElementById('sig-type-preview').textContent='Signature Preview';}updatePreview();}
+function addFreeItem(){freeItems.push({desc:'',hsn:'',qty:1,rate:0,gst_pct:18});renderFreeItems();}
+function syncCompanyName(v){const el=document.getElementById('fi-from-name');if(el)el.value=v;updatePreview();}
+function syncShipping(){const chk=document.getElementById('fi-same-address');if(chk&&chk.checked){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill)ship.value=bill.value;}}
+function toggleSameAddress(chk){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill){if(chk.checked){ship.value=bill.value;ship.disabled=true;}else{ship.disabled=false;}updatePreview();}}
+var _freeColor='#C1121F';
+function applyFreeTemplate(tpl){const colors={orange:'#C1121F',blue:'#2563EB',clean:'#64748B',green:'#16A34A',purple:'#7C3AED'};_freeColor=colors[tpl]||'#C1121F';const pvw=document.getElementById('inv-preview');if(!pvw)return;pvw.querySelectorAll('.pvw-inv-title,.pvw-bar,.pvw-stamp,.pvw-stamp span,.pvw-sig-lbl,.pvw-divider,.pvw-addr-hdr,.pvw-tot-row.grand').forEach(el=>{if(el.classList.contains('pvw-divider')||el.classList.contains('pvw-addr-hdr')||el.classList.contains('pvw-bar')||el.classList.contains('grand'))el.style.background=_freeColor;if(el.classList.contains('pvw-inv-title')||el.classList.contains('pvw-sig-lbl')||el.classList.contains('pvw-stamp')||el.classList.contains('pvw-stamp span'))el.style.color=_freeColor;});}
+function removeFreeItem(i){if(freeItems.length===1)return;freeItems.splice(i,1);renderFreeItems();}
+function updateFreeItem(i,field,val){freeItems[i][field]=val;recalcFreeTotal();}
+function renderFreeItems(){
+  const wrap=document.getElementById('fi-items');
+  const Q='\x27';
+  wrap.innerHTML=freeItems.map((it,i)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);return '<div class="item-block"><div class="item-main-row"><span class="item-sno">'+(i+1)+'</span><input class="item-desc-input" placeholder="Description *" value="'+(it.desc||'').replace(/"/g,'&quot;')+'" oninput="updateFreeItem('+i+','+Q+'desc'+Q+',this.value)" style="border-color:'+(it.desc?'#E8E7E5':'#FCA5A5')+'"><input class="item-desc-input" placeholder="HSN/SAC" value="'+(it.hsn||'').replace(/"/g,'&quot;')+'" style="text-align:center" oninput="updateFreeItem('+i+','+Q+'hsn'+Q+',this.value)"><input class="item-num-input" type="number" placeholder="1" value="'+(it.qty||1)+'" min="0" step="0.01" oninput="updateFreeItem('+i+','+Q+'qty'+Q+',parseFloat(this.value)||0)"><input class="item-num-input" type="number" placeholder="0.00" value="'+(it.rate||'')+'" min="0" step="0.01" style="border-color:'+((parseFloat(it.rate)||0)>0?'#E8E7E5':'#FCA5A5')+'" oninput="updateFreeItem('+i+','+Q+'rate'+Q+',parseFloat(this.value)||0)"><input class="item-num-input" type="number" placeholder="18" value="'+(it.gst_pct!=null?it.gst_pct:18)+'" min="0" max="28" step="0.5" oninput="updateFreeItem('+i+','+Q+'gst_pct'+Q+',parseFloat(this.value)||0)"><span class="item-amt-cell" id="item-amt-'+i+'">&#8377;'+amt.toFixed(2)+'</span><button class="item-x-btn" onclick="removeFreeItem('+i+')" title="Remove row"><i class="bi bi-x"></i></button></div></div>';}).join('');
+  recalcFreeTotal();
+}
+function amountToWords(n){const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];function tw(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');}function convert(n){if(n===0)return'';if(n<100)return tw(n);if(n<1000)return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+tw(n%100):'');if(n<100000)return convert(Math.floor(n/1000))+' Thousand'+(n%1000?' '+convert(n%1000):'');if(n<10000000)return convert(Math.floor(n/100000))+' Lakh'+(n%100000?' '+convert(n%100000):'');return convert(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+convert(n%10000000):'');}const rupees=Math.floor(n);const paise=Math.round((n-rupees)*100);let words=convert(rupees)||'Zero';words+=' Rupee'+(rupees!==1?'s':'');if(paise>0)words+=' and '+tw(paise)+' Paise';return words+' Only.';}
+var _freeTaxMode='intra';
+function setFreeTaxMode(m){
+  _freeTaxMode=m;
+  const intra=m==='intra', inter=m==='inter', all=m==='all';
+  document.getElementById('fi-mode-intra').classList.toggle('active',intra);
+  document.getElementById('fi-mode-inter').classList.toggle('active',inter);
+  document.getElementById('fi-mode-all').classList.toggle('active',all);
+  document.getElementById('fi-row-cgst').style.display=(intra||all)?'':'none';
+  document.getElementById('fi-row-sgst').style.display=(intra||all)?'':'none';
+  document.getElementById('fi-row-igst').style.display=(inter||all)?'':'none';
+  const cg=document.getElementById('fi-cgst-rate'),sg=document.getElementById('fi-sgst-rate'),ig=document.getElementById('fi-igst-rate');
+  if(all){ if(!parseFloat(cg.value)) cg.value=9; if(!parseFloat(sg.value)) sg.value=9; }
+  else if(intra){const t=parseFloat(ig.value)||0;const half=t?Math.round(t/2*2)/2:9;cg.value=half;sg.value=half;ig.value=0;}
+  else if(inter){const t=(parseFloat(cg.value)||0)+(parseFloat(sg.value)||0);ig.value=t||18;cg.value=0;sg.value=0;}
+  recalcFreeTotal();
+}
+function recalcFreeTotal(){
+  let sub=0;freeItems.forEach((it,i)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);sub+=amt;const el=document.getElementById('item-amt-'+i);if(el)el.textContent='₹'+amt.toFixed(2);});
+  const cgstRate=parseFloat(document.getElementById('fi-cgst-rate').value)||0;const sgstRate=parseFloat(document.getElementById('fi-sgst-rate').value)||0;const igstRate=parseFloat(document.getElementById('fi-igst-rate').value)||0;
+  const cgstAmt=sub*cgstRate/100;const sgstAmt=sub*sgstRate/100;const igstAmt=sub*igstRate/100;const gstTotal=cgstAmt+sgstAmt+igstAmt;const grand=sub+gstTotal;
+  const fmt=n=>'₹'+n.toFixed(2);
+  document.getElementById('fi-subtotal').textContent=fmt(sub);document.getElementById('fi-cgst-amt').textContent=fmt(cgstAmt);document.getElementById('fi-sgst-amt').textContent=fmt(sgstAmt);document.getElementById('fi-igst-amt').textContent=fmt(igstAmt);document.getElementById('fi-gst-total').textContent=fmt(gstTotal);document.getElementById('fi-total').textContent=fmt(grand);
+  const totalRate=cgstRate+sgstRate+igstRate;document.getElementById('fi-gst-pct').textContent=totalRate;
+  const wordsBox=document.getElementById('fi-words-box');if(grand>0){document.getElementById('fi-words-text').textContent=amountToWords(grand);wordsBox.style.display='block';}else{wordsBox.style.display='none';}
+  updatePreview();
+}
+function _v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function _t(id,val){const el=document.getElementById(id);if(el)el.textContent=val||'';}
+function _Rs(n){return '₹'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function updatePreview(){
+  const pvw=document.getElementById('inv-preview');if(!pvw)return;
+  _t('pvw-co-name',_v('fi-from-name')||'YOUR COMPANY NAME');
+  const gstVal=_v('fi-from-gst');_t('pvw-co-gst',gstVal?'GSTIN: '+gstVal:'');
+  _t('pvw-inv-no',_v('fi-inv-number')||'—');
+  const rawDate=_v('fi-inv-date');if(rawDate){const d=new Date(rawDate);_t('pvw-inv-date',d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}));}else _t('pvw-inv-date','—');
+  _t('pvw-from-name',_v('fi-from-name')||'—');_t('pvw-from-addr',_v('fi-from-address'));_t('pvw-from-email',_v('fi-from-email'));_t('pvw-from-phone',_v('fi-from-phone'));_t('pvw-from-cin',_v('fi-from-cin')?'CIN: '+_v('fi-from-cin'):'');_t('pvw-from-pan',_v('fi-from-pan')?'PAN: '+_v('fi-from-pan'):'');
+  _t('pvw-to-name',_v('fi-name')||'—');_t('pvw-to-addr',_v('fi-cust-address'));_t('pvw-to-email',_v('fi-email'));_t('pvw-to-phone',_v('fi-cust-phone'));_t('pvw-to-gst',_v('fi-cust-gst')?'GSTIN: '+_v('fi-cust-gst'):'');
+  const logoCircle=document.getElementById('pvw-logo-circle');const logoImg=document.getElementById('fi-logo-img');if(logoImg&&logoImg.src&&logoImg.style.display!=='none'){logoCircle.innerHTML='<img src="'+logoImg.src+'" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">';}else{logoCircle.textContent='Rs';logoCircle.style.background='#C1121F';}
+  const cgstRate=parseFloat(_v('fi-cgst-rate'))||0;const sgstRate=parseFloat(_v('fi-sgst-rate'))||0;const igstRate=parseFloat(_v('fi-igst-rate'))||0;let sub=0;
+  const tbody=document.getElementById('pvw-items-body');tbody.innerHTML='';
+  freeItems.forEach((it)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);sub+=amt;const row=document.createElement('div');row.className='pvw-item-row';row.innerHTML='<span>'+(it.desc||'—')+'</span><span>'+(it.hsn||'')+'</span><span>'+(it.rate?_Rs(parseFloat(it.rate)):'')+'</span><span>'+(parseFloat(it.qty)||'')+'</span><span>0%</span><span>'+(amt>0?_Rs(amt):'')+'</span>';tbody.appendChild(row);});
+  const anyHsn=freeItems.some(it=>(it.hsn||'').trim());
+  document.getElementById('pvw-items-wrap').classList.toggle('no-hsn',!anyHsn);
+  const cgstAmt=sub*cgstRate/100;const sgstAmt=sub*sgstRate/100;const igstAmt=sub*igstRate/100;const gstTotal=cgstAmt+sgstAmt+igstAmt;const grand=sub+gstTotal;
+  _t('pvw-sub',_Rs(sub));_t('pvw-cgst',_Rs(cgstAmt));_t('pvw-sgst',_Rs(sgstAmt));_t('pvw-igst',_Rs(igstAmt));_t('pvw-grand',_Rs(grand));_t('pvw-cgst-lbl','CGST @ '+cgstRate+'%');_t('pvw-sgst-lbl','SGST @ '+sgstRate+'%');_t('pvw-igst-lbl','IGST @ '+igstRate+'%');
+  const intra=_freeTaxMode==='intra';
+  const _shRow=(id,show)=>{const el=document.getElementById(id);if(el)el.style.display=show?'':'none';};
+  _shRow('pvw-row-cgst',intra);_shRow('pvw-row-sgst',intra);_shRow('pvw-row-igst',!intra);
+  _t('pvw-words-text',grand>0?amountToWords(grand):'—');
+  const ty=_v('fi-thankyou');_t('pvw-note-1',ty?'• '+ty:'• Thank you for your business.');
+  _t('pvw-sig-name',_v('fi-sig-name'));_t('pvw-sig-co',_v('fi-sig-company'));
+  const pvwSigImg=document.getElementById('pvw-sig-img');const pvwSigSpacer=document.getElementById('pvw-sig-spacer');const upSigImg=document.getElementById('fi-sig-img');const sigCanvas=document.getElementById('fi-sig-canvas');let sigSrc='';
+  if(upSigImg&&upSigImg.src&&upSigImg.style.display!=='none'){sigSrc=upSigImg.src;}else if(_sigTab==='draw'&&sigCanvas){try{const pd=sigCanvas.getContext('2d').getImageData(0,0,sigCanvas.width,sigCanvas.height).data;if(pd.some((_,i)=>i%4===3&&pd[i]>10))sigSrc=sigCanvas.toDataURL();}catch(e){}}else if(_sigTab==='type'){const typed=document.getElementById('fi-sig-typed');if(typed&&typed.value.trim()){const oc=document.createElement('canvas');oc.width=200;oc.height=50;const octx=oc.getContext('2d');octx.font="32px 'Segoe Script','Brush Script MT',cursive";octx.fillStyle='#1E293B';octx.fillText(typed.value.trim(),8,38);sigSrc=oc.toDataURL();}}
+  if(sigSrc){pvwSigImg.src=sigSrc;pvwSigImg.style.display='block';pvwSigSpacer.style.display='none';}else{pvwSigImg.style.display='none';pvwSigSpacer.style.display='block';}
+  // Website only — email/phone already appear in the FROM block above.
+  _t('pvw-bar',_v('fi-from-website')||'www.zayron.in');
+}
+function wirePreview(){
+  ['fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone','fi-from-cin','fi-from-pan','fi-from-website','fi-name','fi-cust-address','fi-ship-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-company-sel','fi-inv-number','fi-inv-date','fi-cgst-rate','fi-sgst-rate','fi-igst-rate','fi-thankyou','fi-dept','fi-sig-name','fi-sig-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updatePreview);});
+  updatePreview();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wirePreview);else wirePreview();
+function validateFreeForm(){
+  const errEl=document.getElementById('fi-error');errEl.style.display='none';
+  if(!document.getElementById('fi-inv-number').value.trim()){document.getElementById('inv-num-err').style.display='block';document.getElementById('fi-inv-number').classList.add('error');document.getElementById('fi-inv-number').focus();return false;}
+  document.getElementById('inv-num-err').style.display='none';document.getElementById('fi-inv-number').classList.remove('error');
+  if(!document.getElementById('fi-name').value.trim()){errEl.textContent='Customer name is required.';errEl.style.display='block';document.getElementById('fi-name').focus();return false;}
+  if(!document.getElementById('fi-email').value.trim()){errEl.textContent='Customer email is required.';errEl.style.display='block';document.getElementById('fi-email').focus();return false;}
+  if(!document.getElementById('fi-cust-address').value.trim()){errEl.textContent='Customer address is required.';errEl.style.display='block';document.getElementById('fi-cust-address').focus();return false;}
+  if(!freeItems.filter(it=>it.desc&&(parseFloat(it.rate)||0)>0).length){errEl.textContent='Add at least one item with a description and rate.';errEl.style.display='block';return false;}
+  return true;
+}
+async function createFreeInvoice(){
+  if(!validateFreeForm())return;
+  _freeInvoiceCount = parseInt(sessionStorage.getItem('zi_free_count')||'0');
+  const btn=document.getElementById('fi-btn');const errEl=document.getElementById('fi-error');btn.disabled=true;ZayroLoader.show(btn,'Creating…',{inline:true});
+  const validItems=freeItems.filter(it=>it.desc&&(parseFloat(it.rate)||0)>0);
+  const cgstRate=parseFloat(document.getElementById('fi-cgst-rate').value)||0;const sgstRate=parseFloat(document.getElementById('fi-sgst-rate').value)||0;const igstRate=parseFloat(document.getElementById('fi-igst-rate').value)||0;
+  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:'Due on Receipt',notes:'',cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
+  const fd=new FormData();Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
+  const logoFile=document.getElementById('fi-logo-file').files[0];if(logoFile)fd.append('logo',logoFile);
+  const sigFile=document.getElementById('fi-sig-file').files[0];if(sigFile){fd.append('signature',sigFile);}else{const sigDataUrl=getSignatureDataURL();if(sigDataUrl)fd.append('signature_data',sigDataUrl);}
+  try{
+    const r=await fetch('/api/invoices/free/',{method:'POST',body:fd});const d=await r.json();
+    if(d.success){showFreeResult(d.data);}else{
+      if(r.status===403&&d.data&&d.data.signup_required){sessionStorage.setItem('zi_free_used','1');openModal('reg-modal');return;}
+      else if(r.status===409){errEl.textContent=d.message||'Duplicate invoice number.';const el=document.getElementById('fi-inv-number');if(el){el.style.borderColor='#EF4444';el.focus();el.addEventListener('input',()=>{el.style.borderColor='';},{once:true});}}
+      else{errEl.textContent=d.message||'Failed to create invoice.';}
+      errEl.style.display='block';
+    }
+  }catch{errEl.textContent='Network error. Please try again.';errEl.style.display='block';}
+  btn.disabled=false;btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';
+}
+function showFreeResult(data){
+  _freeInvoiceCount = parseInt(sessionStorage.getItem('zi_free_count')||'0') + 1;
+  sessionStorage.setItem('zi_free_count', String(_freeInvoiceCount));
+  document.getElementById('free-form-card').classList.add('d-none');
+  const rc=document.getElementById('free-result-card');rc.classList.remove('d-none');rc.scrollIntoView({behavior:'smooth'});
+  const fmt=n=>'₹'+Number(n).toFixed(2);
+  const pdfUrl='/api/invoices/free/'+data.id+'/pdf/';
+  document.getElementById('res-number').textContent=data.invoice_number;
+  document.getElementById('res-customer').textContent=data.customer_name+' · '+data.customer_email;
+  document.getElementById('res-total').textContent=fmt(data.grand_total);
+  document.getElementById('res-total2').textContent=fmt(data.grand_total);
+  const dlBtn=document.getElementById('res-pdf-btn');
+  dlBtn.href=pdfUrl;
+  document.getElementById('res-items').innerHTML=data.items.map(it=>'<tr><td style="font-weight:600">'+it.name+(it.hsn?' <span style="color:#94A3B8;font-weight:400">('+it.hsn+')</span>':'')+'</td><td style="text-align:right">'+(it.qty||1)+'</td><td style="text-align:right">'+fmt(it.price)+'</td><td style="text-align:right;font-weight:700;color:#131416">'+fmt(it.total||(it.price*(it.qty||1)))+'</td></tr>').join('');
+  dlBtn.onclick=null;
+}
+function createAnotherFree(){
+  document.getElementById('free-form-card').classList.remove('d-none');document.getElementById('free-result-card').classList.add('d-none');freeItems=[];addFreeItem();
+  ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-recipient','fi-inv-number','fi-from-name','fi-from-email','fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  removeLogo();removeSignature();document.getElementById('fi-sig-name').value='';document.getElementById('fi-sig-company').value='';
+  document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('fi-cgst-rate').value='9';document.getElementById('fi-sgst-rate').value='9';
+  setFreeTaxMode(_freeTaxMode);
+  document.getElementById('fi-thankyou').value='Thank you for your business!';document.getElementById('fi-dept').value='Sales & Procurement Department';
+  recalcFreeTotal();
+}
+</script>
+
+<!-- ══════════════ HERO AMBIENT FIELD ══════════════
+     Raw WebGL, ~2KB. Technique (fullscreen clip-space quad driven by a
+     time uniform + fbm value noise) is adapted from the three.js shader
+     examples in D:\gamedev\three.js-dev, but the library itself is NOT
+     shipped: this project has no bundler, so three.module.js + its
+     three.core.js dependency would cost ~419KB gzipped to tree-shake
+     nothing — indefensible for a decorative background on a product whose
+     users are largely on Indian mobile data. The technique is worth
+     borrowing; the payload is not.
+
+     Degrades in three steps: reduced-motion → CSS wash only (canvas hidden
+     via media query); no WebGL / shader failure → CSS wash only (canvas
+     never gets .ready); off-screen → loop parked by IntersectionObserver. -->
+<script>
+(function () {
+  var cv = document.getElementById('hero-fx');
+  if (!cv) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var gl = cv.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: false })
+        || cv.getContext('experimental-webgl', { alpha: true, antialias: false });
+  if (!gl) return;                       // silently keep the CSS wash
+
+  var VERT =
+    'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+
+  // Value-noise fbm: cheap, band-limited, and reads as slow drifting heat
+  // rather than the particle-swarm cliche. Two octaves is plenty at this
+  // opacity and keeps the fragment cost trivial on integrated GPUs.
+  var FRAG = [
+    'precision mediump float;',
+    'uniform vec2 uRes; uniform float uT;',
+    'float h(vec2 v){return fract(sin(dot(v,vec2(127.1,311.7)))*43758.5453);}',
+    'float n(vec2 v){vec2 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);',
+    ' return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}',
+    'float fbm(vec2 v){return .58*n(v)+.30*n(v*2.03)+.12*n(v*4.11);}',
+    'void main(){',
+    '  vec2 uv=gl_FragCoord.xy/uRes;',
+    '  vec2 a=vec2(uv.x*1.6+uT*.016, uv.y*1.6-uT*.011);',
+    '  float f=fbm(a*2.2);',
+    // Bias the field toward the upper-left, behind the headline, and let it
+    // fall off before it reaches the dashboard mock on the right.
+    '  float fall=smoothstep(1.15,.12,distance(uv,vec2(.30,.62)));',
+    '  float amt=pow(f,1.5)*fall;',
+    '  vec3 ember=vec3(.910,.478,.239);',
+    '  gl_FragColor=vec4(ember, amt*.42);',
+    '}'
+  ].join('\n');
+
+  function sh(t, src) {
+    var s = gl.createShader(t);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+  }
+  var vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) return;
+
+  var pr = gl.createProgram();
+  gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
+  gl.useProgram(pr);
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(pr, 'p');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  var uRes = gl.getUniformLocation(pr, 'uRes'),
+      uT   = gl.getUniformLocation(pr, 'uT');
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  function size() {
+    // Cap DPR at 1.5: this is a soft out-of-focus wash, so extra pixels buy
+    // nothing visible and cost real fill rate on high-DPI laptops.
+    var d = Math.min(window.devicePixelRatio || 1, 1.5),
+        w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return;
+    cv.width = w * d | 0; cv.height = h * d | 0;
+    gl.viewport(0, 0, cv.width, cv.height);
+    gl.uniform2f(uRes, cv.width, cv.height);
+  }
+  window.addEventListener('resize', size);
+  size();
+
+  var raf = null, t0 = performance.now();
+  function frame(now) {
+    gl.uniform1f(uT, (now - t0) / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (raf === null) { t0 = performance.now() - 1000; raf = requestAnimationFrame(frame); } }
+  function stop()  { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
+
+  // Park the loop whenever the hero is scrolled away or the tab is hidden.
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      es[0].isIntersecting ? start() : stop();
+    }, { threshold: 0.01 }).observe(cv);
+  } else { start(); }
+  document.addEventListener('visibilitychange', function () {
+    document.hidden ? stop() : start();
+  });
+
+  cv.classList.add('ready');
+})();
 </script>
 </body>
 </html>

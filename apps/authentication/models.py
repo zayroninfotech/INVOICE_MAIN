@@ -2,6 +2,49 @@ import mongoengine as me
 from datetime import datetime
 
 
+class AuditLog(me.Document):
+    actor_id    = me.StringField(default='system')
+    actor_email = me.StringField(default='system')
+    action      = me.StringField(required=True)
+    detail      = me.StringField(default='')
+    ip          = me.StringField(default='')
+    created_at  = me.DateTimeField(default=datetime.utcnow)
+
+    meta = {'collection': 'audit_logs', 'ordering': ['-created_at'], 'indexes': ['-created_at']}
+
+    @classmethod
+    def log(cls, actor, action, detail='', ip=''):
+        cls(
+            actor_id=str(actor.id) if hasattr(actor, 'id') else 'system',
+            actor_email=getattr(actor, 'email', 'system'),
+            action=action,
+            detail=detail,
+            ip=ip,
+        ).save()
+
+
+class TemplateBlock(me.Document):
+    template_id = me.StringField(required=True, unique=True)
+    blocked_at  = me.DateTimeField(default=datetime.utcnow)
+    blocked_by  = me.StringField(default='')
+
+    meta = {'collection': 'template_blocks'}
+
+
+class TemplateConfig(me.Document):
+    """Per-template admin configuration — overrides the registry's default plan gate."""
+    template_id = me.StringField(required=True, unique=True)
+    min_plan    = me.StringField(choices=['free', 'plus', 'pro', 'unlimited'], default='free')
+    updated_at  = me.DateTimeField(default=datetime.utcnow)
+    updated_by  = me.StringField(default='')
+
+    meta = {'collection': 'template_configs'}
+
+    def save(self, *args, **kwargs):
+        self.updated_at = datetime.utcnow()
+        return super().save(*args, **kwargs)
+
+
 class BusinessProfile(me.Document):
     user_id      = me.StringField(required=True, unique=True)
     company_name = me.StringField(default='')
@@ -13,6 +56,8 @@ class BusinessProfile(me.Document):
     phone        = me.StringField(default='')
     email        = me.StringField(default='')
     gst          = me.StringField(default='')
+    cin          = me.StringField(default='')
+    pan          = me.StringField(default='')
     website      = me.StringField(default='')
     updated_at   = me.DateTimeField(default=datetime.utcnow)
 

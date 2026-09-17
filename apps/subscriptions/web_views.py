@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 def pricing_page(request):
-    return render(request, 'subscriptions/pricing.html')
+    return redirect('/#pricing')
 
 
 def upgrade_page(request):

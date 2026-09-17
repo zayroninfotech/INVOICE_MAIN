@@ -4,7 +4,7 @@ from datetime import datetime, date
 
 class Subscription(me.Document):
     user_id = me.StringField(required=True, unique=True)
-    plan = me.StringField(choices=['free', 'plus', 'premium'], default='free')
+    plan = me.StringField(choices=['free', 'plus', 'pro', 'unlimited', 'premium'], default='free')
     status = me.StringField(choices=['active', 'expired', 'cancelled'], default='active')
     start_date = me.DateTimeField(default=datetime.utcnow)
     end_date = me.DateTimeField()  # None = free (no expiry gate)
@@ -69,6 +69,14 @@ class Subscription(me.Document):
         from django.conf import settings
         return settings.PLAN_LIMITS.get(self.plan, {}).get('invoices_per_month')
 
+    def reset_usage_counters(self):
+        today = date.today()
+        self.invoices_used_today = 0
+        self.invoices_used_month = 0
+        self.last_daily_reset = today.strftime('%Y-%m-%d')
+        self.last_monthly_reset = today.strftime('%Y-%m')
+        self.save()
+
     def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()
         return super().save(*args, **kwargs)
@@ -79,8 +87,10 @@ class PlanSettings(me.Document):
     key = me.StringField(required=True, unique=True, default='default')
     razorpay_key_id = me.StringField(default='')
     razorpay_key_secret = me.StringField(default='')
-    plus_price = me.IntField(default=149900)     # in paise (₹1,499)
-    premium_price = me.IntField(default=229900)  # in paise (₹2,299)
+    plus_price = me.IntField(default=19900)      # in paise (₹199)
+    pro_price = me.IntField(default=49900)       # in paise (₹499)
+    unlimited_price = me.IntField(default=99900) # in paise (₹999)
+    premium_price = me.IntField(default=229900)  # deprecated — kept for safe doc reads
     is_payments_enabled = me.BooleanField(default=False)
     bank_name = me.StringField(default='')
     bank_account = me.StringField(default='')
