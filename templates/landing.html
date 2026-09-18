@@ -339,6 +339,103 @@
       background:var(--ember); flex-shrink:0; margin-top:7px;
     }
 
+    /* ── TEMPLATE GALLERY (carousel) ─────────── */
+    .tg-section{padding:96px 0 108px;background:#fff;overflow:hidden;}
+    .tg-head{max-width:1200px;margin:0 auto 44px;padding:0 40px;display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap;}
+    .tg-h{font-size:clamp(1.9rem,3.4vw,3rem);font-weight:800;color:#0F172A;letter-spacing:-.03em;line-height:1.15;text-wrap:balance;}
+    .tg-grad{background:linear-gradient(100deg,#3B82F6,#8B5CF6);-webkit-background-clip:text;background-clip:text;color:transparent;}
+    .tg-cta{flex-shrink:0;padding:13px 26px;border:1.5px solid #131416;border-radius:999px;color:#131416;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:all .15s;}
+    .tg-cta:hover{background:#131416;color:#fff;}
+    .tg-carousel-wrap{
+      position:relative;max-width:1200px;margin:0 auto;padding:10px 70px 26px;
+    }
+    .tg-track-mask{
+      overflow:hidden;
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);
+      mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);
+    }
+    .tg-track{
+      display:flex;gap:28px;align-items:flex-start;
+      overflow-x:auto;scroll-behavior:auto;-ms-overflow-style:none;scrollbar-width:none;
+      padding:6px 2px 10px;
+    }
+    .tg-track::-webkit-scrollbar{display:none;}
+    @media(prefers-reduced-motion:reduce){.tg-track{scroll-behavior:auto;}}
+    .tg-arrow{
+      position:absolute;top:calc(50% - 22px);width:44px;height:44px;border-radius:10px;
+      background:#fff;border:1.5px solid #E2E8F0;display:flex;align-items:center;justify-content:center;
+      color:#131416;cursor:pointer;box-shadow:0 4px 14px rgba(15,23,42,.1);transition:border-color .15s,transform .15s;
+      z-index:4;font-size:1.1rem;
+    }
+    .tg-arrow:hover{border-color:#131416;transform:translateY(-1px);}
+    .tg-arrow-l{left:10px;}
+    .tg-arrow-r{right:10px;}
+
+    /* Full invoice-page style thumbnails, styled after real template previews
+       (portrait A4-ish proportions, denser content) rather than small widget cards. */
+    .tg-card{
+      flex:0 0 auto;width:310px;background:#fff;
+      border:1px solid #E5E3DF;border-radius:6px;box-shadow:0 10px 30px rgba(15,23,42,.09);
+      padding:22px 22px 20px;font-family:Arial,sans-serif;cursor:pointer;
+      transition:transform .25s ease,box-shadow .25s ease;
+    }
+    .tg-card:hover{transform:scale(1.055);box-shadow:0 22px 48px rgba(15,23,42,.22);position:relative;z-index:3;}
+    .tg-mi-logo{width:32px;height:32px;border-radius:50%;background:#CBD5E1;flex-shrink:0;}
+    .tg-mi-logo-light{background:rgba(255,255,255,.9);}
+    .tg-mi-rule{height:2px;margin:0 0 13px;}
+    .tg-mi-label{margin-top:16px;font-size:12px;font-weight:700;color:#94A3B8;text-align:center;}
+
+    .tg-p-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;gap:10px;}
+    .tg-p-brand{display:flex;align-items:center;gap:10px;min-width:0;}
+    .tg-p-co{font-size:13px;font-weight:800;color:#0F172A;}
+    .tg-p-co-addr{font-size:9.5px;color:#94A3B8;margin-top:2px;}
+    .tg-p-invhd{text-align:right;flex-shrink:0;}
+    .tg-p-invtitle{font-size:17px;font-weight:800;letter-spacing:.02em;color:#0F172A;}
+    .tg-p-invno{font-size:9.5px;color:#94A3B8;margin-top:3px;}
+    .tg-p-bill{display:flex;justify-content:space-between;gap:10px;margin-bottom:13px;}
+    .tg-p-lbl{font-size:8.5px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+    .tg-p-name{font-size:11px;font-weight:700;color:#0F172A;}
+    .tg-p-addr{font-size:9.5px;color:#64748B;line-height:1.5;}
+    .tg-p-fields{font-size:9.5px;color:#64748B;text-align:right;}
+    .tg-p-fields div{display:flex;justify-content:flex-end;gap:8px;margin-bottom:3px;}
+    .tg-p-fields span:first-child{color:#94A3B8;}
+    .tg-tint-band{padding:8px 10px;margin:0 -10px 13px!important;border-radius:5px;}
+    .tg-p-tbl-hdr{display:grid;grid-template-columns:16px 1fr 32px 44px 52px;gap:5px;font-size:8.5px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.03em;padding:5px 0;}
+    .tg-p-tbl-hdr.tg-p-tbl-hdr-fill{background:#0F172A;color:#fff;padding:6px 8px;margin:0 -8px 5px;border-radius:3px;}
+    .tg-p-tbl-hdr span:not(:first-child){text-align:right;}
+    .tg-p-tbl-hdr span:nth-child(2){text-align:left;}
+    .tg-p-row{display:grid;grid-template-columns:16px 1fr 32px 44px 52px;gap:5px;font-size:10.5px;color:#334155;padding:4px 0;border-bottom:1px solid #F8FAFC;}
+    .tg-p-row span:not(:nth-child(2)){text-align:right;color:#64748B;}
+    .tg-p-tot{margin-top:10px;}
+    .tg-p-tot>div{display:flex;justify-content:space-between;font-size:10px;color:#64748B;padding:2.5px 0;}
+    .tg-p-bal{font-weight:800;color:#0F172A;border-radius:4px;padding:6px 9px;margin:5px -9px 0;}
+    .tg-p-foot{font-size:9px;color:#64748B;margin-top:13px;line-height:1.5;}
+    .tg-p-foot-lbl{font-weight:700;color:#0F172A;font-size:9px;}
+
+    .tg-p-masthead{margin:-22px -22px 0;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;border-radius:6px 6px 0 0;}
+    .tg-p-bold-mast{padding-bottom:22px;}
+
+    .tg-p-center{text-align:center;margin-bottom:6px;}
+
+    .tg-p-plain-row{display:flex;justify-content:space-between;font-size:10.5px;color:#334155;padding:3px 0;}
+    .tg-p-plain-total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:#0F172A;}
+
+    /* Professional: warm tinted Bill-To band (accent spine kept subtle via border) */
+    .tg-professional{border-left:5px solid #E87A3D;}
+
+    /* Sidebar: full-height colour identity panel running down the left side */
+    .tg-sidebar-tpl{padding:0;overflow:hidden;}
+    .tg-p-with-sidebar{display:flex;align-items:stretch;}
+    .tg-sb-panel{width:56px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 8px;}
+    .tg-sb-inv{writing-mode:vertical-rl;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;}
+    .tg-sb-body{flex:1;padding:20px 18px 18px;min-width:0;}
+
+    @media(max-width:700px){
+      .tg-head{padding:0 20px;}
+      .tg-carousel-wrap{padding:10px 16px 26px;}
+      .tg-arrow{display:none;}
+    }
+
     /* ── TEMPLATE SHOWCASE (live colour preview) ─────────── */
     .tpl-section { padding:100px 40px; border-top:1px solid var(--dark-b); }
     .tpl-inner {
@@ -567,31 +664,33 @@
     .faq-body.open { grid-template-rows:1fr; }
 
     /* ── FOOTER ──────────────────────────────────────── */
+    /* Deliberately pitch-black, scoped to its own literal colors rather than
+       the page's light-theme text/dark tokens, which are the wrong
+       polarity here (this is the one dark section on an otherwise light page). */
     .footer {
-      border-top:1px solid var(--dark-b);
-      background:var(--dark-2);
+      background:#000;
     }
     .footer-inner {
-      max-width:1200px; margin:0 auto; padding:48px 40px 36px;
-      display:grid; grid-template-columns:2fr 1fr 1fr; gap:48px;
+      max-width:1200px; margin:0 auto; padding:64px 40px 40px;
+      display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
     }
     .footer-brand-col { }
-    .footer-logo { display:flex; align-items:center; gap:8px; text-decoration:none; margin-bottom:12px; }
-    .footer-logo span { font-size:.9rem; font-weight:700; color:rgba(255,255,255,.55); }
-    .footer-desc { font-size:.8rem; color:var(--text-3); line-height:1.7; max-width:280px; }
-    .footer-col-title { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); margin-bottom:16px; }
-    .footer-col-links { display:flex; flex-direction:column; gap:10px; }
+    .footer-logo { display:flex; align-items:center; gap:8px; text-decoration:none; margin-bottom:14px; }
+    .footer-logo span { font-size:.95rem; font-weight:700; color:#fff; }
+    .footer-desc { font-size:.82rem; color:rgba(255,255,255,.45); line-height:1.7; max-width:280px; }
+    .footer-col-title { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:18px; }
+    .footer-col-links { display:flex; flex-direction:column; gap:12px; }
     .footer-col-links a {
-      font-size:.8rem; color:rgba(255,255,255,.3); text-decoration:none;
-      transition:color .12s;
+      font-size:.85rem; color:rgba(255,255,255,.75); text-decoration:none;
+      transition:color .2s ease;
     }
-    .footer-col-links a:hover { color:rgba(255,255,255,.7); }
+    .footer-col-links a:hover { color:var(--ember); }
     .footer-bottom {
-      border-top:1px solid var(--dark-b); padding:20px 40px;
+      border-top:1px solid rgba(255,255,255,.1); padding:24px 40px;
       display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
     }
-    .footer-copy { font-size:.72rem; color:rgba(255,255,255,.18); }
-    .footer-tagline { font-size:.72rem; color:rgba(255,255,255,.18); }
+    .footer-copy { font-size:.75rem; color:rgba(255,255,255,.35); }
+    .footer-tagline { font-size:.75rem; color:rgba(255,255,255,.35); }
 
     /* ── SCROLL REVEAL ───────────────────────────────── */
     .reveal {
@@ -736,12 +835,18 @@
     .pvw-tot-row.gst-total{font-weight:700;color:#8C0F1B;}
     .pvw-words{margin:0 10px 8px;padding:6px 10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:4px;font-size:7.5px;color:#92400E;font-weight:600;}
     .pvw-words-lbl{font-size:7px;text-transform:uppercase;color:#B45309;font-weight:700;letter-spacing:.05em;margin-bottom:1px;}
-    .pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:8px 10px;border-top:1px solid #E8E7E5;align-items:center;}
-    .pvw-notes{font-size:7.5px;color:#64748B;line-height:1.5;}
+    .pvw-notes,.pvw-terms{font-size:7.5px;color:#64748B;line-height:1.5;padding:8px 10px;border-top:1px solid #E8E7E5;}
+    .pvw-terms #pvw-terms-text{white-space:pre-line;}
+    .pvw-sig-row{display:flex;justify-content:flex-end;align-items:center;gap:22px;padding:8px 16px;}
+    /* FROM/BILL TO swap: grid honours `order`, so the divider follows whichever column is on the left */
+    .pvw-addr-col[data-party=from]{border-right:1px solid #fff;}
+    .pvw-addr.swapped [data-party=from]{order:2;border-right:none;}
+    .pvw-addr.swapped [data-party=to]{border-right:1px solid #fff;}
+    .inv-preview [data-label]{cursor:text;border-radius:2px;outline:none;}
+    .inv-preview [data-label]:hover{box-shadow:0 0 0 1px rgba(100,116,139,.45);}
+    .inv-preview [data-label]:focus{box-shadow:0 0 0 1.5px #2563EB;}
     .pvw-notes-lbl{font-weight:700;color:#0F172A;margin-bottom:2px;font-size:8px;}
-    .pvw-stamp{width:52px;height:52px;border-radius:50%;border:2.5px solid #C1121F;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;}
-    .pvw-stamp span:first-child{font-size:7.5px;font-weight:700;color:#C1121F;}
-    .pvw-stamp span:last-child{font-size:11px;font-weight:900;color:#C1121F;}
+    .pvw-thanks{font-size:8.5px;font-style:italic;font-weight:600;color:#64748B;}
     .pvw-sig{text-align:center;font-size:7.5px;color:#374151;}
     .pvw-sig-lbl{font-weight:700;color:#C1121F;font-size:7px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
     .pvw-sig-line{border-top:1px solid #0F172A;width:80px;margin:0 auto 2px;}
@@ -901,6 +1006,30 @@
     /* Hide the HSN/SAC column on the final invoice entirely when no item has one filled in */
     .pvw-items.no-hsn .pvw-items-hdr,.pvw-items.no-hsn .pvw-item-row{grid-template-columns:1fr 56px 28px 36px 56px!important;}
     .pvw-items.no-hsn .pvw-items-hdr span:nth-child(2),.pvw-items.no-hsn .pvw-item-row span:nth-child(2){display:none;}
+    .pvw-items.no-disc .pvw-items-hdr,.pvw-items.no-disc .pvw-item-row{grid-template-columns:1fr 44px 56px 28px 56px!important;}
+    .pvw-items.no-hsn.no-disc .pvw-items-hdr,.pvw-items.no-hsn.no-disc .pvw-item-row{grid-template-columns:1fr 56px 28px 56px!important;}
+    .pvw-items.no-disc .pvw-items-hdr span:nth-child(5),.pvw-items.no-disc .pvw-item-row span:nth-child(5){display:none;}
+    /* layout editor */
+    .pvw-cust-btn{padding:5px 10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .pvw-cust-btn:hover,.pvw-cust-btn.open{background:rgba(255,255,255,.3);}
+    #free-sec-editor{display:none;margin:12px 16px 0;background:#fff;border:1px solid #E8E7E5;border-radius:8px;overflow:hidden;flex-shrink:0;}
+    #free-sec-editor.open{display:block;}
+    .fse-top{padding:10px 12px;border-bottom:1px solid #E8E7E5;display:flex;flex-direction:column;gap:6px;}
+    .fse-hint{font-size:.7rem;color:#94A3B8;line-height:1.4;}
+    .sec-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #F1EFEC;background:#fff;cursor:grab;user-select:none;-webkit-user-select:none;}
+    .sec-row.dragging{opacity:.4;background:#FDF0F1;}
+    .sec-row.drag-over{box-shadow:inset 0 2px 0 #C1121F;}
+    .sec-row.hidden-sec{opacity:.5;background:#FAFAFA;}
+    .sec-grip{color:#CBD5E1;font-size:.9rem;flex-shrink:0;}
+    .sec-name{flex:1;font-size:.78rem;font-weight:600;color:#0F172A;min-width:0;}
+    .sec-btn{background:none;border:none;color:#64748B;cursor:pointer;font-size:.8rem;padding:2px 4px;flex-shrink:0;}
+    .sec-btn:hover{color:#C1121F;}
+    .sec-caret{transition:transform .15s;}
+    .sec-caret.open{transform:rotate(90deg);}
+    .sec-sub{display:none;padding:4px 12px 8px 34px;background:#FAFAFA;border-bottom:1px solid #F1EFEC;}
+    .sec-sub.open{display:block;}
+    .tgl-row{display:flex;align-items:center;gap:8px;font-size:.76rem;color:#475569;cursor:pointer;padding:3px 0;margin:0;}
+    .tgl-row input[type=checkbox]{accent-color:#C1121F;width:14px;height:14px;cursor:pointer;}
     @media(max-width:600px){
       .items-thead,.item-main-row{grid-template-columns:20px 1fr 52px 40px 40px 28px!important;}
       .items-thead span:nth-child(3),.item-main-row input:nth-child(3){display:none;}
@@ -1079,81 +1208,6 @@
     </div>
   </div>
 </section>
-
-<!-- ══════════════ TEMPLATE SHOWCASE (live colour preview) ══════════════ -->
-<section class="tpl-section" aria-labelledby="tpl-heading">
-  <div class="tpl-inner">
-    <div>
-      <span class="fa-eyebrow"><i class="bi bi-palette-fill"></i> Templates</span>
-      <h2 class="fa-h" id="tpl-heading">Every invoice, on brand.</h2>
-      <p class="fa-p">Pick an accent colour and Zayro applies it across the logo mark, section bar and total &#8212; on screen and in the downloaded PDF. No design work, no re-uploading anything.</p>
-      <ul class="fa-list" aria-label="Template features">
-        <li>Recolour any invoice in one click, no re-upload needed</li>
-        <li>Consistent branding across every invoice you send</li>
-        <li>Looks the same on screen, in PDF and in print</li>
-      </ul>
-      <div class="tpl-swatches" role="group" aria-label="Preview accent colour">
-        <button type="button" class="tpl-swatch is-active" data-color="#C1121F" style="background:#C1121F;color:#C1121F" aria-label="Red" aria-pressed="true"></button>
-        <button type="button" class="tpl-swatch" data-color="#131416" style="background:#131416;color:#131416" aria-label="Black" aria-pressed="false"></button>
-        <button type="button" class="tpl-swatch" data-color="#2563EB" style="background:#2563EB;color:#2563EB" aria-label="Blue" aria-pressed="false"></button>
-        <button type="button" class="tpl-swatch" data-color="#16A34A" style="background:#16A34A;color:#16A34A" aria-label="Green" aria-pressed="false"></button>
-        <button type="button" class="tpl-swatch" data-color="#7C3AED" style="background:#7C3AED;color:#7C3AED" aria-label="Purple" aria-pressed="false"></button>
-      </div>
-    </div>
-    <div class="mini-inv tpl-live-inv" id="tpl-live-inv" aria-hidden="true">
-      <div class="mi-hd">
-        <div style="display:flex;align-items:center;gap:9px">
-          <div class="mi-logo-box" id="tpl-live-logo"><i class="bi bi-receipt"></i></div>
-          <div>
-            <div class="mi-brand" id="tpl-live-brand">Zayro</div>
-            <div class="mi-inv-num">Acme Exports Pvt Ltd</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div class="mi-inv-num" style="margin-top:0">#INV-0048</div>
-          <div class="mi-inv-num">15 Jul 2026</div>
-        </div>
-      </div>
-      <div class="mi-parties">
-        <div>
-          <div class="mi-pl">Bill To</div>
-          <div class="mi-pn">Ravi Sharma &amp; Co</div>
-        </div>
-        <div>
-          <div class="mi-pl">GSTIN</div>
-          <div class="mi-pn">29ABCDE1234F1Z5</div>
-        </div>
-      </div>
-      <div class="mi-tbl-hdr"><span>Item</span><span>Qty</span><span>Amount</span></div>
-      <div class="mi-item"><div class="mi-in">Web design services</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;20,000</div></div>
-      <div class="mi-item"><div class="mi-in">SEO audit report</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;5,000</div></div>
-      <div class="mi-div"></div>
-      <div class="mi-gst"><span>CGST + SGST</span><span>&#8377;4,500</span></div>
-      <div class="mi-total-bar" id="tpl-live-total">
-        <span class="mi-tl">Total Due</span><span class="mi-tv">&#8377;29,500</span>
-      </div>
-    </div>
-  </div>
-</section>
-<script>
-  (function(){
-    var swatches = document.querySelectorAll('.tpl-swatches .tpl-swatch');
-    var logo = document.getElementById('tpl-live-logo');
-    var brand = document.getElementById('tpl-live-brand');
-    var totalBar = document.getElementById('tpl-live-total');
-    swatches.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        swatches.forEach(function(b){ b.classList.remove('is-active'); b.setAttribute('aria-pressed','false'); });
-        btn.classList.add('is-active');
-        btn.setAttribute('aria-pressed','true');
-        var color = btn.getAttribute('data-color');
-        if (logo) logo.style.background = color;
-        if (brand) brand.style.color = color;
-        if (totalBar) totalBar.style.background = color;
-      });
-    });
-  })();
-</script>
 
 <!-- FREE INVOICE GENERATOR -->
 <section id="free-section" style="background:linear-gradient(180deg,var(--dark) 0%,var(--dark-3) 100%);display:none;padding-bottom:60px">
@@ -1339,24 +1393,40 @@
               <option value="green">Classic (Green)</option>
               <option value="purple">Elegant (Purple)</option>
             </select>
+            <button type="button" class="pvw-cust-btn" id="fse-toggle" onclick="toggleFreeSecEditor()" aria-expanded="false" aria-controls="free-sec-editor"><i class="bi bi-sliders"></i> Customize</button>
+          </div>
+          <div id="free-sec-editor">
+            <div class="fse-top">
+              <label class="tgl-row"><input type="checkbox" id="fse-swap" onchange="setSwapParties(this.checked)"> Swap FROM and BILL TO sides</label>
+              <div class="fse-hint">Drag sections to reorder, use the eye to hide, the arrow for field options. Click any heading in the preview (e.g. "BILL TO") to rename it.</div>
+            </div>
+            <div id="free-sec-rows"></div>
+            <div class="fse-top" style="border-bottom:none;border-top:1px solid #E8E7E5">
+              <div class="fse-hint">Section order, hidden sections and column options apply to the PDF. Renamed headings and the side swap are preview-only for now.</div>
+              <button type="button" class="sec-btn" style="align-self:flex-start;padding:0;font-size:.72rem;font-weight:600" onclick="resetFreeLayout()"><i class="bi bi-arrow-counterclockwise"></i> Reset layout</button>
+            </div>
           </div>
           <div class="preview-wrap">
             <div class="inv-preview" id="inv-preview">
               <div class="pvw-hdr">
                 <div style="display:flex;align-items:center;gap:8px;"><div class="pvw-logo" id="pvw-logo-circle">Rs</div><div class="pvw-co"><div class="pvw-co-name" id="pvw-co-name">YOUR COMPANY NAME</div><div class="pvw-co-sub" id="pvw-co-gst"></div></div></div>
-                <div class="pvw-inv-title">INVOICE</div>
+                <div class="pvw-inv-title" data-label="invoice_title" contenteditable="true" spellcheck="false">INVOICE</div>
               </div>
               <div class="pvw-divider"></div>
-              <div class="pvw-meta"><div><span class="pvw-meta-lbl">NUMBER</span><span class="pvw-meta-val" id="pvw-inv-no">&#8212;</span></div><div><span class="pvw-meta-lbl">DATE</span><span class="pvw-meta-val" id="pvw-inv-date">&#8212;</span></div></div>
-              <div class="pvw-addr">
-                <div class="pvw-addr-col" style="border-right:1px solid #fff;"><div class="pvw-addr-hdr">FROM</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-from-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-from-addr"></div><div class="pvw-addr-muted" id="pvw-from-email"></div><div class="pvw-addr-muted" id="pvw-from-phone"></div><div class="pvw-addr-muted" id="pvw-from-cin"></div><div class="pvw-addr-muted" id="pvw-from-pan"></div></div></div>
-                <div class="pvw-addr-col"><div class="pvw-addr-hdr">BILL TO</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-to-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-to-addr"></div><div class="pvw-addr-muted" id="pvw-to-email"></div><div class="pvw-addr-muted" id="pvw-to-phone"></div><div class="pvw-addr-muted" id="pvw-to-gst"></div></div></div>
+              <div class="pvw-sec" data-sec="invoice_meta"><div class="pvw-meta"><div><span class="pvw-meta-lbl" data-label="number" contenteditable="true" spellcheck="false">NUMBER</span><span class="pvw-meta-val" id="pvw-inv-no">&#8212;</span></div><div><span class="pvw-meta-lbl" data-label="date" contenteditable="true" spellcheck="false">DATE</span><span class="pvw-meta-val" id="pvw-inv-date">&#8212;</span></div></div></div>
+              <div class="pvw-sec" data-sec="bill_to"><div class="pvw-addr" id="pvw-addr">
+                <div class="pvw-addr-col" data-party="from"><div class="pvw-addr-hdr" data-label="from" contenteditable="true" spellcheck="false">FROM</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-from-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-from-addr"></div><div class="pvw-addr-muted" id="pvw-from-email"></div><div class="pvw-addr-muted" id="pvw-from-phone"></div><div class="pvw-addr-muted" id="pvw-from-cin"></div><div class="pvw-addr-muted" id="pvw-from-pan"></div></div></div>
+                <div class="pvw-addr-col" data-party="to"><div class="pvw-addr-hdr" data-label="bill_to" contenteditable="true" spellcheck="false">BILL TO</div><div class="pvw-addr-body"><div class="pvw-addr-name" id="pvw-to-name">&#8212;</div><div class="pvw-addr-muted" id="pvw-to-addr"></div><div class="pvw-addr-muted" id="pvw-to-email"></div><div class="pvw-addr-muted" id="pvw-to-phone"></div><div class="pvw-addr-muted" id="pvw-to-gst"></div></div></div>
+              </div></div>
+              <div class="pvw-sec" data-sec="items_table">
+                <div class="pvw-items" id="pvw-items-wrap"><div class="pvw-items-hdr"><span>DESCRIPTION</span><span>HSN/SAC</span><span>RATE</span><span>QTY</span><span>DISC%</span><span>AMOUNT</span></div><div id="pvw-items-body"></div></div>
+                <div class="pvw-words" id="pvw-words-wrap"><div class="pvw-words-lbl" data-label="words" contenteditable="true" spellcheck="false">Amount in Words</div><div id="pvw-words-text">&#8212;</div></div>
               </div>
-              <div class="pvw-items" id="pvw-items-wrap"><div class="pvw-items-hdr"><span>DESCRIPTION</span><span>HSN/SAC</span><span>RATE</span><span>QTY</span><span>DISC%</span><span>AMOUNT</span></div><div id="pvw-items-body"></div></div>
-              <div class="pvw-words" id="pvw-words-wrap"><div class="pvw-words-lbl">Amount in Words</div><div id="pvw-words-text">&#8212;</div></div>
-              <div class="pvw-totals"><div class="pvw-totals-box"><div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST @ 18%</span><span id="pvw-igst">&#8377;0.00</span></div><div class="pvw-tot-row grand"><span>GRAND TOTAL</span><span id="pvw-grand">&#8377;0.00</span></div></div></div>
-              <div class="pvw-footer"><div class="pvw-notes"><div class="pvw-notes-lbl">Notes</div><div id="pvw-note-1">&#8226; Thank you for your business.</div><div>&#8226; Please make payment on or before the due date.</div></div><div class="pvw-stamp"><span>Thank</span><span>YOU!</span></div><div class="pvw-sig"><div class="pvw-sig-lbl">Authorized Signatory</div><img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none"><div style="height:24px;" id="pvw-sig-spacer"></div><div class="pvw-sig-line"></div><div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div><div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div></div></div>
-              <div class="pvw-bar" id="pvw-bar">www.zayron.in</div>
+              <div class="pvw-sec" data-sec="totals"><div class="pvw-totals"><div class="pvw-totals-box"><div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST @ 18%</span><span id="pvw-igst">&#8377;0.00</span></div><div class="pvw-tot-row grand"><span data-label="grand_total" contenteditable="true" spellcheck="false">GRAND TOTAL</span><span id="pvw-grand">&#8377;0.00</span></div></div></div></div>
+              <div class="pvw-sec" data-sec="notes"><div class="pvw-notes"><div class="pvw-notes-lbl" data-label="notes" contenteditable="true" spellcheck="false">Notes</div><div id="pvw-note-1">&#8226; Thank you for your business.</div><div data-label="note_2" contenteditable="true" spellcheck="false">&#8226; Please make payment on or before the due date.</div></div></div>
+              <div class="pvw-sec" data-sec="terms"><div class="pvw-terms"><div class="pvw-notes-lbl" data-label="terms" contenteditable="true" spellcheck="false">Terms &amp; Conditions</div><div id="pvw-terms-text">Due on Receipt</div></div></div>
+              <div class="pvw-sec" data-sec="signature"><div class="pvw-sig-row"><div class="pvw-thanks">Thank you for your business!</div><div class="pvw-sig"><div class="pvw-sig-lbl" data-label="signature" contenteditable="true" spellcheck="false">Authorized Signatory</div><img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none"><div style="height:24px;" id="pvw-sig-spacer"></div><div class="pvw-sig-line"></div><div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div><div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div></div></div></div>
+              <div class="pvw-sec" data-sec="footer"><div class="pvw-bar" id="pvw-bar">www.zayron.in</div></div>
             </div>
           </div>
         </div>
@@ -1367,7 +1437,7 @@
       <table class="result-table"><thead><tr><th>Description</th><th style="text-align:right">QTY</th><th style="text-align:right">Rate (&#8377;)</th><th style="text-align:right">Amount (&#8377;)</th></tr></thead><tbody id="res-items"></tbody></table>
       <div class="result-total-bar"><span style="color:rgba(255,255,255,.8);font-weight:600">Balance Due</span><span style="color:#fff;font-weight:900;font-size:1.2rem" id="res-total2"></span></div>
       <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap"><a id="res-pdf-btn" href="#" target="_blank" class="btn-result-primary"><i class="bi bi-file-earmark-pdf-fill"></i> Download PDF</a><button onclick="openPreviewModal()" class="btn-result-sec"><i class="bi bi-eye-fill"></i> Preview</button><button onclick="createAnotherFree()" class="btn-result-sec"><i class="bi bi-arrow-repeat"></i> New Invoice</button></div>
-      <div class="upsell"><div style="font-size:1rem;font-weight:800;color:#C4B5FD;margin-bottom:6px"><i class="bi bi-stars me-2"></i>Want unlimited invoices + customer management?</div><div style="color:#94A3B8;font-size:.85rem;margin-bottom:16px">Register free to save invoices, manage customers, track payments, and download anytime.</div><button onclick="openModal('reg-modal')" style="padding:10px 24px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer"><i class="bi bi-person-plus-fill me-1"></i> Register Free</button></div>
+      <div class="upsell"><div style="font-size:1rem;font-weight:800;color:#7C3AED;margin-bottom:6px"><i class="bi bi-stars me-2"></i>Want unlimited invoices + customer management?</div><div style="color:#64748B;font-size:.85rem;margin-bottom:16px">Register free to save invoices, manage customers, track payments, and download anytime.</div><button onclick="openModal('reg-modal')" style="padding:10px 24px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer"><i class="bi bi-person-plus-fill me-1"></i> Register Free</button></div>
     </div>
   </div>
 </section>
@@ -1408,6 +1478,562 @@
     </div>
   </div>
 </section>
+
+
+<!-- ══════════════ TEMPLATE GALLERY (carousel) ══════════════ -->
+<section class="tg-section" aria-labelledby="tg-heading">
+  <div class="tg-head">
+    <h2 class="tg-h" id="tg-heading">Invoice templates that<br>&#8203;<span class="tg-grad">speak your brand.</span></h2>
+    <a href="#free-section" class="tg-cta" onclick="showFreeForm();return false;">Create free invoices</a>
+  </div>
+  <div class="tg-carousel-wrap">
+    <button type="button" class="tg-arrow tg-arrow-l" aria-label="Previous templates" onclick="tgArrowNudge(-1)"><i class="bi bi-chevron-left"></i></button>
+    <div class="tg-track-mask">
+    <div class="tg-track" id="tg-track">
+      <div class="tg-card tg-classic">
+        <div class="tg-p-top">
+          <div class="tg-p-brand"><div class="tg-mi-logo" style="background:#E87A3D"></div><div><div class="tg-p-co">Zayron Infotech</div><div class="tg-p-co-addr">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle">INVOICE</div><div class="tg-p-invno">#INV-0148</div></div>
+        </div>
+        <div class="tg-mi-rule" style="background:#E87A3D"></div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0148</span></div>
+            <div><span>Date</span><span>04 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style=""><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Default</div>
+      </div>
+      <div class="tg-card tg-minimal">
+        <div class="tg-p-center">
+          <div class="tg-p-co" style="font-weight:700">Zayron Infotech</div>
+          <div class="tg-p-co-addr">Chennai, Tamil Nadu</div>
+        </div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px"></div>
+        <div class="tg-p-invtitle" style="text-align:center;margin:6px 0">INVOICE</div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px;margin-bottom:8px"></div>
+        <div class="tg-p-fields" style="margin-bottom:8px"><div><span>Invoice#</span><span>INV-0149</span></div><div><span>Date</span><span>11 Mar 2026</span></div></div>
+        <div class="tg-p-plain-row"><span>1&nbsp;&nbsp;Web hosting</span><span>3,000</span></div>
+        <div class="tg-p-plain-row"><span>2&nbsp;&nbsp;Domain renewal</span><span>1,200</span></div>
+        <div class="tg-p-plain-row"><span>3&nbsp;&nbsp;SSL certificate</span><span>800</span></div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px;margin:6px 0"></div>
+        <div class="tg-p-plain-total"><span>TOTAL</span><span>5,000</span></div>
+        <div class="tg-p-foot" style="text-align:center;margin-top:14px">Thanks for your business.</div>
+        <div class="tg-mi-label">Minimal</div>
+      </div>
+      <div class="tg-card tg-modern">
+        <div class="tg-p-masthead" style="background:#0F172A">
+          <div class="tg-p-brand"><div class="tg-mi-logo tg-mi-logo-light"></div><div><div class="tg-p-co" style="color:#fff">Zayron Infotech</div><div class="tg-p-co-addr" style="color:#94A3B8">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle" style="color:#fff">INVOICE</div><div class="tg-p-invno" style="color:#94A3B8">#INV-0150</div></div>
+        </div>
+        <div class="tg-mi-rule" style="background:#E87A3D;margin:0 0 10px"></div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0150</span></div>
+            <div><span>Date</span><span>18 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr tg-p-tbl-hdr-fill"><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#0F172A;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Modern</div>
+      </div>
+      <div class="tg-card tg-professional">
+        <div class="tg-p-top">
+          <div class="tg-p-brand"><div class="tg-mi-logo" style="background:#E87A3D"></div><div><div class="tg-p-co">Zayron Infotech</div><div class="tg-p-co-addr">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle">INVOICE</div><div class="tg-p-invno">#INV-0151</div></div>
+        </div>
+        <div class="tg-p-bill tg-tint-band" style="background:#FFF7F0">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0151</span></div>
+            <div><span>Date</span><span>25 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#E87A3D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Professional</div>
+      </div>
+      <div class="tg-card tg-bold">
+        <div class="tg-p-masthead tg-p-bold-mast" style="background:#E87A3D">
+          <div class="tg-p-brand"><div class="tg-mi-logo tg-mi-logo-light"></div><div><div class="tg-p-co" style="color:#fff">Zayron Infotech</div><div class="tg-p-co-addr" style="color:rgba(255,255,255,.75)">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle" style="color:#fff;font-size:15px">INVOICE</div><div class="tg-p-invno" style="color:rgba(255,255,255,.75)">#INV-0152</div></div>
+        </div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0152</span></div>
+            <div><span>Date</span><span>02 Apr 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr tg-p-tbl-hdr-fill"><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#E87A3D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Bold</div>
+      </div>
+      <div class="tg-card tg-sidebar-tpl">
+        <div class="tg-p-with-sidebar">
+          <div class="tg-sb-panel" style="background:#16243D">
+            <div class="tg-mi-logo tg-mi-logo-light"></div>
+            <div class="tg-sb-inv">INVOICE</div>
+          </div>
+          <div class="tg-sb-body">
+            <div class="tg-p-co">Zayron Infotech</div>
+            <div class="tg-p-co-addr" style="margin-bottom:8px">Chennai, TN</div>
+            <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0153</span></div>
+            <div><span>Date</span><span>09 Apr 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+            <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+            <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#16243D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+          </div>
+        </div>
+        <div class="tg-mi-label">Sidebar</div>
+      </div>
+
+      <!-- Duplicate set (aria-hidden) so the marquee loop is seamless — matches
+           the technique zoho.com/invoice uses for its own template carousel. -->
+      <div class="tg-card tg-classic" aria-hidden="true">
+        <div class="tg-p-top">
+          <div class="tg-p-brand"><div class="tg-mi-logo" style="background:#E87A3D"></div><div><div class="tg-p-co">Zayron Infotech</div><div class="tg-p-co-addr">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle">INVOICE</div><div class="tg-p-invno">#INV-0148</div></div>
+        </div>
+        <div class="tg-mi-rule" style="background:#E87A3D"></div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0148</span></div>
+            <div><span>Date</span><span>04 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style=""><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Default</div>
+      </div>
+      <div class="tg-card tg-minimal" aria-hidden="true">
+        <div class="tg-p-center">
+          <div class="tg-p-co" style="font-weight:700">Zayron Infotech</div>
+          <div class="tg-p-co-addr">Chennai, Tamil Nadu</div>
+        </div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px"></div>
+        <div class="tg-p-invtitle" style="text-align:center;margin:6px 0">INVOICE</div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px;margin-bottom:8px"></div>
+        <div class="tg-p-fields" style="margin-bottom:8px"><div><span>Invoice#</span><span>INV-0149</span></div><div><span>Date</span><span>11 Mar 2026</span></div></div>
+        <div class="tg-p-plain-row"><span>1&nbsp;&nbsp;Web hosting</span><span>3,000</span></div>
+        <div class="tg-p-plain-row"><span>2&nbsp;&nbsp;Domain renewal</span><span>1,200</span></div>
+        <div class="tg-p-plain-row"><span>3&nbsp;&nbsp;SSL certificate</span><span>800</span></div>
+        <div class="tg-mi-rule" style="background:#0F172A;height:1.5px;margin:6px 0"></div>
+        <div class="tg-p-plain-total"><span>TOTAL</span><span>5,000</span></div>
+        <div class="tg-p-foot" style="text-align:center;margin-top:14px">Thanks for your business.</div>
+        <div class="tg-mi-label">Minimal</div>
+      </div>
+      <div class="tg-card tg-modern" aria-hidden="true">
+        <div class="tg-p-masthead" style="background:#0F172A">
+          <div class="tg-p-brand"><div class="tg-mi-logo tg-mi-logo-light"></div><div><div class="tg-p-co" style="color:#fff">Zayron Infotech</div><div class="tg-p-co-addr" style="color:#94A3B8">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle" style="color:#fff">INVOICE</div><div class="tg-p-invno" style="color:#94A3B8">#INV-0150</div></div>
+        </div>
+        <div class="tg-mi-rule" style="background:#E87A3D;margin:0 0 10px"></div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0150</span></div>
+            <div><span>Date</span><span>18 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr tg-p-tbl-hdr-fill"><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#0F172A;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Modern</div>
+      </div>
+      <div class="tg-card tg-professional" aria-hidden="true">
+        <div class="tg-p-top">
+          <div class="tg-p-brand"><div class="tg-mi-logo" style="background:#E87A3D"></div><div><div class="tg-p-co">Zayron Infotech</div><div class="tg-p-co-addr">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle">INVOICE</div><div class="tg-p-invno">#INV-0151</div></div>
+        </div>
+        <div class="tg-p-bill tg-tint-band" style="background:#FFF7F0">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0151</span></div>
+            <div><span>Date</span><span>25 Mar 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#E87A3D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Professional</div>
+      </div>
+      <div class="tg-card tg-bold" aria-hidden="true">
+        <div class="tg-p-masthead tg-p-bold-mast" style="background:#E87A3D">
+          <div class="tg-p-brand"><div class="tg-mi-logo tg-mi-logo-light"></div><div><div class="tg-p-co" style="color:#fff">Zayron Infotech</div><div class="tg-p-co-addr" style="color:rgba(255,255,255,.75)">Chennai, TN</div></div></div>
+          <div class="tg-p-invhd"><div class="tg-p-invtitle" style="color:#fff;font-size:15px">INVOICE</div><div class="tg-p-invno" style="color:rgba(255,255,255,.75)">#INV-0152</div></div>
+        </div>
+        <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0152</span></div>
+            <div><span>Date</span><span>02 Apr 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+        <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr tg-p-tbl-hdr-fill"><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+        <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#E87A3D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+        <div class="tg-p-foot">
+          <div class="tg-p-foot-lbl">Notes</div>
+          <div>Thanks for your business.</div>
+          <div class="tg-p-foot-lbl" style="margin-top:6px">Terms &amp; Conditions</div>
+          <div>Payment due within 15 days of invoice date.</div>
+        </div>
+        <div class="tg-mi-label">Bold</div>
+      </div>
+      <div class="tg-card tg-sidebar-tpl" aria-hidden="true">
+        <div class="tg-p-with-sidebar">
+          <div class="tg-sb-panel" style="background:#16243D">
+            <div class="tg-mi-logo tg-mi-logo-light"></div>
+            <div class="tg-sb-inv">INVOICE</div>
+          </div>
+          <div class="tg-sb-body">
+            <div class="tg-p-co">Zayron Infotech</div>
+            <div class="tg-p-co-addr" style="margin-bottom:8px">Chennai, TN</div>
+            <div class="tg-p-bill">
+          <div>
+            <div class="tg-p-lbl">Bill To</div>
+            <div class="tg-p-name">Ravi Sharma &amp; Co</div>
+            <div class="tg-p-addr">43268, Christiansen Heights,<br>Bengaluru, Karnataka 56210</div>
+          </div>
+          <div class="tg-p-fields">
+            <div><span>Invoice #</span><span>0153</span></div>
+            <div><span>Date</span><span>09 Apr 2026</span></div>
+            <div><span>Terms</span><span>Due on Receipt</span></div>
+          </div>
+        </div>
+            <div class="tg-p-tbl">
+          <div class="tg-p-tbl-hdr "><span>#</span><span>Item &amp; Description</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+          <div class="tg-p-row"><span>1</span><span>Web design services</span><span>1.00</span><span>20,000</span><span>20,000</span></div>
+          <div class="tg-p-row"><span>2</span><span>SEO audit report</span><span>1.00</span><span>5,000</span><span>5,000</span></div>
+          <div class="tg-p-row"><span>3</span><span>Hosting &amp; domain (1 yr)</span><span>1.00</span><span>3,500</span><span>3,500</span></div>
+        </div>
+            <div class="tg-p-tot">
+          <div><span>Sub Total</span><span>28,500</span></div>
+          <div><span>GST (18%)</span><span>5,130</span></div>
+          <div><span>Total</span><span>33,630</span></div>
+          <div class="tg-p-bal" style="background:#16243D;color:#fff"><span>Balance Due</span><span>33,630</span></div>
+        </div>
+          </div>
+        </div>
+        <div class="tg-mi-label">Sidebar</div>
+      </div>
+    </div>
+    </div>
+    <button type="button" class="tg-arrow tg-arrow-r" aria-label="Next templates" onclick="tgArrowNudge(1)"><i class="bi bi-chevron-right"></i></button>
+  </div>
+</section>
+<script>
+  (function(){
+    const track = document.getElementById('tg-track');
+    if (!track) return;
+    let setWidth = 0;
+    function measure(){
+      const cards = track.children;
+      const half = cards.length / 2;
+      if (half > 0 && cards[half]) setWidth = cards[half].offsetLeft - cards[0].offsetLeft;
+    }
+    // Fonts/images can shift layout after first paint — remeasure once settled.
+    window.addEventListener('load', measure);
+    measure();
+
+    // scrollLeft only stores whole pixels, so accumulating a sub-pixel step by
+    // reading it back each frame (track.scrollLeft += 0.45) truncates to 0
+    // forever — keep our own float position instead and only write it out.
+    let pos = 0, isHovering = false, arrowCooldownUntil = 0, raf = null;
+    const SPEED = 0.45; // px per frame, ≈ zoho's slow continuous drift
+    function tick(){
+      // Two independent reasons to freeze (hover, a just-clicked arrow) — computed
+      // fresh each frame so one can't clobber the other's pause via a shared flag.
+      const frozen = isHovering || performance.now() < arrowCooldownUntil;
+      if (!frozen && setWidth > 0) {
+        pos += SPEED;
+        if (pos >= setWidth) pos -= setWidth;
+        track.scrollLeft = pos;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) raf = requestAnimationFrame(tick);
+
+    const wrap = track.closest('.tg-carousel-wrap');
+    wrap.addEventListener('mouseenter', () => { isHovering = true; });
+    // The track is a real scrollable element, so the visitor may have dragged/
+    // wheeled it while paused — resync our float position from the real one.
+    wrap.addEventListener('mouseleave', () => { isHovering = false; pos = track.scrollLeft; });
+
+    window.tgArrowNudge = function(dir){
+      arrowCooldownUntil = performance.now() + 900;
+      const cardWidth = (track.children[0]?.getBoundingClientRect().width || 300) + 28;
+      track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
+      clearTimeout(window._tgResyncTimer);
+      window._tgResyncTimer = setTimeout(() => {
+        pos = track.scrollLeft;
+        if (setWidth > 0 && pos >= setWidth) pos -= setWidth;
+        if (setWidth > 0 && pos < 0) pos += setWidth;
+        track.scrollLeft = pos;
+      }, 900);
+    };
+  })();
+</script>
+
+<!-- ══════════════ TEMPLATE SHOWCASE (live colour preview) ══════════════ -->
+<section class="tpl-section" aria-labelledby="tpl-heading">
+  <div class="tpl-inner">
+    <div>
+      <span class="fa-eyebrow"><i class="bi bi-palette-fill"></i> Templates</span>
+      <h2 class="fa-h" id="tpl-heading">Every invoice, on brand.</h2>
+      <p class="fa-p">Pick an accent colour and Zayro applies it across the logo mark, section bar and total &#8212; on screen and in the downloaded PDF. No design work, no re-uploading anything.</p>
+      <ul class="fa-list" aria-label="Template features">
+        <li>Recolour any invoice in one click, no re-upload needed</li>
+        <li>Consistent branding across every invoice you send</li>
+        <li>Looks the same on screen, in PDF and in print</li>
+      </ul>
+      <div class="tpl-swatches" role="group" aria-label="Preview accent colour">
+        <button type="button" class="tpl-swatch is-active" data-color="#C1121F" style="background:#C1121F;color:#C1121F" aria-label="Red" aria-pressed="true"></button>
+        <button type="button" class="tpl-swatch" data-color="#131416" style="background:#131416;color:#131416" aria-label="Black" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#2563EB" style="background:#2563EB;color:#2563EB" aria-label="Blue" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#16A34A" style="background:#16A34A;color:#16A34A" aria-label="Green" aria-pressed="false"></button>
+        <button type="button" class="tpl-swatch" data-color="#7C3AED" style="background:#7C3AED;color:#7C3AED" aria-label="Purple" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div class="mini-inv tpl-live-inv" id="tpl-live-inv" aria-hidden="true">
+      <div class="mi-hd">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mi-logo-box" id="tpl-live-logo"><i class="bi bi-receipt"></i></div>
+          <div>
+            <div class="mi-brand" id="tpl-live-brand">Zayro</div>
+            <div class="mi-inv-num">Acme Exports Pvt Ltd</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="mi-inv-num" style="margin-top:0">#INV-0048</div>
+          <div class="mi-inv-num">15 Jul 2026</div>
+        </div>
+      </div>
+      <div class="mi-parties">
+        <div>
+          <div class="mi-pl">Bill To</div>
+          <div class="mi-pn">Ravi Sharma &amp; Co</div>
+        </div>
+        <div>
+          <div class="mi-pl">GSTIN</div>
+          <div class="mi-pn">29ABCDE1234F1Z5</div>
+        </div>
+      </div>
+      <div class="mi-tbl-hdr"><span>Item</span><span>Qty</span><span>Amount</span></div>
+      <div class="mi-item"><div class="mi-in">Web design services</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;20,000</div></div>
+      <div class="mi-item"><div class="mi-in">SEO audit report</div><div class="mi-iq">1</div><div class="mi-ia">&#8377;5,000</div></div>
+      <div class="mi-div"></div>
+      <div class="mi-gst"><span>CGST + SGST</span><span>&#8377;4,500</span></div>
+      <div class="mi-total-bar" id="tpl-live-total">
+        <span class="mi-tl">Total Due</span><span class="mi-tv">&#8377;29,500</span>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  (function(){
+    var swatches = document.querySelectorAll('.tpl-swatches .tpl-swatch');
+    var logo = document.getElementById('tpl-live-logo');
+    var brand = document.getElementById('tpl-live-brand');
+    var totalBar = document.getElementById('tpl-live-total');
+    swatches.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        swatches.forEach(function(b){ b.classList.remove('is-active'); b.setAttribute('aria-pressed','false'); });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed','true');
+        var color = btn.getAttribute('data-color');
+        if (logo) logo.style.background = color;
+        if (brand) brand.style.color = color;
+        if (totalBar) totalBar.style.background = color;
+      });
+    });
+  })();
+</script>
 
 <!-- ══════════════ FEATURES ══════════════ -->
 <section class="features-section" id="features" aria-label="Product features">
@@ -1788,7 +2414,7 @@
 
 
 <!-- ══════════════ FOOTER ══════════════ -->
-<footer>
+<footer class="footer">
   <div class="footer-inner">
     <div class="footer-brand-col">
       <a class="footer-logo" href="/" aria-label="Zayro Invoice home">
@@ -1796,6 +2422,14 @@
         <span>Zayro Invoice</span>
       </a>
       <p class="footer-desc">Professional invoicing for modern Indian businesses. GST-ready, PDF-first, built to save you time.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Account</div>
+      <nav class="footer-col-links" aria-label="Account links">
+        <a href="#" onclick="openModal('login-modal');return false;">Sign in</a>
+        <a href="#" onclick="openModal('reg-modal');return false;">Start for free</a>
+        <a href="#" onclick="showFreeForm();return false;">Try without an account</a>
+      </nav>
     </div>
     <div>
       <div class="footer-col-title">Product</div>
@@ -1810,14 +2444,6 @@
       <nav class="footer-col-links" aria-label="Company links">
         <a href="/about/">About us</a>
         <a href="/support/">Support</a>
-      </nav>
-    </div>
-    <div>
-      <div class="footer-col-title">Account</div>
-      <nav class="footer-col-links" aria-label="Account links">
-        <a href="#" onclick="openModal('login-modal');return false;">Sign in</a>
-        <a href="#" onclick="openModal('reg-modal');return false;">Start for free</a>
-        <a href="#" onclick="showFreeForm();return false;">Try without an account</a>
       </nav>
     </div>
   </div>
@@ -2052,7 +2678,7 @@ function syncCompanyName(v){const el=document.getElementById('fi-from-name');if(
 function syncShipping(){const chk=document.getElementById('fi-same-address');if(chk&&chk.checked){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill)ship.value=bill.value;}}
 function toggleSameAddress(chk){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill){if(chk.checked){ship.value=bill.value;ship.disabled=true;}else{ship.disabled=false;}updatePreview();}}
 var _freeColor='#C1121F';
-function applyFreeTemplate(tpl){const colors={orange:'#C1121F',blue:'#2563EB',clean:'#64748B',green:'#16A34A',purple:'#7C3AED'};_freeColor=colors[tpl]||'#C1121F';const pvw=document.getElementById('inv-preview');if(!pvw)return;pvw.querySelectorAll('.pvw-inv-title,.pvw-bar,.pvw-stamp,.pvw-stamp span,.pvw-sig-lbl,.pvw-divider,.pvw-addr-hdr,.pvw-tot-row.grand').forEach(el=>{if(el.classList.contains('pvw-divider')||el.classList.contains('pvw-addr-hdr')||el.classList.contains('pvw-bar')||el.classList.contains('grand'))el.style.background=_freeColor;if(el.classList.contains('pvw-inv-title')||el.classList.contains('pvw-sig-lbl')||el.classList.contains('pvw-stamp')||el.classList.contains('pvw-stamp span'))el.style.color=_freeColor;});}
+function applyFreeTemplate(tpl){const colors={orange:'#C1121F',blue:'#2563EB',clean:'#64748B',green:'#16A34A',purple:'#7C3AED'};_freeColor=colors[tpl]||'#C1121F';const pvw=document.getElementById('inv-preview');if(!pvw)return;pvw.querySelectorAll('.pvw-inv-title,.pvw-bar,.pvw-sig-lbl,.pvw-divider,.pvw-addr-hdr,.pvw-items-hdr,.pvw-tot-row.grand').forEach(el=>{if(el.classList.contains('pvw-divider')||el.classList.contains('pvw-addr-hdr')||el.classList.contains('pvw-items-hdr')||el.classList.contains('pvw-bar')||el.classList.contains('grand'))el.style.background=_freeColor;if(el.classList.contains('pvw-inv-title')||el.classList.contains('pvw-sig-lbl'))el.style.color=_freeColor;});}
 function removeFreeItem(i){if(freeItems.length===1)return;freeItems.splice(i,1);renderFreeItems();}
 function updateFreeItem(i,field,val){freeItems[i][field]=val;recalcFreeTotal();}
 function renderFreeItems(){
@@ -2091,6 +2717,82 @@ function recalcFreeTotal(){
 function _v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function _t(id,val){const el=document.getElementById(id);if(el)el.textContent=val||'';}
 function _Rs(n){return '₹'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+/* ── Layout customization (same layout_config shape as the logged-in invoice form) ── */
+const FREE_SECTIONS=['invoice_meta','bill_to','items_table','totals','notes','terms','signature','footer'];
+const FREE_SEC_LABELS={invoice_meta:'Invoice number & date',bill_to:'From / Bill To',items_table:'Items table',totals:'Totals',notes:'Notes',terms:'Terms & conditions',signature:'Signature',footer:'Footer bar'};
+// section -> [settingsKey, flag, label]; a flag is "on" unless explicitly false
+const FREE_SEC_FIELDS={
+  bill_to:[['header','show_gstin','Your GSTIN (header)'],['bill_to','show_from_email','Your email'],['bill_to','show_from_phone','Your phone'],['bill_to','show_from_cin','Your CIN'],['bill_to','show_from_pan','Your PAN'],['bill_to','show_email','Customer email'],['bill_to','show_phone','Customer phone'],['bill_to','show_gst','Customer GSTIN']],
+  items_table:[['items_table','show_hsn','HSN / SAC column'],['items_table','show_discount','Discount column'],['items_table','show_words','Amount in words']],
+};
+const FREE_FIELD_IDS={'pvw-co-gst':['header','show_gstin'],'pvw-from-email':['bill_to','show_from_email'],'pvw-from-phone':['bill_to','show_from_phone'],'pvw-from-cin':['bill_to','show_from_cin'],'pvw-from-pan':['bill_to','show_from_pan'],'pvw-to-email':['bill_to','show_email'],'pvw-to-phone':['bill_to','show_phone'],'pvw-to-gst':['bill_to','show_gst'],'pvw-words-wrap':['items_table','show_words']};
+function freshLayout(){return{section_order:[...FREE_SECTIONS],hidden_sections:[],section_settings:{header:{},bill_to:{},items_table:{}},swap_parties:false,custom_labels:{}};}
+let layoutState=freshLayout();
+function _on(sec,key){return (layoutState.section_settings[sec]||{})[key]!==false;}
+let _dragSecId=null;
+function renderFreeSecEditor(){
+  const wrap=document.getElementById('free-sec-rows');if(!wrap)return;
+  wrap.innerHTML='';
+  layoutState.section_order.forEach(secId=>{
+    const hidden=layoutState.hidden_sections.includes(secId);
+    const fields=FREE_SEC_FIELDS[secId];
+    const row=document.createElement('div');
+    row.className='sec-row'+(hidden?' hidden-sec':'');row.draggable=true;
+    row.innerHTML='<i class="bi bi-grip-vertical sec-grip"></i><span class="sec-name">'+FREE_SEC_LABELS[secId]+'</span>'
+      +(fields?'<button type="button" class="sec-btn sec-caret" title="Field options" onclick="toggleSecSub(\''+secId+'\',this)"><i class="bi bi-chevron-right"></i></button>':'')
+      +'<button type="button" class="sec-btn" title="'+(hidden?'Show':'Hide')+' section" onclick="toggleSecVisibility(\''+secId+'\')"><i class="bi '+(hidden?'bi-eye-slash':'bi-eye')+'"></i></button>'
+      +'<button type="button" class="sec-btn" title="Move up" onclick="moveSection(\''+secId+'\',-1)"><i class="bi bi-arrow-up"></i></button>'
+      +'<button type="button" class="sec-btn" title="Move down" onclick="moveSection(\''+secId+'\',1)"><i class="bi bi-arrow-down"></i></button>';
+    row.addEventListener('dragstart',e=>{_dragSecId=secId;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',secId);}catch(_){}});
+    row.addEventListener('dragend',()=>row.classList.remove('dragging'));
+    row.addEventListener('dragover',e=>{e.preventDefault();row.classList.add('drag-over');});
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();row.classList.remove('drag-over');
+      if(!_dragSecId||_dragSecId===secId)return;
+      const o=layoutState.section_order;o.splice(o.indexOf(_dragSecId),1);o.splice(o.indexOf(secId),0,_dragSecId);
+      _dragSecId=null;renderFreeSecEditor();applyLayoutToPreview();
+    });
+    wrap.appendChild(row);
+    if(fields){
+      const sub=document.createElement('div');sub.className='sec-sub';sub.dataset.subFor=secId;
+      sub.innerHTML=fields.map(([s,k,lbl])=>'<label class="tgl-row"><input type="checkbox" '+(_on(s,k)?'checked':'')+' onchange="setSecSetting(\''+s+'\',\''+k+'\',this.checked)"> '+lbl+'</label>').join('');
+      wrap.appendChild(sub);
+    }
+  });
+}
+function toggleSecSub(secId,btn){const sub=document.querySelector('.sec-sub[data-sub-for="'+secId+'"]');if(!sub)return;sub.classList.toggle('open');btn.classList.toggle('open');}
+function setSecSetting(sec,key,val){(layoutState.section_settings[sec]=layoutState.section_settings[sec]||{})[key]=val;updatePreview();}
+function toggleSecVisibility(secId){const h=layoutState.hidden_sections,i=h.indexOf(secId);if(i>=0)h.splice(i,1);else h.push(secId);renderFreeSecEditor();applyLayoutToPreview();}
+function moveSection(secId,dir){const o=layoutState.section_order,i=o.indexOf(secId),j=i+dir;if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];renderFreeSecEditor();applyLayoutToPreview();}
+function setSwapParties(on){layoutState.swap_parties=on;applyLayoutToPreview();}
+function toggleFreeSecEditor(){const p=document.getElementById('free-sec-editor'),b=document.getElementById('fse-toggle');const open=p.classList.toggle('open');b.classList.toggle('open',open);b.setAttribute('aria-expanded',String(open));}
+function resetFreeLayout(){
+  layoutState=freshLayout();
+  document.querySelectorAll('#inv-preview [data-label]').forEach(el=>{el.textContent=el.dataset.default;});
+  document.getElementById('fse-swap').checked=false;
+  renderFreeSecEditor();updatePreview();
+}
+function applyLayoutToPreview(){
+  const pvw=document.getElementById('inv-preview');if(!pvw)return;
+  layoutState.section_order.forEach(s=>{const el=pvw.querySelector('.pvw-sec[data-sec="'+s+'"]');if(el)pvw.appendChild(el);});
+  pvw.querySelectorAll('.pvw-sec').forEach(el=>{el.style.display=layoutState.hidden_sections.includes(el.dataset.sec)?'none':'';});
+  Object.entries(FREE_FIELD_IDS).forEach(([id,[s,k]])=>{const el=document.getElementById(id);if(el)el.style.display=_on(s,k)?'':'none';});
+  document.getElementById('pvw-items-wrap').classList.toggle('no-disc',!_on('items_table','show_discount'));
+  document.getElementById('pvw-addr').classList.toggle('swapped',!!layoutState.swap_parties);
+}
+function wireLabelEditing(){
+  const pvw=document.getElementById('inv-preview');if(!pvw)return;
+  pvw.querySelectorAll('[data-label]').forEach(el=>{el.dataset.default=el.textContent;});
+  pvw.addEventListener('input',e=>{const el=e.target.closest&&e.target.closest('[data-label]');if(el)layoutState.custom_labels[el.dataset.label]=el.textContent.trim();});
+  pvw.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.closest('[data-label]');if(el&&e.key==='Enter'){e.preventDefault();el.blur();}});
+  // Normalise on blur: strips pasted markup, restores the default when cleared.
+  pvw.addEventListener('focusout',e=>{
+    const el=e.target.closest&&e.target.closest('[data-label]');if(!el)return;
+    const t=el.textContent.trim();
+    if(!t){el.textContent=el.dataset.default;delete layoutState.custom_labels[el.dataset.label];}else el.textContent=t;
+  });
+}
 function updatePreview(){
   const pvw=document.getElementById('inv-preview');if(!pvw)return;
   _t('pvw-co-name',_v('fi-from-name')||'YOUR COMPANY NAME');
@@ -2104,7 +2806,7 @@ function updatePreview(){
   const tbody=document.getElementById('pvw-items-body');tbody.innerHTML='';
   freeItems.forEach((it)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);sub+=amt;const row=document.createElement('div');row.className='pvw-item-row';row.innerHTML='<span>'+(it.desc||'—')+'</span><span>'+(it.hsn||'')+'</span><span>'+(it.rate?_Rs(parseFloat(it.rate)):'')+'</span><span>'+(parseFloat(it.qty)||'')+'</span><span>0%</span><span>'+(amt>0?_Rs(amt):'')+'</span>';tbody.appendChild(row);});
   const anyHsn=freeItems.some(it=>(it.hsn||'').trim());
-  document.getElementById('pvw-items-wrap').classList.toggle('no-hsn',!anyHsn);
+  document.getElementById('pvw-items-wrap').classList.toggle('no-hsn',!anyHsn||!_on('items_table','show_hsn'));
   const cgstAmt=sub*cgstRate/100;const sgstAmt=sub*sgstRate/100;const igstAmt=sub*igstRate/100;const gstTotal=cgstAmt+sgstAmt+igstAmt;const grand=sub+gstTotal;
   _t('pvw-sub',_Rs(sub));_t('pvw-cgst',_Rs(cgstAmt));_t('pvw-sgst',_Rs(sgstAmt));_t('pvw-igst',_Rs(igstAmt));_t('pvw-grand',_Rs(grand));_t('pvw-cgst-lbl','CGST @ '+cgstRate+'%');_t('pvw-sgst-lbl','SGST @ '+sgstRate+'%');_t('pvw-igst-lbl','IGST @ '+igstRate+'%');
   const intra=_freeTaxMode==='intra';
@@ -2118,9 +2820,12 @@ function updatePreview(){
   if(sigSrc){pvwSigImg.src=sigSrc;pvwSigImg.style.display='block';pvwSigSpacer.style.display='none';}else{pvwSigImg.style.display='none';pvwSigSpacer.style.display='block';}
   // Website only — email/phone already appear in the FROM block above.
   _t('pvw-bar',_v('fi-from-website')||'www.zayron.in');
+  _t('pvw-terms-text',_v('fi-terms')||'Due on Receipt');
+  applyLayoutToPreview();
 }
 function wirePreview(){
-  ['fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone','fi-from-cin','fi-from-pan','fi-from-website','fi-name','fi-cust-address','fi-ship-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-company-sel','fi-inv-number','fi-inv-date','fi-cgst-rate','fi-sgst-rate','fi-igst-rate','fi-thankyou','fi-dept','fi-sig-name','fi-sig-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updatePreview);});
+  wireLabelEditing();renderFreeSecEditor();
+  ['fi-terms','fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone','fi-from-cin','fi-from-pan','fi-from-website','fi-name','fi-cust-address','fi-ship-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-company-sel','fi-inv-number','fi-inv-date','fi-cgst-rate','fi-sgst-rate','fi-igst-rate','fi-thankyou','fi-dept','fi-sig-name','fi-sig-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updatePreview);});
   updatePreview();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wirePreview);else wirePreview();
@@ -2140,7 +2845,7 @@ async function createFreeInvoice(){
   const btn=document.getElementById('fi-btn');const errEl=document.getElementById('fi-error');btn.disabled=true;ZayroLoader.show(btn,'Creating…',{inline:true});
   const validItems=freeItems.filter(it=>it.desc&&(parseFloat(it.rate)||0)>0);
   const cgstRate=parseFloat(document.getElementById('fi-cgst-rate').value)||0;const sgstRate=parseFloat(document.getElementById('fi-sgst-rate').value)||0;const igstRate=parseFloat(document.getElementById('fi-igst-rate').value)||0;
-  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:'Due on Receipt',notes:'',cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
+  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim()||'Due on Receipt',notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:layoutState.section_settings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
   const fd=new FormData();Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
   const logoFile=document.getElementById('fi-logo-file').files[0];if(logoFile)fd.append('logo',logoFile);
   const sigFile=document.getElementById('fi-sig-file').files[0];if(sigFile){fd.append('signature',sigFile);}else{const sigDataUrl=getSignatureDataURL();if(sigDataUrl)fd.append('signature_data',sigDataUrl);}

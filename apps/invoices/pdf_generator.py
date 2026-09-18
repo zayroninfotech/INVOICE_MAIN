@@ -199,42 +199,21 @@ class _CircleBadge(Flowable):
         c.drawCentredString(r, r - self.font_size * 0.35, self.initials)
 
 
-class _StampBadge(Flowable):
-    """Filled circle with two centered lines of text — the ReportLab
-    equivalent of the web preview's `.pvw-stamp` "Thank YOU!" badge."""
-    def __init__(self, lines, bg, fg=None, d=1.7*cm, font_size=8.5):
-        super().__init__()
-        self.lines = lines
-        self.bg = bg
-        self.fg = fg or colors.white
-        self.d = d
-        self.font_size = font_size
-        self.width = self.height = d
-
-    def draw(self):
-        c = self.canv
-        r = self.d / 2
-        c.setFillColor(self.bg)
-        c.circle(r, r, r, stroke=0, fill=1)
-        c.setFillColor(self.fg)
-        c.setFont(FONT_B, self.font_size)
-        n = len(self.lines)
-        for i, ln in enumerate(self.lines):
-            y = r - self.font_size * 0.35 + (n - 1 - i - (n - 1) / 2.0) * (self.font_size + 1)
-            c.drawCentredString(r, y, ln)
-
-
 def _thank_you_stamp(ctx):
-    """Small 'Thank YOU!' circle badge near the signature area — skipped for
-    the 'minimal' template, matching `.inv-preview.tpl-minimal .pvw-stamp{display:none;}`."""
+    """Small italic 'Thank you for your business!' line near the signature
+    area — skipped for the 'minimal' template, matching the web preview's
+    `.pvw-thanks` (and its `.inv-preview.tpl-minimal` hide rule). Previously a
+    large circular 'Thank YOU!' badge; simplified to match the web preview
+    after the badge was replaced there with plain text."""
     if ctx.get('style_id') == 'minimal':
         return []
-    badge = _StampBadge(['Thank', 'YOU!'], ctx['ACCENT'], d=1.5*cm, font_size=8)
-    wrap = Table([[badge]], colWidths=[ctx['CW']], hAlign='CENTER')
+    p = Paragraph('Thank you for your business!',
+                  _style('ThanksLine', fontSize=8, fontName=FONT_I, textColor=MUTED))
+    wrap = Table([[p]], colWidths=[ctx['CW']], hAlign='CENTER')
     wrap.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 0), (-1, -1), 2), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
     return [wrap]
 

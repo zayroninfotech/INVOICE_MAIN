@@ -5,6 +5,7 @@ from django.http import FileResponse
 from django.conf import settings
 from .models import Invoice, InvoiceItem
 from .pdf_generator import generate_invoice_pdf
+from .template_registry import normalize_layout_config
 from utils.response import success, error
 from apps.subscriptions.entitlements import can_create_invoice, increment_usage
 from datetime import datetime, date
@@ -134,6 +135,14 @@ class FreeInvoiceView(APIView):
         else:
             items_data = raw_items
 
+        raw_layout = data.get('layout_config') or {}
+        if isinstance(raw_layout, str):
+            try:
+                raw_layout = json.loads(raw_layout)
+            except (ValueError, TypeError):
+                raw_layout = {}
+        layout_config = normalize_layout_config(raw_layout if isinstance(raw_layout, dict) else {})
+
         if not customer_name or not customer_email:
             return error("Customer name and email are required.")
         if not items_data:
@@ -191,6 +200,7 @@ class FreeInvoiceView(APIView):
                 terms=terms,
                 currency='INR',
                 template_color=template_color,
+                layout_config=layout_config,
                 created_by='anonymous',
             ).save()
         except NotUniqueError:

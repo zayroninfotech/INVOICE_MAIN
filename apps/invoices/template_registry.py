@@ -336,6 +336,13 @@ def normalize_layout_config(layout_config):
 
     # Legacy flat toggles kept for backward compatibility
     legacy = {k: lc[k] for k in ('show_terms', 'show_signature', 'show_watermark') if k in lc}
+    # Preview-only for now (the PDF builders don't read them yet); stored so a
+    # later PDF pass can honour them without a data migration.
+    if isinstance(lc.get('swap_parties'), bool):
+        legacy['swap_parties'] = lc['swap_parties']
+    labels = lc.get('custom_labels')
+    if isinstance(labels, dict):
+        legacy['custom_labels'] = {str(k)[:40]: str(v)[:60] for k, v in list(labels.items())[:20]}
 
     cfg = {
         'section_order': order,
