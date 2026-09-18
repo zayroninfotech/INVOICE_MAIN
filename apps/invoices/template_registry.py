@@ -343,6 +343,12 @@ def normalize_layout_config(layout_config):
     labels = lc.get('custom_labels')
     if isinstance(labels, dict):
         legacy['custom_labels'] = {str(k)[:40]: str(v)[:60] for k, v in list(labels.items())[:20]}
+    # Renamed field labels (e.g. GSTIN -> GST) from the free generator's own
+    # form fields — read by pdf_generator.py's classic/minimal builders,
+    # keyed by the source input's id (fi-from-gst, fi-inv-number, ...).
+    field_labels = lc.get('field_labels')
+    if isinstance(field_labels, dict):
+        legacy['field_labels'] = {str(k)[:40]: str(v)[:60] for k, v in list(field_labels.items())[:20]}
 
     cfg = {
         'section_order': order,

@@ -865,6 +865,11 @@
     .logo-upload-box:hover{border-color:#C1121F;background:#FDF0F1;}
     .logo-placeholder-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
     .logo-upload-box span{font-size:.7rem;color:#94A3B8;font-weight:600;}
+    .logo-size-wrap{display:flex;align-items:center;gap:8px;margin-top:6px;}
+    input[type=range].logo-slider{-webkit-appearance:none;appearance:none;width:90px;height:4px;border-radius:3px;background:#E2E8F0;outline:none;cursor:pointer;}
+    input[type=range].logo-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:#C1121F;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+    input[type=range].logo-slider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#C1121F;cursor:pointer;border:2px solid #fff;}
+    #fi-logo-size-val{font-size:.68rem;font-weight:700;color:#C1121F;min-width:32px;}
     .seller-company-input{font-size:1.1rem;font-weight:800;color:#0F172A;border:none;outline:none;background:transparent;width:100%;margin-bottom:4px;}
     .seller-company-input::placeholder{color:#D1D0CC;}
     .seller-meta-row{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:6px;}
@@ -976,7 +981,12 @@
     .fi-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px;}
     .fi-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px;}
     .fi-field{margin-bottom:10px;}
-    .fi-field label{display:block;font-size:.7rem;font-weight:700;color:#64748B;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+    .fi-field label{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;color:#64748B;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+    .fi-lbl-text{outline:none;border-radius:3px;padding:0 2px;margin:0 -2px;cursor:text;}
+    .fi-lbl-text:hover,.fi-lbl-text:focus{background:#FDF0F1;color:#C1121F;}
+    .fi-lbl-edit{opacity:0;flex-shrink:0;background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.68rem;padding:2px;line-height:1;transition:opacity .12s,color .12s;}
+    .fi-field:hover .fi-lbl-edit,.fi-lbl-edit:focus{opacity:1;}
+    .fi-lbl-edit:hover{color:#C1121F;}
     .fi-field input,.fi-field select,.fi-field textarea{width:100%;border:1.5px solid #E8E7E5;border-radius:7px;padding:7px 10px;font-size:.82rem;color:#0F172A;outline:none;background:#fff;transition:border-color .15s;}
     .fi-field input:focus,.fi-field select:focus,.fi-field textarea:focus{border-color:#C1121F;box-shadow:0 0 0 2px rgba(193,18,31,.1);}
     .fi-field input::placeholder,.fi-field textarea::placeholder{color:#D1D0CC;}
@@ -1236,6 +1246,10 @@
                     </div>
                     <input type="file" id="fi-logo-file" accept="image/*" style="display:none" onchange="previewLogo(this)">
                     <div id="logo-remove-wrap" style="display:none;text-align:center;margin-top:3px"><button onclick="removeLogo()" style="background:none;border:none;color:#EF4444;font-size:.68rem;cursor:pointer;font-weight:600"><i class="bi bi-x-circle me-1"></i>Remove</button></div>
+                    <div class="logo-size-wrap" id="logo-size-wrap" style="display:none">
+                      <input type="range" class="logo-slider" id="fi-logo-size" min="60" max="200" step="10" value="110" oninput="onLogoSize(this.value)">
+                      <span id="fi-logo-size-val">110px</span>
+                    </div>
                   </div>
                   <div style="flex:1;min-width:0;">
                     <input class="seller-company-input" id="fi-from-name" placeholder="YOUR COMPANY NAME" maxlength="100" oninput="updatePreview()">
@@ -1252,11 +1266,7 @@
                     <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Website</label><input id="fi-from-website" placeholder="www.company.com" oninput="updatePreview()"></div>
                   </div>
                 </div>
-                <div class="fi-grid-4">
-                  <div class="fi-field" style="margin-bottom:0">
-                    <label>Company <span style="color:#EF4444">*</span></label>
-                    <input id="fi-company-sel" placeholder="Zayro Infotech Pvt Ltd" oninput="syncCompanyName(this.value)">
-                  </div>
+                <div class="fi-grid-2">
                   <div class="fi-field" style="margin-bottom:0">
                     <label>Invoice No. <span style="color:#EF4444">*</span></label>
                     <input class="inv-meta-input" id="fi-inv-number" placeholder="INV-2026-001" oninput="updatePreview()">
@@ -2632,6 +2642,7 @@ function previewLogo(input) {
   img.src=URL.createObjectURL(file); img.style.display='block';
   document.getElementById('fi-logo-placeholder').style.display='none';
   document.getElementById('logo-remove-wrap').style.display='block';
+  document.getElementById('logo-size-wrap').style.display='flex';
   img.onload=updatePreview;
 }
 function removeLogo() {
@@ -2640,7 +2651,22 @@ function removeLogo() {
   img.src=''; img.style.display='none';
   document.getElementById('fi-logo-placeholder').style.display='flex';
   document.getElementById('logo-remove-wrap').style.display='none';
+  document.getElementById('logo-size-wrap').style.display='none';
   updatePreview();
+}
+// Only meaningful once a logo image is uploaded — the plain "Rs" initials
+// circle shown before that has a fixed size, matching the PDF's own badge.
+function onLogoSize(val) {
+  const v=parseInt(val,10)||110;
+  layoutState.logo_width=v;
+  document.getElementById('fi-logo-size-val').textContent=v+'px';
+  const slider=document.getElementById('fi-logo-size');
+  if(slider&&slider.value!=v)slider.value=v;
+  const circle=document.getElementById('pvw-logo-circle');
+  if(circle){
+    const px=Math.round(v*0.35);
+    circle.style.width=px+'px';circle.style.height=px+'px';
+  }
 }
 let _sigTab='draw';
 function switchSigTab(tab,btn) {
@@ -2674,7 +2700,6 @@ function getSignatureDataURL(){
 function previewSignature(input){const file=input.files[0];if(!file)return;const img=document.getElementById('fi-sig-img');img.src=URL.createObjectURL(file);img.style.display='block';document.getElementById('fi-sig-ph').style.display='none';document.getElementById('sig-remove-wrap').style.display='block';img.onload=updatePreview;}
 function removeSignature(){document.getElementById('fi-sig-file').value='';const img=document.getElementById('fi-sig-img');img.src='';img.style.display='none';document.getElementById('fi-sig-ph').style.display='flex';document.getElementById('sig-remove-wrap').style.display='none';clearCanvas();const typed=document.getElementById('fi-sig-typed');if(typed){typed.value='';document.getElementById('sig-type-preview').textContent='Signature Preview';}updatePreview();}
 function addFreeItem(){freeItems.push({desc:'',hsn:'',qty:1,rate:0,gst_pct:18});renderFreeItems();}
-function syncCompanyName(v){const el=document.getElementById('fi-from-name');if(el)el.value=v;updatePreview();}
 function syncShipping(){const chk=document.getElementById('fi-same-address');if(chk&&chk.checked){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill)ship.value=bill.value;}}
 function toggleSameAddress(chk){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill){if(chk.checked){ship.value=bill.value;ship.disabled=true;}else{ship.disabled=false;}updatePreview();}}
 var _freeColor='#C1121F';
@@ -2726,7 +2751,7 @@ const FREE_SEC_FIELDS={
   items_table:[['items_table','show_hsn','HSN / SAC column'],['items_table','show_discount','Discount column'],['items_table','show_words','Amount in words']],
 };
 const FREE_FIELD_IDS={'pvw-co-gst':['header','show_gstin'],'pvw-from-email':['bill_to','show_from_email'],'pvw-from-phone':['bill_to','show_from_phone'],'pvw-from-cin':['bill_to','show_from_cin'],'pvw-from-pan':['bill_to','show_from_pan'],'pvw-to-email':['bill_to','show_email'],'pvw-to-phone':['bill_to','show_phone'],'pvw-to-gst':['bill_to','show_gst'],'pvw-words-wrap':['items_table','show_words']};
-function freshLayout(){return{section_order:[...FREE_SECTIONS],hidden_sections:[],section_settings:{header:{},bill_to:{},items_table:{}},swap_parties:false,custom_labels:{}};}
+function freshLayout(){return{section_order:[...FREE_SECTIONS],hidden_sections:[],section_settings:{header:{},bill_to:{},items_table:{}},swap_parties:false,custom_labels:{},logo_width:110};}
 let layoutState=freshLayout();
 function _on(sec,key){return (layoutState.section_settings[sec]||{})[key]!==false;}
 let _dragSecId=null;
@@ -2771,6 +2796,7 @@ function resetFreeLayout(){
   layoutState=freshLayout();
   document.querySelectorAll('#inv-preview [data-label]').forEach(el=>{el.textContent=el.dataset.default;});
   document.getElementById('fse-swap').checked=false;
+  onLogoSize(110);
   renderFreeSecEditor();updatePreview();
 }
 function applyLayoutToPreview(){
@@ -2793,14 +2819,61 @@ function wireLabelEditing(){
     if(!t){el.textContent=el.dataset.default;delete layoutState.custom_labels[el.dataset.label];}else el.textContent=t;
   });
 }
+// Lets a user rename any form field's label in place (e.g. "GSTIN" -> "GST").
+// For the handful of fields whose label also prints as a prefix/heading in
+// the live preview and the final PDF (GSTIN/PAN/CIN, invoice number/date),
+// the rename carries through to both — tracked in customFieldLabels, keyed
+// by the input's id, and sent as layout_config.field_labels on submit.
+let customFieldLabels={};
+const PROPAGATED_FIELD_LABELS=new Set(['fi-from-gst','fi-from-pan','fi-from-cin','fi-cust-gst','fi-cust-pan','fi-inv-number','fi-inv-date']);
+function wireFieldLabelEditing(){
+  const form=document.getElementById('free-form-card');if(!form)return;
+  form.querySelectorAll('.fi-field > label').forEach(lbl=>{
+    if(lbl.querySelector('.fi-lbl-text'))return; // already wired
+    const textNode=[...lbl.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
+    if(!textNode)return;
+    const fieldId=lbl.parentElement.querySelector('input,select,textarea')?.id||'';
+    const span=document.createElement('span');
+    span.className='fi-lbl-text';span.contentEditable='true';span.spellcheck=false;
+    span.dataset.fieldId=fieldId;
+    span.textContent=textNode.textContent.trim();
+    span.dataset.default=span.textContent;
+    lbl.replaceChild(span,textNode);
+    const btn=document.createElement('button');
+    btn.type='button';btn.className='fi-lbl-edit';btn.tabIndex=-1;btn.title='Rename this label';
+    btn.innerHTML='<i class="bi bi-pencil-fill"></i>';
+    btn.addEventListener('mousedown',e=>e.preventDefault());
+    btn.addEventListener('click',()=>{span.focus();window.getSelection().selectAllChildren(span);});
+    span.insertAdjacentElement('afterend',btn);
+  });
+  form.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.closest('.fi-lbl-text');if(el&&e.key==='Enter'){e.preventDefault();el.blur();}});
+  form.addEventListener('focusout',e=>{
+    const el=e.target.closest&&e.target.closest('.fi-lbl-text');if(!el)return;
+    const t=el.textContent.trim();
+    el.textContent=t||el.dataset.default;
+    const fid=el.dataset.fieldId;
+    if(fid&&PROPAGATED_FIELD_LABELS.has(fid)){
+      if(t&&t!==el.dataset.default)customFieldLabels[fid]=t;else delete customFieldLabels[fid];
+      updatePreview();
+    }
+  });
+}
 function updatePreview(){
   const pvw=document.getElementById('inv-preview');if(!pvw)return;
   _t('pvw-co-name',_v('fi-from-name')||'YOUR COMPANY NAME');
-  const gstVal=_v('fi-from-gst');_t('pvw-co-gst',gstVal?'GSTIN: '+gstVal:'');
+  const gstLbl=customFieldLabels['fi-from-gst']||'GSTIN';
+  const gstVal=_v('fi-from-gst');_t('pvw-co-gst',gstVal?gstLbl+': '+gstVal:'');
   _t('pvw-inv-no',_v('fi-inv-number')||'—');
   const rawDate=_v('fi-inv-date');if(rawDate){const d=new Date(rawDate);_t('pvw-inv-date',d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}));}else _t('pvw-inv-date','—');
-  _t('pvw-from-name',_v('fi-from-name')||'—');_t('pvw-from-addr',_v('fi-from-address'));_t('pvw-from-email',_v('fi-from-email'));_t('pvw-from-phone',_v('fi-from-phone'));_t('pvw-from-cin',_v('fi-from-cin')?'CIN: '+_v('fi-from-cin'):'');_t('pvw-from-pan',_v('fi-from-pan')?'PAN: '+_v('fi-from-pan'):'');
-  _t('pvw-to-name',_v('fi-name')||'—');_t('pvw-to-addr',_v('fi-cust-address'));_t('pvw-to-email',_v('fi-email'));_t('pvw-to-phone',_v('fi-cust-phone'));_t('pvw-to-gst',_v('fi-cust-gst')?'GSTIN: '+_v('fi-cust-gst'):'');
+  // Form-renamed NUMBER/DATE labels take over the preview's own headings —
+  // otherwise leave them alone so a direct click-to-edit on the preview itself still sticks.
+  document.querySelectorAll('#inv-preview [data-label="number"]').forEach(el=>{if(customFieldLabels['fi-inv-number'])el.textContent=customFieldLabels['fi-inv-number'];});
+  document.querySelectorAll('#inv-preview [data-label="date"]').forEach(el=>{if(customFieldLabels['fi-inv-date'])el.textContent=customFieldLabels['fi-inv-date'];});
+  const cinLbl=customFieldLabels['fi-from-cin']||'CIN';
+  const panLbl=customFieldLabels['fi-from-pan']||'PAN';
+  const custGstLbl=customFieldLabels['fi-cust-gst']||'GSTIN';
+  _t('pvw-from-name',_v('fi-from-name')||'—');_t('pvw-from-addr',_v('fi-from-address'));_t('pvw-from-email',_v('fi-from-email'));_t('pvw-from-phone',_v('fi-from-phone'));_t('pvw-from-cin',_v('fi-from-cin')?cinLbl+': '+_v('fi-from-cin'):'');_t('pvw-from-pan',_v('fi-from-pan')?panLbl+': '+_v('fi-from-pan'):'');
+  _t('pvw-to-name',_v('fi-name')||'—');_t('pvw-to-addr',_v('fi-cust-address'));_t('pvw-to-email',_v('fi-email'));_t('pvw-to-phone',_v('fi-cust-phone'));_t('pvw-to-gst',_v('fi-cust-gst')?custGstLbl+': '+_v('fi-cust-gst'):'');
   const logoCircle=document.getElementById('pvw-logo-circle');const logoImg=document.getElementById('fi-logo-img');if(logoImg&&logoImg.src&&logoImg.style.display!=='none'){logoCircle.innerHTML='<img src="'+logoImg.src+'" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">';}else{logoCircle.textContent='Rs';logoCircle.style.background='#C1121F';}
   const cgstRate=parseFloat(_v('fi-cgst-rate'))||0;const sgstRate=parseFloat(_v('fi-sgst-rate'))||0;const igstRate=parseFloat(_v('fi-igst-rate'))||0;let sub=0;
   const tbody=document.getElementById('pvw-items-body');tbody.innerHTML='';
@@ -2819,13 +2892,15 @@ function updatePreview(){
   if(upSigImg&&upSigImg.src&&upSigImg.style.display!=='none'){sigSrc=upSigImg.src;}else if(_sigTab==='draw'&&sigCanvas){try{const pd=sigCanvas.getContext('2d').getImageData(0,0,sigCanvas.width,sigCanvas.height).data;if(pd.some((_,i)=>i%4===3&&pd[i]>10))sigSrc=sigCanvas.toDataURL();}catch(e){}}else if(_sigTab==='type'){const typed=document.getElementById('fi-sig-typed');if(typed&&typed.value.trim()){const oc=document.createElement('canvas');oc.width=200;oc.height=50;const octx=oc.getContext('2d');octx.font="32px 'Segoe Script','Brush Script MT',cursive";octx.fillStyle='#1E293B';octx.fillText(typed.value.trim(),8,38);sigSrc=oc.toDataURL();}}
   if(sigSrc){pvwSigImg.src=sigSrc;pvwSigImg.style.display='block';pvwSigSpacer.style.display='none';}else{pvwSigImg.style.display='none';pvwSigSpacer.style.display='block';}
   // Website only — email/phone already appear in the FROM block above.
-  _t('pvw-bar',_v('fi-from-website')||'www.zayron.in');
+  // Drop each part when empty instead of falling back to Zayron's own site —
+  // this is Zayron's product, but the invoice belongs to whoever filled in the form.
+  _t('pvw-bar',[_v('fi-from-website'),_v('fi-from-email'),_v('fi-from-phone')].filter(Boolean).join('   |   '));
   _t('pvw-terms-text',_v('fi-terms')||'Due on Receipt');
   applyLayoutToPreview();
 }
 function wirePreview(){
-  wireLabelEditing();renderFreeSecEditor();
-  ['fi-terms','fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone','fi-from-cin','fi-from-pan','fi-from-website','fi-name','fi-cust-address','fi-ship-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-company-sel','fi-inv-number','fi-inv-date','fi-cgst-rate','fi-sgst-rate','fi-igst-rate','fi-thankyou','fi-dept','fi-sig-name','fi-sig-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updatePreview);});
+  wireLabelEditing();wireFieldLabelEditing();renderFreeSecEditor();
+  ['fi-terms','fi-from-name','fi-from-gst','fi-from-address','fi-from-email','fi-from-phone','fi-from-cin','fi-from-pan','fi-from-website','fi-name','fi-cust-address','fi-ship-address','fi-email','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-inv-number','fi-inv-date','fi-cgst-rate','fi-sgst-rate','fi-igst-rate','fi-thankyou','fi-dept','fi-sig-name','fi-sig-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updatePreview);});
   updatePreview();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wirePreview);else wirePreview();
@@ -2845,7 +2920,16 @@ async function createFreeInvoice(){
   const btn=document.getElementById('fi-btn');const errEl=document.getElementById('fi-error');btn.disabled=true;ZayroLoader.show(btn,'Creating…',{inline:true});
   const validItems=freeItems.filter(it=>it.desc&&(parseFloat(it.rate)||0)>0);
   const cgstRate=parseFloat(document.getElementById('fi-cgst-rate').value)||0;const sgstRate=parseFloat(document.getElementById('fi-sgst-rate').value)||0;const igstRate=parseFloat(document.getElementById('fi-igst-rate').value)||0;
-  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim()||'Due on Receipt',notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:layoutState.section_settings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
+  // Same "drop when empty" rule the preview already applies to the HSN/SAC
+  // column (no-hsn class) — the submitted config must carry that same
+  // data-driven verdict, or the PDF falls back to its default (shown) and
+  // silently disagrees with what the user just saw. Discount has no per-item
+  // input in the free generator at all, so it's always effectively empty here.
+  const effSectionSettings=JSON.parse(JSON.stringify(layoutState.section_settings||{}));
+  effSectionSettings.items_table=effSectionSettings.items_table||{};
+  effSectionSettings.items_table.show_hsn=_on('items_table','show_hsn')&&validItems.some(it=>(it.hsn||'').trim());
+  effSectionSettings.items_table.show_discount=_on('items_table','show_discount')&&validItems.some(it=>(parseFloat(it.discount)||0)>0);
+  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim()||'Due on Receipt',notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:effSectionSettings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels,field_labels:customFieldLabels,logo_width:layoutState.logo_width}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
   const fd=new FormData();Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
   const logoFile=document.getElementById('fi-logo-file').files[0];if(logoFile)fd.append('logo',logoFile);
   const sigFile=document.getElementById('fi-sig-file').files[0];if(sigFile){fd.append('signature',sigFile);}else{const sigDataUrl=getSignatureDataURL();if(sigDataUrl)fd.append('signature_data',sigDataUrl);}
@@ -2879,7 +2963,7 @@ function showFreeResult(data){
 function createAnotherFree(){
   document.getElementById('free-form-card').classList.remove('d-none');document.getElementById('free-result-card').classList.add('d-none');freeItems=[];addFreeItem();
   ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-recipient','fi-inv-number','fi-from-name','fi-from-email','fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  removeLogo();removeSignature();document.getElementById('fi-sig-name').value='';document.getElementById('fi-sig-company').value='';
+  removeLogo();onLogoSize(110);removeSignature();document.getElementById('fi-sig-name').value='';document.getElementById('fi-sig-company').value='';
   document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('fi-cgst-rate').value='9';document.getElementById('fi-sgst-rate').value='9';
   setFreeTaxMode(_freeTaxMode);

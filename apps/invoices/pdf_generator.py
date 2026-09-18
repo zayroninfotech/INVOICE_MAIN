@@ -136,7 +136,10 @@ def _logo_image(logo_path_str, max_w=3.5*cm, max_h=2.5*cm):
     logo_abs = os.path.join(settings.MEDIA_ROOT, logo_path_str)
     if not os.path.exists(logo_abs):
         return None
-    d = min(max_w, max_h, 1.05*cm)
+    # Was `min(max_w, max_h, 1.05*cm)` — the fixed 1.05cm floor always won,
+    # silently capping every logo to that size regardless of the caller's
+    # logo_width setting (both here and the logged-in form's own slider).
+    d = min(max_w, max_h)
     return _CircleLogoImage(logo_abs, d=d)
 
 
@@ -715,6 +718,10 @@ def _party_blocks(ctx, from_first=True):
     ss = ctx['cfg'].get('section_settings', {})
     show_header_gst = ss.get('header', {}).get('show_gstin', True)
     show_bill_gst   = ss.get('bill_to', {}).get('show_gst', True)
+    # Free-generator users can rename a field's on-screen label (e.g. GSTIN ->
+    # GST) via the pencil icon next to it; that same wording should carry
+    # through here rather than only affecting the live preview.
+    fl = ctx['cfg'].get('field_labels', {})
 
     s = ctx.get('seller') or {}
 
@@ -722,12 +729,12 @@ def _party_blocks(ctx, from_first=True):
     # GST prints once: the header renders it when show_gstin is on, so the
     # FROM block only carries it as the fallback when that toggle is off.
     if ctx['s_gst'] and not show_header_gst:
-        from_lines.append(f"GST: {ctx['s_gst']}")
+        from_lines.append(f"{fl.get('fi-from-gst', 'GST')}: {ctx['s_gst']}")
     # Collected by the no-login generator and shown in its live preview.
     if s.get('cin'):
-        from_lines.append(f"CIN: {s['cin']}")
+        from_lines.append(f"{fl.get('fi-from-cin', 'CIN')}: {s['cin']}")
     if s.get('pan'):
-        from_lines.append(f"PAN: {s['pan']}")
+        from_lines.append(f"{fl.get('fi-from-pan', 'PAN')}: {s['pan']}")
 
     to_lines = [invoice.customer_name,
                 getattr(invoice, 'customer_address', '') or '',
@@ -735,9 +742,9 @@ def _party_blocks(ctx, from_first=True):
     if s.get('customer_phone'):
         to_lines.append(s['customer_phone'])
     if invoice.customer_gst and show_bill_gst:
-        to_lines.append(f"GST: {invoice.customer_gst}")
+        to_lines.append(f"{fl.get('fi-cust-gst', 'GST')}: {invoice.customer_gst}")
     if s.get('customer_pan'):
-        to_lines.append(f"PAN: {s['customer_pan']}")
+        to_lines.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
     return from_lines, to_lines
 
 
@@ -787,11 +794,16 @@ def _sec_classic(ctx):
         co_st = _style('CoN', fontSize=10, fontName=FONT_B, textColor=DARK, leading=13)
         gst_st = _style('CoG', fontSize=8, textColor=MUTED, leading=11)
         ss = ctx['cfg'].get('section_settings', {}).get('header', {})
+        gstin_label = ctx['cfg'].get('field_labels', {}).get('fi-from-gst', 'GSTIN')
         co_right = [Paragraph(ctx['s_name'] or 'Your Company', co_st)]
         if ctx['s_gst'] and ss.get('show_gstin', True):
-            co_right.append(Paragraph(f"GSTIN: {ctx['s_gst']}", gst_st))
+            co_right.append(Paragraph(f"{gstin_label}: {ctx['s_gst']}", gst_st))
+        # A resized logo (via logo_width) needs a wider slot than the fixed
+        # 1.3cm the small initials badge fits in, or it collides with the
+        # company name/GSTIN text next to it.
+        badge_col = max(1.3*cm, getattr(badge, 'width', 1.3*cm) + 0.4*cm)
         co_cell = Table([[badge, co_right]],
-                        colWidths=[1.3*cm, CW*0.6 - 1.3*cm])
+                        colWidths=[badge_col, CW*0.6 - badge_col])
         co_cell.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (0, 0), 8),
@@ -809,10 +821,11 @@ def _sec_classic(ctx):
                 HRFlowable(width=CW, thickness=3, color=ACCENT, spaceAfter=14)]
 
     def meta():
+        fl = ctx['cfg'].get('field_labels', {})
         ml = _style('ML', fontSize=7.5, fontName=FONT_B, textColor=MUTED, leading=10, spaceAfter=3)
         mv = _style('MV', fontSize=9.5, fontName=FONT_B, textColor=DARK, leading=13)
         meta_t = Table(
-            [[Paragraph('NUMBER', ml), Paragraph('DATE', ml)],
+            [[Paragraph(fl.get('fi-inv-number', 'NUMBER'), ml), Paragraph(fl.get('fi-inv-date', 'DATE'), ml)],
              [Paragraph(inv.invoice_number, mv), Paragraph(_fmt_date(inv.invoice_date), mv)]],
             colWidths=[CW*0.50, CW*0.50],
         )
@@ -880,10 +893,12 @@ def _sec_minimal(ctx):
                 HRFlowable(width=CW, thickness=0.5, color=NEAR_BLACK, spaceAfter=14)]
 
     def meta():
+        date_label = ctx['cfg'].get('field_labels', {}).get('fi-inv-date', 'DATE')
         sm = _style('SM2', fontSize=7.5, fontName=FONT_B, textColor=MUTED, leading=10, spaceAfter=2)
         bd = _style('BD2', fontSize=8.5, textColor=MUTED, leading=12)
         # Two label/value pairs as a row of columns, mirroring .pvw-meta.
-        labels = [Paragraph(t, sm) for t in ('DATE', 'DUE')]
+        # 'DUE' has no counterpart in the free generator's form, so it isn't renameable.
+        labels = [Paragraph(t, sm) for t in (date_label, 'DUE')]
         values = [Paragraph(_fmt_date(inv.invoice_date), bd),
                   Paragraph(_fmt_date(inv.due_date), bd)]
         w = CW / 2.0
@@ -2099,8 +2114,10 @@ def _bottom_bar(style_id, spec, ACCENT, s_name, CW, seller=None):
     # logged-in flow now also carries a seller dict, so gate on `source` —
     # a bare truthiness test here would restyle all nine other templates.
     if seller and (seller.get('source', 'sidecar') == 'sidecar'):
-        parts = [seller.get('website') or 'www.zayron.in',
-                 seller.get('email') or '', seller.get('phone') or '']
+        # Each part drops when empty (matching the HSN/SAC column's rule) —
+        # this used to fall back to Zayron's own website, which put our
+        # domain on invoices that belong to whoever filled in the form.
+        parts = [seller.get('website') or '', seller.get('email') or '', seller.get('phone') or '']
         label = '   |   '.join([x for x in parts if x])
     txt = Paragraph(label, _style('BAR', fontSize=7.5, fontName=FONT_B,
                                                 textColor=WHITE, alignment=TA_CENTER))
@@ -2273,7 +2290,9 @@ def generate_invoice_pdf(invoice, business_profile=None, seller=None, plan=None)
     s_name, s_email, s_phone, s_gst, s_addr, logo_path = _seller_info(business_profile, seller,
                                                                       invoice=invoice)
     max_logo_pt = min(cfg['logo_width'] * 0.75, 6 * cm)  # css px -> pdf pt
-    logo_img = _logo_image(logo_path, max_w=max_logo_pt)
+    # Square bound — without an explicit max_h, _logo_image()'s own 2.5cm
+    # default height silently flattened out most of the slider's range.
+    logo_img = _logo_image(logo_path, max_w=max_logo_pt, max_h=max_logo_pt)
 
     elems = build_elements(style_id, invoice, (s_name, s_email, s_phone, s_gst, s_addr),
                            logo_img, ACCENT, cur, cfg, CW, spec=spec, seller=seller)
