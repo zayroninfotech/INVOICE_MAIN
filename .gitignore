@@ -56,6 +56,9 @@ scratch_invoices/
 *.swp
 *.swo
 
+# Graphify (generated knowledge-graph artifacts)
+graphify-out/
+
 # OS
 .DS_Store
 Thumbs.db

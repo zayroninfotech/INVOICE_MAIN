@@ -1,0 +1,309 @@
+{% comment %}
+Customization features carried over from the landing page's free generator, shared by
+form.html (create) and edit.html so the two can't drift apart:
+
+  - pencil next to each form field label to rename it (GST Number -> GST, ...);
+    renames for fields whose label also prints on the invoice flow into the live
+    preview and the PDF (layout_config.field_labels)
+  - click-to-rename headings inside the preview (FROM, BILL TO, Notes, ...) — preview-only
+  - FROM / BILL TO side swap, extra per-field show/hide options — preview-only
+  - HSN/SAC and discount columns drop out when no item uses them (the PDF does the
+    same server-side in _items_rows)
+
+Include AFTER the page's main script: it wraps updatePvw()/secSettingsHtml() and reads layoutState.
+{% endcomment %}
+<style>
+.fi-lbl.fi-lbl-wired{display:inline-flex;align-items:center;gap:5px;}
+.fi-lbl-text{outline:none;border-radius:3px;padding:0 2px;margin:0 -2px;cursor:text;}
+.fi-lbl-text:hover,.fi-lbl-text:focus{background:rgba(193,18,31,.08);color:#C1121F;}
+.fi-lbl-edit{opacity:0;flex-shrink:0;background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.68rem;padding:2px;line-height:1;transition:opacity .12s,color .12s;}
+.fi-lbl-host:hover .fi-lbl-edit,.fi-lbl-edit:focus{opacity:1;}
+.fi-lbl-edit:hover{color:#C1121F;}
+.inv-preview [data-label]{cursor:text;border-radius:2px;outline:none;}
+.inv-preview [data-label]:hover{box-shadow:0 0 0 1px rgba(100,116,139,.45);}
+.inv-preview [data-label]:focus{box-shadow:0 0 0 1.5px #2563EB;}
+.inv-preview .pvw-addr.swapped > :first-child{order:2;border-right:none!important;}
+.inv-preview .pvw-addr.swapped > :last-child{border-right:1px solid #fff;}
+.sec-extras{padding:10px 12px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--border,#E8E7E5);}
+.sec-extras .sec-extras-hint{font-size:.7rem;color:var(--text-muted,#94A3B8);line-height:1.4;}
+.sec-extras .sec-extras-reset{align-self:flex-start;background:none;border:none;padding:0;font-size:.72rem;font-weight:600;color:var(--text-muted,#64748B);cursor:pointer;}
+.sec-extras .sec-extras-reset:hover{color:#C1121F;}
+/* Customize bar + panel (matches the landing generator) */
+.pvw-tpl-bar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;flex-wrap:wrap;}
+.pvw-cust-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;background:transparent;border:1px solid var(--border-strong);border-radius:8px;color:var(--text-primary);font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s,color .12s;}
+.pvw-cust-btn i{color:var(--text-muted);}
+.pvw-cust-btn:hover{background:var(--surface-subtle);}
+.pvw-cust-btn.open{border-color:var(--ember);color:var(--ember);}
+.pvw-cust-btn.open i{color:var(--ember);}
+.pvw-cust-btn:focus-visible,.pvw-accent:focus-within{outline:2px solid var(--ember);outline-offset:2px;}
+/* Template colour: swatch + hex in one pill */
+.pvw-accent{display:inline-flex;align-items:center;gap:8px;margin:0;padding:4px 12px 4px 5px;border:1px solid var(--border-strong);border-radius:999px;background:transparent;color:var(--text-secondary);font-size:.78rem;font-weight:600;cursor:pointer;}
+.pvw-accent:hover{background:var(--surface-subtle);}
+.pvw-accent input[type=color]{-webkit-appearance:none;appearance:none;width:24px;height:24px;padding:0;border:none;border-radius:50%;background:none;cursor:pointer;}
+.pvw-accent input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+.pvw-accent input[type=color]::-webkit-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:50%;}
+.pvw-accent input[type=color]::-moz-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:50%;}
+.pvw-accent #accent-color-val{font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--text-primary);}
+/* Items table: stays one line per item. In a narrower form the numeric columns shrink so the
+   description keeps a usable width (the fixed 413px of columns used to squeeze it to a sliver). */
+.items-cq{container-type:inline-size;container-name:items;}
+.ifld{display:contents;}
+@container items (min-width:440px) and (max-width:700px){
+  .items-hdr,.item-row{grid-template-columns:minmax(100px,1fr) 60px 44px 68px 44px 74px 24px;gap:4px;}
+  .items-hdr.items-employee,.item-row.items-employee{grid-template-columns:minmax(100px,1fr) 88px 60px 72px 74px 24px;}
+  .items-hdr{padding:8px 6px;}
+  .items-hdr span{font-size:.55rem;letter-spacing:.03em;}
+  .iinp{padding:5px 4px;font-size:.74rem;}
+  .item-row .itotal{font-size:.76rem;}
+  .item-row .idel{width:24px;height:24px;}
+}
+#free-sec-editor{display:none;margin:12px 16px 0;flex-shrink:0;}
+#free-sec-editor.open{display:block;}
+/* Logo size under the logo box, only once a logo exists (as on the landing page) */
+.from-logo-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;width:112px;}
+.from-logo-col .logo-size-wrap{margin:0;padding:0;border:none;background:none;gap:6px;flex-wrap:nowrap;width:100%;align-items:center;}
+.from-logo-col .logo-slider{min-width:0;width:0;flex:1 1 auto;}
+.from-logo-col #logo-size-val{font-size:.68rem;min-width:32px;}
+</style>
+<script>
+(function(){
+  // ── state ────────────────────────────────────────────────────────────────
+  layoutState.swap_parties = !!layoutState.swap_parties;
+  layoutState.custom_labels = layoutState.custom_labels || {};
+  layoutState.section_settings.bill_to = layoutState.section_settings.bill_to || {};
+  window.customFieldLabels = window.customFieldLabels || {};
+
+  // form input id -> the key the PDF generator reads (layout_config.field_labels)
+  const LABEL_FIELDS = {
+    'inv-number':'fi-inv-number', 'invoice_date':'fi-inv-date', 'due_date':'fi-due-date',
+    'cust-gst':'fi-cust-gst', 'cust-pan':'fi-cust-pan', 'cust-cin':'fi-cust-cin',
+  };
+  // preview element that carries "<label>: value" for a renamed field
+  const PREFIXED = { 'pvw-to-gst':'fi-cust-gst', 'pvw-to-pan':'fi-cust-pan', 'pvw-to-cin':'fi-cust-cin' };
+
+  // ── 1. rename form field labels ──────────────────────────────────────────
+  function wireFieldLabels(){
+    document.querySelectorAll('label.fi-lbl').forEach(lbl => {
+      if (lbl.querySelector('.fi-lbl-text')) return;
+      const textNode = [...lbl.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+      if (!textNode) return;
+      const host = lbl.parentElement;
+      const fieldId = host.querySelector('input,select,textarea')?.id || '';
+      const span = document.createElement('span');
+      span.className = 'fi-lbl-text'; span.contentEditable = 'true'; span.spellcheck = false;
+      span.dataset.fieldId = fieldId;
+      span.textContent = textNode.textContent.trim();
+      span.dataset.default = span.textContent;
+      lbl.replaceChild(span, textNode);
+      lbl.classList.add('fi-lbl-wired'); host.classList.add('fi-lbl-host');
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'fi-lbl-edit'; btn.tabIndex = -1; btn.title = 'Rename this label';
+      btn.innerHTML = '<i class="bi bi-pencil-fill"></i>';
+      btn.addEventListener('mousedown', e => e.preventDefault());
+      btn.addEventListener('click', () => { span.focus(); window.getSelection().selectAllChildren(span); });
+      span.insertAdjacentElement('afterend', btn);
+    });
+    document.addEventListener('keydown', e => {
+      const el = e.target.closest && e.target.closest('.fi-lbl-text');
+      if (el && e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    });
+    document.addEventListener('focusout', e => {
+      const el = e.target.closest && e.target.closest('.fi-lbl-text'); if (!el) return;
+      const t = el.textContent.trim();
+      el.textContent = t || el.dataset.default;
+      const key = LABEL_FIELDS[el.dataset.fieldId];
+      if (key) {
+        if (t && t !== el.dataset.default) window.customFieldLabels[key] = t; else delete window.customFieldLabels[key];
+        updatePvw();
+      }
+    });
+  }
+
+  // ── 2. rename headings inside the preview ────────────────────────────────
+  // Older copies of the preview markup (edit.html) lack some ids, so fall back to a sibling lookup.
+  const HEADING_SELECTORS = {
+    invoice_title: '#pvw-invoice-lbl',
+    notes:         '.pvw-sec[data-sec="notes"] > div > div:first-child',
+    terms:         '.pvw-sec[data-sec="terms"] > div > div:first-child',
+    signature:     '.pvw-sec[data-sec="signature"] .pvw-sig-lbl',
+  };
+  function headingEl(key){
+    const q = s => document.querySelector('#inv-preview ' + s);
+    const all = s => document.querySelectorAll('#inv-preview ' + s);
+    if (key === 'from')    return all('.pvw-addr-hdr')[0];
+    if (key === 'bill_to') return all('.pvw-addr-hdr')[1];
+    if (key === 'number')  return all('.pvw-mlbl')[0];
+    if (key === 'date')    return all('.pvw-mlbl')[1];
+    if (key === 'subtotal')    return document.getElementById('pvw-sub-lbl')   || document.getElementById('pvw-sub')?.previousElementSibling;
+    if (key === 'grand_total') return document.getElementById('pvw-grand-lbl') || document.getElementById('pvw-grand')?.previousElementSibling;
+    return HEADING_SELECTORS[key] ? q(HEADING_SELECTORS[key]) : null;
+  }
+  const HEADING_KEYS = ['from','bill_to','number','date','invoice_title','notes','terms','signature','subtotal','grand_total'];
+  const DYNAMIC = new Set(['subtotal','grand_total']);
+  function wireHeadings(){
+    const pvw = document.getElementById('inv-preview'); if (!pvw) return;
+    HEADING_KEYS.forEach(key => {
+      const el = headingEl(key); if (!el) return;
+      el.dataset.label = key; el.contentEditable = 'true'; el.spellcheck = false;
+      el.dataset.default = el.textContent;
+    });
+    pvw.addEventListener('input', e => {
+      const el = e.target.closest && e.target.closest('[data-label]');
+      if (el) layoutState.custom_labels[el.dataset.label] = el.textContent.trim();
+    });
+    pvw.addEventListener('keydown', e => {
+      const el = e.target.closest && e.target.closest('[data-label]');
+      if (el && e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    });
+    pvw.addEventListener('focusout', e => {
+      const el = e.target.closest && e.target.closest('[data-label]'); if (!el) return;
+      const t = el.textContent.trim(), key = el.dataset.label;
+      if (!t) {
+        delete layoutState.custom_labels[key];
+        if (DYNAMIC.has(key)) updatePvw(); else el.textContent = el.dataset.default;
+      } else el.textContent = t;
+    });
+  }
+
+  // ── 3. re-apply everything after each preview repaint ────────────────────
+  function applyExtras(){
+    const pvw = document.getElementById('inv-preview'); if (!pvw) return;
+    const L = window.customFieldLabels, C = layoutState.custom_labels;
+    // "GSTIN: 29…" -> "<renamed>: 29…"
+    Object.entries(PREFIXED).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el && L[key] && el.textContent.includes(': ')) el.textContent = L[key] + ': ' + el.textContent.split(': ').slice(1).join(': ');
+    });
+    // typed headings win over defaults; a renamed form label wins for number/date
+    const wanted = Object.assign({}, C);
+    if (L['fi-inv-number']) wanted.number = L['fi-inv-number'];
+    if (L['fi-inv-date'])   wanted.date   = L['fi-inv-date'];
+    Object.entries(wanted).forEach(([key, text]) => {
+      const el = headingEl(key);
+      if (el && text && el !== document.activeElement && el.textContent !== text) el.textContent = text;
+    });
+    pvw.querySelector('.pvw-addr')?.classList.toggle('swapped', !!layoutState.swap_parties);
+    // extra per-field show/hide (preview-only; show_gst is handled by applyLayoutToPreview)
+    const b = layoutState.section_settings.bill_to || {};
+    const show = (id, flag) => { const el = document.getElementById(id); if (el) el.style.display = flag !== false ? '' : 'none'; };
+    show('pvw-to-recipient', b.show_recipient); show('pvw-to-email', b.show_email);
+    show('pvw-to-phone', b.show_phone); show('pvw-to-cin', b.show_cin); show('pvw-to-pan', b.show_pan);
+    show('pvw-from-cin', b.show_from_cin);
+    if (!['staffing','payroll'].includes(window._selectedTemplate)) show('pvw-from-pan', b.show_from_pan);
+  }
+
+  // ── 4. HSN / discount columns drop when nothing uses them ────────────────
+  window.itemsHaveValue = function(kind){
+    if (window._pvwSampleMode) return true;
+    return Array.from(document.querySelectorAll('#items-wrap .item-row')).some(row => {
+      const i = row.id.replace('row-', '');
+      if (kind === 'hsn') return (document.getElementById('hsn-' + i)?.value || '').trim() !== '';
+      return (parseFloat(document.getElementById('disc-' + i)?.value || 0) || 0) > 0;
+    });
+  };
+  let lastColsKey = null;
+  const origUpdatePvw = window.updatePvw;
+  window.updatePvw = function(){
+    const key = itemsHaveValue('hsn') + '|' + itemsHaveValue('disc');
+    if (key !== lastColsKey) { lastColsKey = key; applyLayoutToPreview(); }
+    const out = origUpdatePvw.apply(this, arguments);
+    applyExtras();
+    return out;
+  };
+
+  // ── 5. section-editor extras ─────────────────────────────────────────────
+  const origSecSettingsHtml = window.secSettingsHtml;
+  window.secSettingsHtml = function(secId){
+    let h = origSecSettingsHtml(secId);
+    if (secId === 'bill_to') {
+      const b = layoutState.section_settings.bill_to || {};
+      const row = (k, t) => `<label class="tgl-row"><input type="checkbox" ${b[k] !== false ? 'checked' : ''} onchange="setSecSetting('bill_to','${k}',this.checked)"> ${t}</label>`;
+      h += row('show_recipient','Customer contact') + row('show_email','Customer email') + row('show_phone','Customer phone')
+         + row('show_cin','Customer CIN') + row('show_pan','Customer PAN')
+         + row('show_from_cin','Your CIN') + row('show_from_pan','Your PAN');
+    }
+    return h;
+  };
+  window.resetLayoutExtras = function(){
+    layoutState.section_order = [...DEFAULT_SECTIONS];
+    layoutState.hidden_sections = [];
+    layoutState.section_settings = { items_table:{show_hsn:true,show_discount:true}, header:{show_gstin:true}, bill_to:{show_gst:true} };
+    layoutState.swap_parties = false; layoutState.custom_labels = {}; layoutState.logo_width = 110;
+    HEADING_KEYS.forEach(k => { const el = headingEl(k); if (el && !DYNAMIC.has(k)) el.textContent = el.dataset.default; });
+    const cb = document.getElementById('sec-swap'); if (cb) cb.checked = false;
+    renderSectionEditor(); applyLayoutToPreview(); updatePvw();
+  };
+  function injectEditorExtras(){
+    const ed = document.getElementById('sec-editor');
+    if (!ed || document.getElementById('sec-extras')) return;
+    const box = document.createElement('div');
+    box.className = 'sec-extras'; box.id = 'sec-extras';
+    box.innerHTML =
+      '<label class="tgl-row"><input type="checkbox" id="sec-swap"> Swap FROM and BILL TO sides</label>' +
+      '<div class="sec-extras-hint">Click any heading in the preview (FROM, BILL TO, Notes…) to rename it. ' +
+      'Section order, hidden sections and the HSN / discount / GST toggles apply to the PDF; renamed headings, ' +
+      'the side swap and the other field toggles are preview-only for now.</div>' +
+      '<button type="button" class="sec-extras-reset" onclick="resetLayoutExtras()"><i class="bi bi-arrow-counterclockwise"></i> Reset layout</button>';
+    ed.insertBefore(box, ed.firstChild);
+    document.getElementById('sec-swap').addEventListener('change', e => { layoutState.swap_parties = e.target.checked; applyExtras(); });
+  }
+
+  // ── 6. restore a saved invoice's extras (edit) ───────────────────────────
+  window.restoreExtrasFromConfig = function(lc){
+    lc = lc || {};
+    layoutState.swap_parties = lc.swap_parties === true;
+    layoutState.custom_labels = (lc.custom_labels && typeof lc.custom_labels === 'object') ? Object.assign({}, lc.custom_labels) : {};
+    window.customFieldLabels = (lc.field_labels && typeof lc.field_labels === 'object') ? Object.assign({}, lc.field_labels) : {};
+    Object.entries(LABEL_FIELDS).forEach(([id, key]) => {
+      const t = window.customFieldLabels[key]; if (!t) return;
+      const span = document.getElementById(id)?.parentElement.querySelector('.fi-lbl-text');
+      if (span) span.textContent = t;
+    });
+    const cb = document.getElementById('sec-swap'); if (cb) cb.checked = layoutState.swap_parties;
+  };
+
+  window.toggleCustomizePanel = function(){
+    const p = document.getElementById('free-sec-editor'), b = document.getElementById('fse-toggle');
+    const open = p.classList.toggle('open'); b.classList.toggle('open', open); b.setAttribute('aria-expanded', String(open));
+  };
+
+  // Logo size slider is only relevant while a logo image is showing.
+  function syncLogoSize(){
+    const img = document.getElementById('logo-preview'), w = document.getElementById('logo-size-wrap');
+    if (!img || !w) return;
+    const has = img.getAttribute('src') && img.style.display !== 'none';
+    w.style.display = has ? 'flex' : 'none';
+    document.getElementById('logo-remove-btn').style.display = has ? '' : 'none';
+  }
+  const _logoImg = document.getElementById('logo-preview');
+  if (_logoImg) new MutationObserver(syncLogoSize).observe(_logoImg, {attributes:true, attributeFilter:['src','style']});
+
+  // Items table: tag each numeric field with its column name so the narrow (card) layout can caption it.
+  function labelItemRows(){
+    const hdr = [...document.querySelectorAll('.items-hdr span')].map(x => x.textContent.trim().replace(/^SET%$/i, 'Disc %').replace(/\s*\(₹\)/, ''));
+    document.querySelectorAll('#items-wrap .item-row').forEach(row => {
+      [...row.children].forEach((ch, idx) => {
+        if (idx === 0 || ch.classList.contains('idel') || ch.classList.contains('ifld')) return;
+        const w = document.createElement('div'); w.className = 'ifld';
+        row.insertBefore(w, ch); w.appendChild(ch);
+      });
+      let v = 0;
+      [...row.children].forEach(ch => {
+        const el = ch.classList.contains('ifld') ? ch.firstElementChild : ch;
+        if (el.style.display === 'none') return;
+        if (ch.classList.contains('ifld')) ch.dataset.l = hdr[v] || '';
+        v++;
+      });
+    });
+  }
+  const _hdrEl = document.querySelector('.items-hdr'), _wrapEl = document.getElementById('items-wrap');
+  if (_hdrEl) _hdrEl.parentElement.classList.add('items-cq');
+  let _lblQ = 0;
+  const _relabel = () => { cancelAnimationFrame(_lblQ); _lblQ = requestAnimationFrame(labelItemRows); };
+  if (_wrapEl) new MutationObserver(_relabel).observe(_wrapEl, {childList:true, subtree:true, attributes:true, attributeFilter:['style']});
+  if (_hdrEl) new MutationObserver(_relabel).observe(_hdrEl, {childList:true});
+
+  function init(){ wireFieldLabels(); wireHeadings(); injectEditorExtras(); syncLogoSize(); labelItemRows(); updatePvw(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>

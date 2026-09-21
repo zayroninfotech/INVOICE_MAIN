@@ -95,17 +95,46 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
 
     # Items — staffing relabels the columns; everything else keeps the
     # DESCRIPTION/QTY/RATE/SET%/AMOUNT shape.
+    items = list(invoice.items or [])
+
+    # A column nobody filled in is dropped, exactly as the live preview does it
+    # (form.html's updatePvw) and as _items_rows() does for the PDF. Rendering a
+    # fixed five-column table here was why the print page and the customer's
+    # approval page showed no HSN/SAC on an invoice whose preview and PDF had one.
+    _iss = (getattr(invoice, 'layout_config', None) or {}).get('section_settings', {})
+    _its = (_iss or {}).get('items_table', {}) or {}
+    show_hsn = _its.get('show_hsn', True) and any(
+        (getattr(i, 'hsn_code', '') or '').strip() for i in items)
+    show_disc = _its.get('show_discount', True) and any(
+        float(getattr(i, 'discount', 0) or 0) > 0 for i in items)
+
     rows = []
-    for idx, it in enumerate(list(invoice.items or []), 1):
+    for idx, it in enumerate(items, 1):
         disc = float(getattr(it, 'discount', 0) or 0)
+        # Pre-tax line value, so the AMOUNT column adds up to Subtotal. GST is
+        # then added once, in the CGST/SGST rows below.
         amt = round(float(it.unit_price or 0) * float(it.quantity or 0) * (1 - disc / 100), 2)
         if staffing:
             rows.append([f"{idx:02d}", _item_date(it.hsn_code), it.product_name or '—',
                          getattr(it, 'description', '') or '', _num(it.quantity), _rs(amt)])
         else:
-            rows.append([getattr(it, 'description', '') or it.product_name or '—',
-                         _num(it.quantity), _rs(it.unit_price),
-                         f"{disc:g}%" if disc else '', _rs(amt)])
+            row = [getattr(it, 'description', '') or it.product_name or '—']
+            if show_hsn:
+                row.append((getattr(it, 'hsn_code', '') or '').strip())
+            row += [_num(it.quantity), _rs(it.unit_price)]
+            if show_disc:
+                row.append(f"{disc:g}%" if disc else '')
+            row.append(_rs(amt))
+            rows.append(row)
+
+    if staffing:
+        gen_cols, gen_grid = None, _STAFFING_GRID
+    else:
+        gen_cols = (['DESCRIPTION'] + (['HSN'] if show_hsn else [])
+                    + ['QTY', 'RATE'] + (['SET%'] if show_disc else []) + ['AMOUNT'])
+        # Same track widths the preview sets inline.
+        gen_grid = ('1fr ' + ('32px ' if show_hsn else '') + '32px 55px '
+                    + ('32px ' if show_disc else '') + '55px').strip()
 
     ctx = {
         'style_id': style_id, 'staffing': staffing,
@@ -153,8 +182,8 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'to_gst': (f"GSTIN: {invoice.customer_gst}" if invoice.customer_gst else ''),
         'to_pan': (f"PAN: {s['customer_pan']}" if s.get('customer_pan') else ''),
 
-        'item_cols': _TASK_COLS.get(style_id) if staffing else None,
-        'items_grid': _STAFFING_GRID if staffing else None,
+        'item_cols': _TASK_COLS.get(style_id) if staffing else gen_cols,
+        'items_grid': gen_grid,
         'item_rows': rows,
 
         'sub_lbl': 'Total' if staffing else 'Subtotal',
@@ -188,6 +217,6 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'foot_web': (s.get('website') or '') if staffing else '',
         'foot_phone': (s.get('phone') or '') if staffing else '',
         'foot_email': (s.get('email') or '') if staffing else '',
-        'bar': s.get('sig_company') or co_name or 'Zayron Infotech Pvt. Ltd.',
+        'bar': s.get('sig_company') or co_name or 'Your Company Name',
     }
     return ctx

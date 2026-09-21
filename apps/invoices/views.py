@@ -10,9 +10,13 @@ from .models import Invoice
 from .serializers import InvoiceSerializer, InvoiceListSerializer, InvoiceDetailSerializer
 from .pdf_generator import generate_invoice_pdf
 from . import template_registry
-from .tasks import send_invoice_email_task
+from .emailer import send_invoice_email, approval_url, MailNotConfigured
 from utils.response import success, error
+from datetime import datetime
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 
 def _limit_message(plan, reason):
@@ -73,6 +77,14 @@ class InvoiceListCreateView(APIView):
         queryset = _invoice_qs(request.user)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
+        payment_filter = request.query_params.get('payment', '')
+        if payment_filter == 'Due':
+            queryset = queryset.filter(status__nin=['Paid', 'Cancelled'])
+        elif payment_filter in ('Paid', 'Cancelled'):
+            queryset = queryset.filter(status=payment_filter)
+        approval_filter = request.query_params.get('approval', '')
+        if approval_filter in ('In Process', 'Approved', 'Disapproved'):
+            queryset = queryset.filter(approval_status=approval_filter)
         if search:
             queryset = queryset.filter(
                 __raw__={'$or': [
@@ -192,12 +204,104 @@ class InvoiceEmailView(APIView):
         invoice = _invoice_qs(request.user).filter(pk=pk).first()
         if not invoice:
             return error("Invoice not found.", status=404)
+
+        to = (request.data.get('to') or invoice.customer_email or '').strip()
+        if not to:
+            return error("No recipient email address.")
+        note = (request.data.get('message') or '').strip()[:2000]
+
         bp = BusinessProfile.objects(user_id=invoice.created_by).first()
         pdf_path = generate_invoice_pdf(invoice, business_profile=bp)
         invoice.pdf_path = pdf_path
+        # Minted here rather than at creation: an invoice that was never sent
+        # should have no live public URL to guess at.
+        invoice.ensure_share_token()
         invoice.save()
-        send_invoice_email_task.delay(str(invoice.pk), invoice.customer_email, pdf_path)
-        return success(message=f"Invoice email queued for {invoice.customer_email}.")
+
+        base_url = getattr(settings, 'SITE_URL', '') or request.build_absolute_uri('/')
+        try:
+            send_invoice_email(
+                invoice,
+                seller_name=(bp.company_name if bp else '') or invoice.signature_company,
+                reply_to=(bp.email if bp else '') or '',
+                to=[to], note=note, base_url=base_url,
+                pdf_abs_path=os.path.join(settings.MEDIA_ROOT, pdf_path),
+            )
+        except MailNotConfigured as exc:
+            return error(str(exc), status=503)
+        except Exception as exc:
+            logger.warning("invoice email failed for %s", invoice.pk, exc_info=True)
+            return error(f"Could not send the email: {exc}", status=502)
+
+        # Only 'Sent' on the way out of Draft — never demote a Paid invoice.
+        if invoice.status == 'Draft':
+            invoice.status = 'Sent'
+        invoice.sent_at = datetime.utcnow()
+        invoice.save()
+        return success({'to': to, 'approval_url': approval_url(invoice, base_url)},
+                       f"Invoice sent to {to}.")
+
+
+class PublicInvoiceView(APIView):
+    """The customer's side of an emailed invoice — no account, no login.
+
+    Authorisation is the share_token itself, so it is minted with
+    secrets.token_urlsafe(32) and only ever handed out in the email.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+        invoice = Invoice.objects(share_token=token).first() if token else None
+        if not invoice:
+            return error("This invoice link is not valid.", status=404)
+        return success({
+            'invoice_number':  invoice.invoice_number,
+            'approval_status': invoice.approval_status,
+            'approval_note':   invoice.approval_note,
+            'payment_status':  invoice.payment_status,
+        })
+
+    def post(self, request, token):
+        invoice = Invoice.objects(share_token=token).first() if token else None
+        if not invoice:
+            return error("This invoice link is not valid.", status=404)
+
+        action = (request.data.get('action') or '').strip().lower()
+        if action not in ('approve', 'disapprove'):
+            return error("Choose either approve or disapprove.")
+
+        note = (request.data.get('note') or '').strip()[:2000]
+        if action == 'disapprove' and not note:
+            return error("Please say why you are declining this invoice.")
+
+        invoice.approval_status = 'Approved' if action == 'approve' else 'Disapproved'
+        invoice.approval_note = note
+        invoice.approval_by = (request.data.get('name') or '').strip()[:120] \
+            or invoice.customer_recipient or invoice.customer_name
+        invoice.approval_at = datetime.utcnow()
+        invoice.save()
+        return success({'approval_status': invoice.approval_status},
+                       "Thank you — your response has been recorded.")
+
+
+class PublicInvoicePDFView(APIView):
+    """PDF download from the customer's approval page, authorised by the token."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+        invoice = Invoice.objects(share_token=token).first() if token else None
+        if not invoice:
+            return error("This invoice link is not valid.", status=404)
+        bp = BusinessProfile.objects(user_id=invoice.created_by).first()
+        pdf_path = generate_invoice_pdf(invoice, business_profile=bp)
+        full_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
+        if not os.path.exists(full_path):
+            return error("PDF generation failed.", status=500)
+        return FileResponse(open(full_path, 'rb'), content_type='application/pdf',
+                            as_attachment=True,
+                            filename=f"{invoice.invoice_number}.pdf")
 
 
 class InvoiceStatusView(APIView):

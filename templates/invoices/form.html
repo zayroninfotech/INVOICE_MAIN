@@ -311,12 +311,15 @@ canvas#sig-canvas{touch-action:none;}
 
     <div class="from-bar stage2-only">
 
+      <div class="from-logo-col">
       <div class="from-logo-wrap" id="logo-wrap" onclick="document.getElementById('logo-input').click()" title="Click to upload logo">
 
         <img id="logo-preview" alt="Logo">
 
         <div class="logo-ph" id="logo-ph"><i class="bi bi-image" style="font-size:1.2rem;display:block;color:rgba(255,255,255,.4)"></i>Logo</div>
 
+      </div>
+      {% include "invoices/_logo_size.html" %}
       </div>
 
       <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="onLogo(this)">
@@ -359,39 +362,12 @@ canvas#sig-canvas{touch-action:none;}
         <div id="tpl-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;margin-bottom:16px">
         </div>
 
-        <!-- Accent colour — sent as template_color and applied to the final PDF -->
-        <div style="display:flex;align-items:center;gap:10px">
-          <label for="accent-color" style="font-size:.8rem;font-weight:700;color:var(--text-secondary)">Accent colour</label>
-          <input type="color" id="accent-color" value="#C1121F" oninput="setAccentColor(this.value)" style="width:42px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;padding:2px">
-          <span id="accent-color-val" style="font-size:.75rem;color:var(--text-muted);font-family:monospace">#C1121F</span>
-        </div>
-
       </div>
 
       <!-- STAGE 2: Layout controls for the chosen template (logo size + section order) -->
       <div class="fi-sec stage2-only" id="layout-sec">
 
-        <div class="fi-sec-lbl">Invoice Template &amp; Layout
-          <button type="button" onclick="goToStage(1)" style="background:none;border:none;padding:0;color:var(--ember);font-weight:700;font-size:.72rem;text-transform:none;letter-spacing:0;cursor:pointer;white-space:nowrap"><i class="bi bi-arrow-left-right"></i> Change template</button>
-        </div>
-
-        <!-- Logo size -->
-        <div class="logo-size-wrap">
-          <label for="logo-size">Logo size</label>
-          <input type="range" class="logo-slider" id="logo-size" min="60" max="200" step="10" value="110" oninput="onLogoSize(this.value)">
-          <span id="logo-size-val">110px</span>
-        </div>
-
-        <!-- Section order/visibility editor - lives in the Edit workspace's
-             Sections panel, not the initial creation flow. Kept in the DOM
-             (hidden) so layoutState still initializes with sensible
-             defaults for new invoices; customize it after saving via
-             Edit Invoice. -->
-        <div class="stg-hidden" style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Sections <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-muted)">drag to reorder · eye to hide</span></div>
-        <div class="sec-editor stg-hidden" id="sec-editor">
-          <div class="sec-editor-hint"><i class="bi bi-arrows-move"></i> Drag rows to change the order sections appear on the invoice PDF</div>
-          <div id="sec-rows"></div>
-        </div>
+        <div class="fi-sec-lbl">Invoice Template &amp; Layout        </div>
 
       </div>
 
@@ -560,6 +536,7 @@ canvas#sig-canvas{touch-action:none;}
             <select id="tax-mode" onchange="setTaxMode(this.value)" style="flex:1;padding:4px 6px;border:1px solid #E2E8F0;border-radius:6px;font-size:.84rem;background:#fff;">
               <option value="intra" selected>CGST + SGST (Intra-state)</option>
               <option value="inter">IGST (Inter-state)</option>
+              <option value="all">All three (CGST + SGST + IGST)</option>
             </select>
 
           </div>
@@ -728,7 +705,7 @@ canvas#sig-canvas{touch-action:none;}
 
             <label class="fi-lbl">Company (on signature block)</label>
 
-            <input class="fi" id="sig-company" placeholder="Zayron Infotech Pvt. Ltd." oninput="updatePvw()">
+            <input class="fi" id="sig-company" placeholder="e.g. Your Company Name" oninput="updatePvw()">
 
           </div>
 
@@ -788,6 +765,8 @@ canvas#sig-canvas{touch-action:none;}
     <i class="bi bi-exclamation-triangle-fill"></i>
     <span id="pvw-required-banner-text">Fill required fields to complete invoice</span>
   </div>
+
+  {% include "invoices/_customize_bar.html" %}
 
   <div class="preview-wrap">
 
@@ -1017,15 +996,18 @@ function setTaxMode(m) {
   // switching modes hides the other rows, zeroes their rates and preserves
   // the combined tax rate.
   window._taxMode = m;
-  const intra = m === 'intra';
+  const intra = m === 'intra', all = m === 'all';
   const sel = document.getElementById('tax-mode');
   if (sel && sel.value !== m) sel.value = m;
-  document.getElementById('tax-row-cgst').style.display = intra ? '' : 'none';
-  document.getElementById('tax-row-sgst').style.display = intra ? '' : 'none';
+  document.getElementById('tax-row-cgst').style.display = (intra || all) ? '' : 'none';
+  document.getElementById('tax-row-sgst').style.display = (intra || all) ? '' : 'none';
   document.getElementById('tax-row-igst').style.display = intra ? 'none' : '';
   const cg = document.getElementById('cgst-rate'), sg = document.getElementById('sgst-rate'), ig = document.getElementById('igst-rate');
   const cgVal = parseFloat(cg.value) || 0, sgVal = parseFloat(sg.value) || 0, igVal = parseFloat(ig.value) || 0;
-  if (intra) {
+  if (all) {
+    if (!cgVal) cg.value = 9;
+    if (!sgVal) sg.value = 9;
+  } else if (intra) {
     if (igVal > 0 && !cgVal && !sgVal) { const half = Math.round(igVal / 2 * 2) / 2; cg.value = half; sg.value = half; }
     else if (!cgVal && !sgVal) { cg.value = 9; sg.value = 9; }
     ig.value = 0;
@@ -1108,9 +1090,9 @@ const PVW_SAMPLE = {
   'invoice-terms':'Payment due within 30 days. Interest @18% p.a. on overdue amounts.',
   'department':   'Accounts & Billing',
   'sig-name':     'Rohit Menon',
-  'sig-company':  'Zayro Infotech Pvt. Ltd.',
+  'sig-company':  'Acme Traders Pvt. Ltd.',
 };
-const PVW_SAMPLE_COMPANY = 'Zayro Infotech Pvt. Ltd.';
+const PVW_SAMPLE_COMPANY = 'Acme Traders Pvt. Ltd.';
 const PVW_SAMPLE_ITEMS = [
   { desc: 'Cotton Blend Fabric Roll (60 m) · HSN 5208', qty: 12, price: 2450, disc: 0 },
   { desc: 'Polyester Lining Fabric (40 m) · HSN 5407',  qty: 8,  price: 1875, disc: 0 },
@@ -1318,10 +1300,8 @@ function updatePvw() {
   _t('pvw-igst',     fmtRs(igst));
 
   // Only the applying GST rows show in the preview — CGST/SGST and IGST are
-  // mutually exclusive (see setTaxMode).
-  const intra = (window._taxMode || 'intra') === 'intra';
-  ['pvw-row-cgst', 'pvw-row-sgst'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = intra ? '' : 'none'; });
-  const igstRow = document.getElementById('pvw-row-igst'); if (igstRow) igstRow.style.display = intra ? 'none' : '';
+  // filled in (rate > 0), same as the landing generator and the PDF.
+  [['pvw-row-cgst', cgstR], ['pvw-row-sgst', sgstR], ['pvw-row-igst', igstR]].forEach(([id, r]) => { const el = document.getElementById(id); if (el) el.style.display = r > 0 ? '' : 'none'; });
 
   _t('pvw-grand',    fmtRs(pvwSub + gst));
 
@@ -1352,7 +1332,7 @@ function updatePvw() {
 
   _t('pvw-sig-name', _val('sig-name'));
 
-  _t('pvw-bar', _val('sig-company') || (sample ? PVW_SAMPLE_COMPANY : (_val('from-name') || 'Zayron Infotech Pvt. Ltd.')));
+  _t('pvw-bar', _val('sig-company') || (sample ? PVW_SAMPLE_COMPANY : (_val('from-name') || 'Your Company Name')));
 
   // Staffing replaces the solid bottom bar with the reference document's
   // centered thank-you / address / website / contact block.
@@ -1675,7 +1655,7 @@ async function loadProfile() {
 
     _t('pvw-from-gst',  u.gst ? 'GSTIN: ' + u.gst : '');
 
-    _t('pvw-bar',       u.company_name || uname || 'Zayron Infotech Pvt. Ltd.');
+    _t('pvw-bar',       u.company_name || uname || 'Your Company Name');
 
     updatePvw();
 
@@ -1759,7 +1739,7 @@ async function loadInvoice() {
 
   if (inv.igst_rate != null)  document.getElementById('igst-rate').value = inv.igst_rate;
 
-  setTaxMode((parseFloat(inv.igst_rate) || 0) > 0 ? 'inter' : 'intra');
+  { const _c = (parseFloat(inv.cgst_rate)||0)+(parseFloat(inv.sgst_rate)||0), _i = parseFloat(inv.igst_rate)||0; setTaxMode(_i > 0 ? (_c > 0 ? 'all' : 'inter') : 'intra'); }
 
   document.getElementById('thankyou-msg').value  = inv.notes || 'Thank you for your business!';
 
@@ -1799,6 +1779,7 @@ async function loadInvoice() {
     layoutState.section_settings.items_table.show_hsn      = lc.show_hsn !== false;
     layoutState.section_settings.items_table.show_discount = lc.show_discount !== false;
   }
+  restoreExtrasFromConfig(lc);
   renderSectionEditor();
   applyLayoutToPreview();
 
@@ -1865,6 +1846,8 @@ const TPL_THUMBS = {
 };
 
 window._selectedTemplate = 'classic';
+// Same default the colour picker shows and the save falls back to, so the preview matches the PDF.
+window._selectedColor = '#C1121F';
 window._tplList = [];
 window._planUnlocked = {};
 
@@ -2018,7 +2001,7 @@ function selectTemplate(id) {
 
 const ALL_SKIN_CLASSES = ['tpl-classic','tpl-minimal','tpl-modern','tpl-professional','tpl-bold',
                           'tpl-compact','tpl-sidebar','tpl-boxed','tpl-statement','tpl-staffing',
-                          'tpl-payroll'];
+                          'tpl-payroll','tpl-receipt'];
 
 // Single source of visual truth, mirrored from apps/invoices/template_registry.py
 // TEMPLATE_SPECS. Do not hardcode template colors anywhere else in this file —
@@ -2233,8 +2216,9 @@ function applyLayoutToPreview() {
   setDisp('pvw-to-gst',   ss.bill_to?.show_gst !== false);
 
   // Items header columns — HSN and discount columns both toggle, matching pdf_generator.py's _items_rows()
-  const showDisc = ss.items_table?.show_discount !== false;
-  const showHsn  = ss.items_table?.show_hsn !== false;
+  // A column nobody filled in is dropped too (itemsHaveValue comes from _layout_extras.html, which loads after this script).
+  const showDisc = ss.items_table?.show_discount !== false && (window.itemsHaveValue ? itemsHaveValue('disc') : true);
+  const showHsn  = ss.items_table?.show_hsn !== false && (window.itemsHaveValue ? itemsHaveValue('hsn') : true);
   const hdr = document.getElementById('pvw-items-hdr');
   if (hdr && (window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll')) {
     // Task templates use fixed HR columns; the HSN/discount toggles don't apply.
@@ -2381,6 +2365,9 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
       hidden_sections:   layoutState.hidden_sections,
       section_settings:  layoutState.section_settings,
       logo_width:        layoutState.logo_width,
+      swap_parties:      layoutState.swap_parties,
+      custom_labels:     layoutState.custom_labels,
+      field_labels:      window.customFieldLabels,
       // Legacy flat keys kept for backward compatibility with older PDFs/views
       show_hsn:          layoutState.section_settings.items_table.show_hsn !== false,
       show_discount:     layoutState.section_settings.items_table.show_discount !== false,
@@ -2499,6 +2486,8 @@ applyLayoutToPreview();
 })();
 
 </script>
+
+{% include "invoices/_layout_extras.html" %}
 
 {% endblock %}
 

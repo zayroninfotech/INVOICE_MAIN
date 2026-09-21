@@ -46,6 +46,22 @@ class Invoice(me.Document):
         choices=['Draft', 'Sent', 'Paid', 'Partial', 'Overdue', 'Cancelled'],
         default='Draft'
     )
+    # ── Customer approval ──────────────────────────────────────────────────
+    # Set by the customer on the public approval page (no login), reached via
+    # share_token in the emailed link. Separate from `status`, which tracks the
+    # money: an invoice can be Approved but still unpaid, or Paid but never
+    # formally approved.
+    approval_status = me.StringField(
+        choices=['In Process', 'Approved', 'Disapproved'],
+        default='In Process'
+    )
+    approval_note = me.StringField(default='')       # customer's reason, on disapproval
+    approval_by   = me.StringField(default='')       # who acted, as typed by the customer
+    approval_at   = me.DateTimeField()
+    # Unguessable id for the public approval page. Empty until the invoice is
+    # first emailed, so an un-sent invoice has no live public URL.
+    share_token = me.StringField(default='')
+    sent_at     = me.DateTimeField()
     notes = me.StringField(default='')
     terms = me.StringField(default='Payment due within 30 days.')
     currency = me.StringField(default='INR')
@@ -66,9 +82,33 @@ class Invoice(me.Document):
         'indexes': [
             {'fields': ['invoice_number', 'created_by'], 'unique': True},
             'customer_id', 'status', 'created_by', 'due_date',
+            'approval_status',
+            # Only emailed invoices carry a token; the rest hold ''. A `sparse`
+            # index is NOT enough here — sparse only skips documents missing the
+            # field, so every unsent invoice would collide on ''. The partial
+            # filter indexes non-empty tokens only.
+            {'fields': ['share_token'], 'unique': True,
+             'partialFilterExpression': {'share_token': {'$gt': ''}}},
         ],
         'ordering': ['-created_at'],
     }
+
+    @property
+    def payment_status(self):
+        """'Paid' / 'Due' / 'Cancelled' — derived, so the payments ledger stays
+        the single source of truth. apps/payments flips `status` to Paid/Partial
+        when payments are recorded; a cancelled invoice is owed nothing, so it
+        must not read as Due; anything else short of settled is Due."""
+        if self.status == 'Cancelled':
+            return 'Cancelled'
+        return 'Paid' if self.status == 'Paid' else 'Due'
+
+    def ensure_share_token(self):
+        """Mint the public approval token on first send. Idempotent."""
+        if not self.share_token:
+            import secrets
+            self.share_token = secrets.token_urlsafe(32)
+        return self.share_token
 
     def save(self, *args, **kwargs):
         self.updated_at = datetime.utcnow()

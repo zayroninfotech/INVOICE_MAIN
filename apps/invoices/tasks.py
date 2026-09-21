@@ -1,34 +1,50 @@
-from config.celery import app
-from django.core.mail import EmailMessage
-from django.conf import settings
+"""Background wrapper around the invoice emailer.
+
+The web view sends synchronously (see emailer.send_invoice_email) so a vendor
+finds out immediately whether the mail left. This task exists for callers that
+do have a broker running — it shares the same builder, so the message the
+customer receives is identical either way.
+"""
 import os
+
+from django.conf import settings
+
+from config.celery import app
 
 
 @app.task(bind=True, max_retries=3)
-def send_invoice_email_task(self, invoice_id: str, recipient_email: str, pdf_path: str):
-    try:
-        from apps.invoices.models import Invoice
-        invoice = Invoice.objects(pk=invoice_id).first()
-        if not invoice:
-            return {'error': 'Invoice not found'}
+def send_invoice_email_task(self, invoice_id: str, recipient_email: str = '',
+                            pdf_path: str = '', note: str = '', base_url: str = ''):
+    from apps.authentication.models import BusinessProfile
+    from apps.invoices.models import Invoice
+    from apps.invoices.emailer import send_invoice_email
+    from apps.invoices.pdf_generator import generate_invoice_pdf
 
-        subject = f"Invoice {invoice.invoice_number} from Invoice System"
-        body = (
-            f"Dear {invoice.customer_name},\n\n"
-            f"Please find attached invoice {invoice.invoice_number} "
-            f"for {invoice.currency} {float(invoice.grand_total):,.2f}.\n\n"
-            f"Due Date: {invoice.due_date.strftime('%d %b %Y')}\n\n"
-            f"Thank you for your business.\n\nBest regards,\nInvoice System"
+    invoice = Invoice.objects(pk=invoice_id).first()
+    if not invoice:
+        return {'error': 'Invoice not found'}
+
+    bp = BusinessProfile.objects(user_id=invoice.created_by).first()
+    if not pdf_path:
+        pdf_path = generate_invoice_pdf(invoice, business_profile=bp)
+        invoice.pdf_path = pdf_path
+    invoice.ensure_share_token()
+    invoice.save()
+
+    try:
+        send_invoice_email(
+            invoice,
+            seller_name=(bp.company_name if bp else '') or invoice.signature_company,
+            reply_to=(bp.email if bp else '') or '',
+            to=[recipient_email or invoice.customer_email],
+            note=note,
+            base_url=base_url or getattr(settings, 'SITE_URL', ''),
+            pdf_abs_path=os.path.join(settings.MEDIA_ROOT, pdf_path),
         )
-        email = EmailMessage(subject=subject, body=body,
-                             from_email=settings.DEFAULT_FROM_EMAIL,
-                             to=[recipient_email])
-        full_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
-        if os.path.exists(full_path):
-            email.attach_file(full_path)
-        email.send()
-        invoice.status = 'Sent'
-        invoice.save()
-        return {'success': True, 'invoice_number': invoice.invoice_number}
     except Exception as exc:
         raise self.retry(exc=exc, countdown=60)
+
+    if invoice.status == 'Draft':
+        invoice.status = 'Sent'
+        invoice.save()
+    return {'success': True, 'invoice_number': invoice.invoice_number}

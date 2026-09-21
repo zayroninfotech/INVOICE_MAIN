@@ -44,6 +44,8 @@ class DashboardStatsView(APIView):
             'customer_name': inv.customer_name,
             'grand_total': float(inv.grand_total),
             'status': inv.status,
+            'payment_status': inv.payment_status,
+            'approval_status': inv.approval_status,
             'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
         } for inv in recent_invoices]
 

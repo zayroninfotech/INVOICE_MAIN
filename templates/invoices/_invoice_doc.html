@@ -151,7 +151,7 @@ context both collapse to nothing and the preview behaves exactly as before.
   <!-- SECTION: footer -->
   <div class="pvw-sec" data-sec="footer">
     <div style="display:flex;justify-content:center;padding:4px 8px">
-      <div class="pvw-stamp"><span>Thank</span><span>YOU!</span></div>
+      <div class="pvw-thanks">Thank you for your business!</div>
     </div>
     <div style="padding:2px 8px 5px;font-size:6.5px;color:#94A3B8;text-align:center" id="pvw-dept">{{ dept|default:"" }}</div>
     <div class="pvw-foot" id="pvw-foot">
@@ -161,7 +161,7 @@ context both collapse to nothing and the preview behaves exactly as before.
       <div class="pf-web"    id="pvw-foot-web">{{ foot_web|default:"" }}</div>
       <div class="pf-con"    id="pvw-foot-con">{% if foot_phone %}Mobile: {{ foot_phone }} {% endif %}{% if foot_phone and foot_email %}<span class="pf-pipe">|</span>{% endif %}{% if foot_email %}<span class="pf-mail">{{ foot_email }}</span>{% endif %}</div>
     </div>
-    <div class="pvw-bar" id="pvw-bar">{{ bar|default:"Zayron Infotech Pvt. Ltd." }}</div>
+    <div class="pvw-bar" id="pvw-bar">{{ bar|default:"Your Company Name" }}</div>
   </div>
 
 </div><!-- /inv-preview -->

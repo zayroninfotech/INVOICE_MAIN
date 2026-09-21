@@ -315,7 +315,7 @@
 
   <div class="section-header mb-4">
 
-    <div class="d-flex gap-3 flex-wrap">
+    <div class="d-flex gap-2 flex-wrap align-items-center" style="flex:1;min-width:0">
 
       <div class="input-group" style="max-width:280px">
 
@@ -332,13 +332,12 @@
       </div>
 
       <select class="form-select" id="status-filter" style="max-width:160px" onchange="onStatus(this.value)">
-
-        <option value="">All Status</option>
-
-        <option>Draft</option><option>Sent</option><option>Paid</option>
-
-        <option>Partial</option><option>Overdue</option><option>Cancelled</option>
-
+        <option value="">All Payment</option>
+        <option>Due</option><option>Paid</option><option>Cancelled</option>
+      </select>
+      <select class="form-select" id="approval-filter" style="max-width:170px" onchange="onApproval(this.value)">
+        <option value="">All Approval</option>
+        <option>In Process</option><option>Approved</option><option>Disapproved</option>
       </select>
 
     </div>
@@ -361,7 +360,7 @@
 
         <thead><tr>
 
-          <th>Invoice #</th><th>Customer</th><th>Date</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th>
+          <th>Invoice #</th><th>Customer</th><th>Date</th><th>Due Date</th><th>Amount</th><th>Payment</th><th>Approval</th><th>Actions</th>
 
         </tr></thead>
 
@@ -860,7 +859,7 @@
 
 /* ── State ── */
 
-let page = 1, total = 0, search = '', statusFilter = '';
+let page = 1, total = 0, search = '', statusFilter = '', approvalFilter = '';
 
 let editingId = null, itemCount = 0;
 
@@ -933,10 +932,10 @@ async function loadInvoices() {
   const tbody = document.getElementById('invoice-tbody');
   tbody.innerHTML = skeletonRows(7);
 
-  const res = await API.get(`/api/invoices/?page=${page}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(statusFilter)}`);
+  const res = await API.get(`/api/invoices/?page=${page}&search=${encodeURIComponent(search)}&payment=${encodeURIComponent(statusFilter)}&approval=${encodeURIComponent(approvalFilter)}`);
 
   if (!res.success) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon" style="color:var(--color-danger)"><i class="bi bi-wifi-off"></i></div><div class="empty-state-title">Failed to load</div><p class="empty-state-desc">Check your connection and refresh the page.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon" style="color:var(--color-danger)"><i class="bi bi-wifi-off"></i></div><div class="empty-state-title">Failed to load</div><p class="empty-state-desc">Check your connection and refresh the page.</p></div></td></tr>';
     return;
   }
 
@@ -944,15 +943,15 @@ async function loadInvoices() {
   const rows = res.data.results;
 
   if (!rows.length) {
-    const isFiltered = search || statusFilter;
+    const isFiltered = search || statusFilter || approvalFilter;
     tbody.innerHTML = isFiltered
-      ? `<tr><td colspan="7"><div class="empty-state">
+      ? `<tr><td colspan="8"><div class="empty-state">
            <div class="empty-state-icon"><i class="bi bi-search"></i></div>
            <div class="empty-state-title">No results found</div>
            <p class="empty-state-desc">Try adjusting your search or status filter.</p>
-           <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('search').value='';document.getElementById('status-filter').value='';search='';statusFilter='';page=1;loadInvoices()">Clear filters</button>
+           <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('search').value='';document.getElementById('status-filter').value='';document.getElementById('approval-filter').value='';search='';statusFilter='';approvalFilter='';page=1;loadInvoices()">Clear filters</button>
          </div></td></tr>`
-      : `<tr><td colspan="7"><div class="empty-state">
+      : `<tr><td colspan="8"><div class="empty-state">
            <div class="empty-state-icon"><i class="bi bi-file-earmark-text"></i></div>
            <div class="empty-state-title">No invoices yet</div>
            <p class="empty-state-desc">Create your first invoice and start billing your customers.</p>
@@ -980,7 +979,8 @@ async function loadInvoices() {
 
       <td style="font-weight:700">&#8377;${Number(inv.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
 
-      <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
+      <td><span class="badge-ms pay-${inv.payment_status}">${inv.payment_status}</span></td>
+      <td><span class="badge-ms apv-${(inv.approval_status||'In Process').replace(' ','')}">${inv.approval_status||'In Process'}</span></td>
 
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
 
@@ -1060,6 +1060,7 @@ let searchTimer;
 function onSearch(v) { clearTimeout(searchTimer); searchTimer = setTimeout(() => { search = v; page = 1; loadInvoices(); }, 400); }
 
 function onStatus(v) { statusFilter = v; page = 1; loadInvoices(); }
+function onApproval(v) { approvalFilter = v; page = 1; loadInvoices(); }
 
 
 

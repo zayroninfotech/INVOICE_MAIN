@@ -1,0 +1,20 @@
+<!-- Remove button + logo size slider: same as the landing generator — both sit under the
+     logo box and only appear once a logo image is present (toggled by _layout_extras.html). -->
+<button type="button" id="logo-remove-btn" onclick="removeLogo()" style="display:none;background:none;border:none;color:#EF4444;font-size:.68rem;cursor:pointer;font-weight:600;padding:0"><i class="bi bi-x-circle me-1"></i>Remove</button>
+<div class="logo-size-wrap" id="logo-size-wrap" style="display:none">
+  <input type="range" class="logo-slider" id="logo-size" min="60" max="200" step="10" value="110" oninput="onLogoSize(this.value)" aria-label="Logo size">
+  <span id="logo-size-val">110px</span>
+</div>
+<script>
+// Clear a wrongly chosen logo: form thumbnail, live preview, and the saved business-profile logo.
+async function removeLogo() {
+  const img = document.getElementById('logo-preview');
+  img.removeAttribute('src'); img.style.display = 'none';
+  document.getElementById('logo-ph').style.display = '';
+  document.getElementById('logo-input').value = '';
+  if (window.setPreviewLogo) setPreviewLogo('');
+  try {
+    await fetch('/api/auth/business-profile/logo/', { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') } });
+  } catch (e) { /* preview is already cleared; upload a new logo to overwrite */ }
+}
+</script>

@@ -124,6 +124,37 @@
     .tpl-desc{font-size:.78rem;color:var(--t2);}
     .tpl-actions{display:flex;gap:8px;margin-top:4px;}
 
+
+    /* SMTP SETTINGS */
+    .smtp-wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start;}
+    .smtp-card{background:var(--d2);border:1px solid var(--db);border-radius:12px;padding:20px;}
+    .smtp-card h3{font-size:.9rem;font-weight:700;margin-bottom:4px;}
+    .smtp-card .sub{font-size:.78rem;color:var(--t2);margin-bottom:16px;}
+    .smtp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .smtp-f{margin-bottom:12px;}
+    .smtp-f label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--t2);margin-bottom:5px;}
+    .smtp-f input{width:100%;background:var(--d3);border:1px solid var(--db2);border-radius:7px;padding:8px 10px;
+      color:var(--text);font-family:inherit;font-size:.82rem;outline:none;}
+    .smtp-f input:focus{border-color:rgba(193,18,31,.5);}
+    .smtp-f .hint{font-size:.72rem;color:var(--t2);margin-top:4px;line-height:1.45;}
+    .smtp-check{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--t2);margin-bottom:12px;cursor:pointer;}
+    .smtp-check input{accent-color:var(--ember);width:15px;height:15px;cursor:pointer;}
+    .smtp-btn{background:var(--ember);border:none;border-radius:8px;padding:9px 18px;color:#fff;font-weight:700;font-size:.8rem;cursor:pointer;font-family:inherit;}
+    .smtp-btn:hover:not(:disabled){background:var(--ember-d);}
+    .smtp-btn.ghost{background:transparent;border:1px solid var(--db2);color:var(--text);}
+    .smtp-btn.ghost:hover:not(:disabled){border-color:var(--db3);}
+    .smtp-btn:disabled{opacity:.5;cursor:default;}
+    .smtp-btn:focus-visible,.smtp-f input:focus-visible{outline:2px solid var(--ember);outline-offset:2px;}
+    .smtp-btns{display:flex;gap:10px;margin-top:4px;}
+    .smtp-state{display:inline-flex;align-items:center;gap:7px;font-size:.75rem;font-weight:700;padding:5px 11px;border-radius:999px;margin-bottom:14px;}
+    .smtp-state.on{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#4ADE80;}
+    .smtp-state.off{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#F87171;}
+    .smtp-msg{font-size:.78rem;margin-top:12px;padding:10px 12px;border-radius:8px;display:none;line-height:1.5;}
+    .smtp-msg.show{display:block;}
+    .smtp-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86EFAC;}
+    .smtp-msg.bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#FCA5A5;}
+    @media(max-width:900px){.smtp-wrap{grid-template-columns:1fr;}}
+
     /* AUDIT LOG */
     .log-row{display:grid;grid-template-columns:160px 130px 1fr 100px;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);font-size:.78rem;align-items:start;}
     .log-row:last-child{border-bottom:none;}
@@ -257,6 +288,7 @@
       <div class="sidebar-section" style="margin-top:8px">Configuration</div>
       <button class="nav-btn" onclick="showTab('pricing',this)"><i class="bi bi-tags-fill"></i> Pricing & Plans</button>
       <button class="nav-btn" onclick="showTab('templates',this)"><i class="bi bi-palette-fill"></i> Templates</button>
+      <button class="nav-btn" onclick="showTab('smtp',this)"><i class="bi bi-envelope-at-fill"></i> Email (SMTP)</button>
 
       <div class="sidebar-section" style="margin-top:8px">Logs</div>
       <button class="nav-btn" onclick="showTab('audit',this)"><i class="bi bi-journal-text"></i> Audit Trail</button>
@@ -356,6 +388,69 @@
       </div>
     </div>
 
+    <!-- EMAIL (SMTP) -->
+    <div class="tab-panel" id="tab-smtp">
+      <div class="page-hdr">
+        <h1>Email (SMTP)</h1>
+        <p>The mailbox every invoice is sent from. Each vendor's own address goes in Reply-To, so customers answer them directly.</p>
+      </div>
+      <div class="smtp-wrap">
+        <div class="smtp-card">
+          <div id="smtp-state" class="smtp-state off">Loading&hellip;</div>
+          <h3>Mail server</h3>
+          <div class="sub">Leave a field blank to fall back to the matching value in .env.</div>
+
+          <div class="smtp-row">
+            <div class="smtp-f">
+              <label for="sm-host">Host</label>
+              <input type="text" id="sm-host" placeholder="smtp.gmail.com" autocomplete="off">
+            </div>
+            <div class="smtp-f">
+              <label for="sm-port">Port</label>
+              <input type="number" id="sm-port" placeholder="587" autocomplete="off">
+            </div>
+          </div>
+
+          <label class="smtp-check"><input type="checkbox" id="sm-tls"> Use STARTTLS (port 587)</label>
+          <label class="smtp-check"><input type="checkbox" id="sm-ssl"> Use SSL (port 465)</label>
+
+          <div class="smtp-f">
+            <label for="sm-user">Username</label>
+            <input type="text" id="sm-user" placeholder="billing@yourcompany.com" autocomplete="off">
+          </div>
+          <div class="smtp-f">
+            <label for="sm-pass">Password</label>
+            <input type="password" id="sm-pass" placeholder="Leave blank to keep the stored one" autocomplete="new-password">
+            <div class="hint">For Gmail and Outlook this is an app password, not the account password. It is stored write-only and never shown again.</div>
+          </div>
+          <div class="smtp-f">
+            <label for="sm-from">From address</label>
+            <input type="text" id="sm-from" placeholder="Zayro Invoice &lt;billing@yourcompany.com&gt;" autocomplete="off">
+          </div>
+
+          <label class="smtp-check"><input type="checkbox" id="sm-enabled"> Allow invoices to be emailed</label>
+
+          <div class="smtp-btns">
+            <button class="smtp-btn" id="sm-save" onclick="saveSmtp()">Save settings</button>
+          </div>
+          <div class="smtp-msg" id="sm-msg"></div>
+        </div>
+
+        <div class="smtp-card">
+          <h3>Send a test</h3>
+          <div class="sub">Save first, then send yourself a message to confirm the mailbox works.</div>
+          <div class="smtp-f">
+            <label for="sm-test-to">Send to</label>
+            <input type="email" id="sm-test-to" placeholder="you@yourcompany.com" autocomplete="off">
+          </div>
+          <div class="smtp-btns">
+            <button class="smtp-btn ghost" id="sm-test" onclick="testSmtp()">Send test email</button>
+          </div>
+          <div class="smtp-msg" id="sm-test-msg"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- â•â•â• AUDIT â•â•â• -->
     <div class="tab-panel" id="tab-audit">
       <div class="page-hdr"><h1>Audit trail</h1><p>All admin actions, with actor, detail, and IP address.</p></div>
@@ -390,7 +485,86 @@ function showTab(name, btn) {
   if (name === 'invoices')  loadInvoices(1);
   if (name === 'pricing')   loadPricing();
   if (name === 'templates') loadTemplates();
+  if (name === 'smtp')      loadSmtp();
   toggleAdminSidebar(false);
+}
+
+
+/* EMAIL (SMTP) */
+function smtpMsg(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'smtp-msg show ' + (ok ? 'ok' : 'bad');
+}
+
+async function loadSmtp() {
+  const res = await fetch('/z-admin/api/smtp/');
+  const d = await res.json();
+  document.getElementById('sm-host').value = d.host || '';
+  document.getElementById('sm-port').value = d.port || '';
+  document.getElementById('sm-tls').checked = !!d.use_tls;
+  document.getElementById('sm-ssl').checked = !!d.use_ssl;
+  document.getElementById('sm-user').value = d.username || '';
+  document.getElementById('sm-from').value = d.from_email || '';
+  document.getElementById('sm-enabled').checked = !!d.enabled;
+  document.getElementById('sm-pass').placeholder =
+    d.has_password ? 'Leave blank to keep the stored one' : 'Enter the mailbox password';
+
+  const state = document.getElementById('smtp-state');
+  const eff = d.effective || {};
+  if (d.configured && eff.enabled) {
+    state.className = 'smtp-state on';
+    state.textContent = 'Sending as ' + (eff.from_email || eff.username);
+  } else {
+    state.className = 'smtp-state off';
+    state.textContent = eff.enabled === false
+      ? 'Email sending is switched off'
+      : 'Not configured yet - invoices cannot be emailed';
+  }
+}
+
+async function saveSmtp() {
+  const btn = document.getElementById('sm-save');
+  btn.disabled = true;
+  const res = await fetch('/z-admin/api/smtp/', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      host: document.getElementById('sm-host').value.trim(),
+      port: document.getElementById('sm-port').value,
+      use_tls: document.getElementById('sm-tls').checked,
+      use_ssl: document.getElementById('sm-ssl').checked,
+      username: document.getElementById('sm-user').value.trim(),
+      password: document.getElementById('sm-pass').value,
+      from_email: document.getElementById('sm-from').value.trim(),
+      enabled: document.getElementById('sm-enabled').checked,
+    }),
+  });
+  const d = await res.json();
+  btn.disabled = false;
+  if (d.ok) {
+    document.getElementById('sm-pass').value = '';
+    smtpMsg('sm-msg', 'Saved.', true);
+    loadSmtp();
+  } else {
+    smtpMsg('sm-msg', d.error || 'Could not save.', false);
+  }
+}
+
+async function testSmtp() {
+  const to = document.getElementById('sm-test-to').value.trim();
+  if (!to) { smtpMsg('sm-test-msg', 'Enter an address to send the test to.', false); return; }
+  const btn = document.getElementById('sm-test');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  const res = await fetch('/z-admin/api/smtp/', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action: 'test', to}),
+  });
+  const d = await res.json();
+  btn.disabled = false;
+  btn.textContent = orig;
+  smtpMsg('sm-test-msg', d.ok ? d.message : (d.error || 'Test failed.'), !!d.ok);
 }
 
 /* ── Mobile sidebar drawer ── */

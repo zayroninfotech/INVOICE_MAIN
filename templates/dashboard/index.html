@@ -52,41 +52,54 @@
 
 
 
-<!-- ── Onboarding Checklist (shown only if setup incomplete) ── -->
-
-<div id="onboarding-banner" style="display:none;margin-bottom:24px">
-
-  <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:14px;padding:24px 28px;color:#fff">
-
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-
-      <div style="width:40px;height:40px;background:var(--ember);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-
-        <i class="bi bi-rocket-takeoff-fill" style="font-size:1.1rem"></i>
-
-      </div>
-
-      <div>
-
-        <div style="font-size:1.1rem;font-weight:700">Welcome to Zayro ₹ Invoice!</div>
-
-        <div style="color:var(--text-muted);font-size:.85rem">Complete these steps to start creating invoices</div>
-
-      </div>
-
-      <button onclick="document.getElementById('onboarding-banner').style.display='none'" style="margin-left:auto;background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer"><i class="bi bi-x-lg"></i></button>
-
-    </div>
-
-    <div class="row g-3" id="onboarding-steps">
-
-      <!-- steps injected by JS -->
-
-    </div>
-
-  </div>
-
-</div>
+<!-- ── Welcome / first-run setup (new users only; hides itself once both steps are done or dismissed) ── -->
+<style>
+.wlc{position:relative;margin:4px 0 24px;padding:40px 44px;border-radius:18px;
+  background:#FFF7F7 url('/static/img/bg.png') center/cover no-repeat;
+  border:1px solid var(--ember-border);box-shadow:0 4px 18px rgba(193,18,31,.08);
+  display:none;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:stretch}
+.wlc.show{display:grid}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .wlc{background:linear-gradient(135deg,color-mix(in srgb,var(--ember) 15%,var(--surface)),color-mix(in srgb,var(--ember) 5%,var(--surface)))}}
+:root[data-theme="dark"] .wlc{background:linear-gradient(135deg,color-mix(in srgb,var(--ember) 15%,var(--surface)),color-mix(in srgb,var(--ember) 5%,var(--surface)))}
+.wlc-main{display:flex;flex-direction:column;justify-content:center;gap:0}
+.wlc-eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:.78rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-secondary)}
+.wlc-eyebrow::before{content:"";width:34px;height:2px;background:var(--ember)}
+.wlc-who{color:var(--ember)}
+.wlc-chips{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:auto;padding-top:26px}
+.wlc-chip{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:var(--text-primary)}
+.wlc-chip i{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--ember-light);color:var(--ember);font-size:.95rem}
+.wlc-title{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:0 0 10px;color:var(--text-primary)}
+.wlc-sub{font-size:.98rem;line-height:1.6;color:var(--text-secondary);margin:0 0 18px;max-width:40ch}
+.wlc-prog{display:flex;align-items:center;gap:12px;font-size:.85rem;font-weight:600;color:var(--text-primary)}
+.wlc-seg{display:flex;gap:6px}
+.wlc-seg i{width:44px;height:6px;border-radius:99px;background:var(--border-strong)}
+.wlc-seg i.on{background:var(--ember)}
+.wlc-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.wlc-step{display:flex;flex-direction:column;gap:12px;padding:24px;border-radius:16px;background:var(--surface);
+  border:1px solid var(--border-strong);box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.wlc-step.done{border-color:rgba(22,163,74,.45)}
+.wlc-top{display:flex;align-items:center;gap:10px}
+.wlc-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--ember-light);color:var(--ember);font-size:1.15rem}
+.wlc-step.done .wlc-ico{background:rgba(22,163,74,.12);color:#16A34A}
+.wlc-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:800;background:var(--ember);color:#fff}
+.wlc-step.done .wlc-num{background:#16A34A}
+.wlc-name{font-size:1.05rem;font-weight:700;line-height:1.3;color:var(--text-primary)}
+.wlc-desc{font-size:.85rem;line-height:1.55;color:var(--text-secondary);margin:0;flex:1}
+.wlc-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;
+  font-size:.85rem;font-weight:700;text-decoration:none;background:var(--ember);color:#fff;border:1px solid var(--ember)}
+.wlc-btn:hover{background:var(--ember-dark);border-color:var(--ember-dark);color:#fff}
+.wlc-btn:focus-visible,.wlc-x:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.wlc-step.done .wlc-btn{background:transparent;color:var(--text-primary);border-color:var(--border-strong)}
+.wlc-step.done .wlc-btn:hover{background:var(--surface);color:var(--text-primary)}
+.wlc-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:8px;border:none;background:transparent;
+  color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.wlc-x:hover{background:var(--surface-subtle);color:var(--text-primary)}
+@media(max-width:900px){.wlc{grid-template-columns:1fr;padding:26px 20px;gap:24px}.wlc-steps{grid-template-columns:1fr}.wlc-title{font-size:1.8rem}.wlc-chips{padding-top:18px}}
+</style>
+<section class="wlc" id="onboarding-banner" aria-label="Get started"></section>
 
 
 
@@ -229,7 +242,8 @@
 
           <th>Date</th>
 
-          <th>Status</th>
+          <th>Payment</th>
+          <th>Approval</th>
 
           <th>Action</th>
 
@@ -239,7 +253,7 @@
 
       <tbody id="recent-invoices">
 
-        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">
+        <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">
 
           <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
 
@@ -271,7 +285,7 @@ async function loadDashboard() {
 
     document.getElementById('recent-invoices').innerHTML =
 
-      '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--color-danger)">Failed to load dashboard data. Please refresh.</td></tr>';
+      '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--color-danger)">Failed to load dashboard data. Please refresh.</td></tr>';
 
     return;
 
@@ -324,7 +338,7 @@ async function loadDashboard() {
 
   if (!d.recent_invoices.length) {
 
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">
 
       No invoices yet. <a href="/invoices/create/">Create your first invoice →</a>
 
@@ -346,7 +360,8 @@ async function loadDashboard() {
 
       <td style="color:var(--text-secondary)">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
 
-      <td><span class="badge-ms badge-${inv.status}">${inv.status}</span></td>
+      <td><span class="badge-ms pay-${inv.payment_status}">${inv.payment_status}</span></td>
+      <td><span class="badge-ms apv-${(inv.approval_status||'In Process').replace(' ','')}">${inv.approval_status||'In Process'}</span></td>
 
       <td>
 
@@ -363,117 +378,58 @@ loadDashboard();
 
 
 async function loadOnboarding() {
+  const KEY = 'zi_welcome_dismissed_' + (localStorage.getItem('user_username') || '');
+  try { if (localStorage.getItem(KEY)) return; } catch (e) {}
 
-  const [bpRes, custRes, prodRes, invRes] = await Promise.all([
-
+  const [bpRes, invRes] = await Promise.all([
     API.get('/api/auth/business-profile/'),
-
-    API.get('/api/customers/?page_size=1'),
-
-    API.get('/api/products/?page_size=1'),
-
     API.get('/api/invoices/?page_size=1'),
-
   ]);
-
-
-
-  const bp   = bpRes.success ? bpRes.data : {};
-
-  const hasProfile  = bp.company_name && bp.company_name.trim() !== '';
-
-  const hasCustomer = custRes.success && custRes.data.total > 0;
-
-  const hasProduct  = prodRes.success && prodRes.data.total > 0;
-
-  const hasInvoice  = invRes.success  && invRes.data.total > 0;
-
-
-
-  if (hasProfile && hasCustomer && hasProduct && hasInvoice) return; // all done, hide
-
-
+  const bp = bpRes.success ? bpRes.data : {};
+  const hasProfile = !!(bp.company_name && bp.company_name.trim());
+  const hasInvoice = invRes.success && invRes.data.total > 0;
+  if (hasProfile && hasInvoice) return;           // set up already: no welcome
 
   const steps = [
-
-    { done: hasProfile,  icon: 'bi-building',       label: 'Business Profile', sub: 'Name, logo & GSTIN', link: '/auth/profile/' },
-
-    { done: hasCustomer, icon: 'bi-person-plus-fill',label: 'Add a Customer',   sub: 'Who you will bill',            link: '/customers/' },
-
-    { done: hasProduct,  icon: 'bi-box-fill',        label: 'Add a Product',    sub: 'What you are selling',         link: '/products/' },
-
-    { done: hasInvoice,  icon: 'bi-file-earmark-text-fill', label: 'Create Invoice', sub: 'Generate your first PDF', link: '/invoices/?new=1' },
-
+    { done: hasProfile, icon: 'bi-shop', name: 'Set up your business profile',
+      desc: 'Your company name, logo and GSTIN are printed on every invoice you send.',
+      cta: hasProfile ? 'Edit profile' : 'Open profile', link: '/auth/profile/' },
+    { done: hasInvoice, icon: 'bi-file-earmark-plus', name: 'Create your first invoice',
+      desc: 'Choose a template, add your items and download the PDF.',
+      cta: hasInvoice ? 'View invoices' : 'New invoice', link: hasInvoice ? '/invoices/' : '/invoices/?new=1' },
   ];
+  const doneCount = steps.filter(s => s.done).length;
 
-
-
-  const completedCount = steps.filter(s => s.done).length;
-
-  const pct = Math.round((completedCount / steps.length) * 100);
-
-
-
-  document.getElementById('onboarding-steps').innerHTML = `
-
-    <div class="col-12" style="margin-bottom:4px">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-
-        <span style="font-size:.8rem;color:var(--text-muted)">${completedCount} of ${steps.length} steps completed</span>
-
-        <span style="font-size:.8rem;font-weight:700;color:var(--ember)">${pct}%</span>
-
+  const who = (localStorage.getItem('user_username') || '').replace(/[<>&"']/g, '');
+  const box = document.getElementById('onboarding-banner');
+  box.innerHTML = `
+    <button type="button" class="wlc-x" aria-label="Dismiss welcome" onclick="dismissWelcome()"><i class="bi bi-x-lg"></i></button>
+    <div class="wlc-main">
+      <div class="wlc-eyebrow">Good to see you</div>
+      <h2 class="wlc-title">${who ? 'Welcome, <span class="wlc-who">' + who + '</span>' : 'Welcome to Zayro Invoice'}</h2>
+      <p class="wlc-sub">Two quick steps and you are ready to send your first invoice.</p>
+      <div class="wlc-prog"><span class="wlc-seg">${steps.map(s => `<i class="${s.done ? 'on' : ''}"></i>`).join('')}</span>${doneCount} of ${steps.length} done</div>
+      <div class="wlc-chips">
+        <span class="wlc-chip"><i class="bi bi-shield-check"></i>GST ready</span>
+        <span class="wlc-chip"><i class="bi bi-lightning-charge"></i>Fast and simple</span>
+        <span class="wlc-chip"><i class="bi bi-bar-chart-line"></i>Built for businesses</span>
       </div>
-
-      <div style="background:#334155;border-radius:99px;height:6px;overflow:hidden">
-
-        <div style="background:var(--ember);width:100%;height:6px;border-radius:99px;transform-origin:left;transform:scaleX(${pct/100});transition:transform .4s"></div>
-
-      </div>
-
     </div>
+    <div class="wlc-steps">
+      ${steps.map((s, i) => `
+      <div class="wlc-step ${s.done ? 'done' : ''}">
+        <div class="wlc-top"><span class="wlc-num">${s.done ? '<i class="bi bi-check-lg"></i>' : i + 1}</span><span class="wlc-ico"><i class="bi ${s.icon}"></i></span></div>
+        <div class="wlc-name">${s.name}</div>
+        <p class="wlc-desc">${s.desc}</p>
+        <a class="wlc-btn" href="${s.link}">${s.cta} <i class="bi bi-arrow-right"></i></a>
+      </div>`).join('')}
+    </div>`;
+  box.classList.add('show');
+}
 
-    ${steps.map(s => `
-
-    <div class="col-6 col-md-3">
-
-      <a href="${s.link}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;
-
-        background:${s.done ? 'rgba(34,197,94,.1)' : 'rgba(255,255,255,.05)'};
-
-        border:1.5px solid ${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'};
-
-        text-decoration:none;transition:all .15s"
-
-        onmouseover="this.style.borderColor='var(--ember)'" onmouseout="this.style.borderColor='${s.done ? '#22C55E' : 'rgba(255,255,255,.1)'}'">
-
-        <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-
-          background:${s.done ? '#22C55E' : 'var(--ember)'}">
-
-          <i class="bi ${s.done ? 'bi-check-lg' : s.icon}" style="color:#fff;font-size:.95rem"></i>
-
-        </div>
-
-        <div>
-
-          <div style="font-size:.82rem;font-weight:700;color:${s.done ? '#86EFAC' : '#fff'}">${s.label}</div>
-
-          <div style="font-size:.72rem;color:var(--text-secondary)">${s.sub}</div>
-
-        </div>
-
-      </a>
-
-    </div>`).join('')}
-
-  `;
-
-
-
-  document.getElementById('onboarding-banner').style.display = '';
-
+function dismissWelcome() {
+  try { localStorage.setItem('zi_welcome_dismissed_' + (localStorage.getItem('user_username') || ''), '1'); } catch (e) {}
+  document.getElementById('onboarding-banner').classList.remove('show');
 }
 
 loadOnboarding();

@@ -1,0 +1,15 @@
+<!-- Customize bar + layout panel, same place as the landing generator (above the preview). -->
+<div class="pvw-tpl-bar">
+  <button type="button" class="pvw-cust-btn" id="fse-toggle" onclick="toggleCustomizePanel()" aria-expanded="false" aria-controls="free-sec-editor"><i class="bi bi-sliders"></i> Customize</button>
+  <label class="pvw-accent" title="Template colour">
+    <input type="color" id="accent-color" value="#C1121F" oninput="setAccentColor(this.value)" aria-label="Template colour">
+    <span>Colour</span>
+    <span id="accent-color-val">#C1121F</span>
+  </label>
+</div>
+<div id="free-sec-editor">
+  <div class="sec-editor" id="sec-editor">
+    <div class="sec-editor-hint"><i class="bi bi-arrows-move"></i> Drag rows to change the order sections appear on the invoice PDF</div>
+    <div id="sec-rows"></div>
+  </div>
+</div>

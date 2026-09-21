@@ -369,6 +369,10 @@ def _items_rows(invoice, cur, cfg, CW, fs=9):
     ss         = cfg.get('section_settings', {})
     show_hsn   = ss.get('items_table', {}).get('show_hsn', True)
     show_disc  = ss.get('items_table', {}).get('show_discount', True)
+    # A column nobody filled in is dropped rather than printed empty — the
+    # live preview already hides it the same way, so the PDF has to agree.
+    show_hsn   = show_hsn  and any((getattr(i, 'hsn_code', '') or '').strip() for i in invoice.items)
+    show_disc  = show_disc and any(float(getattr(i, 'discount', 0) or 0) > 0 for i in invoice.items)
 
     # Money columns (RATE/AMOUNT) get generous widths: Indian digit grouping
     # ("1,06,200.00") plus the wider DejaVu metrics used to wrap mid-number.
@@ -407,7 +411,13 @@ def _items_rows(invoice, cur, cfg, CW, fs=9):
         if show_disc:
             row.append(Paragraph(f"{float(item.discount):g}%",
                                  _style('Dc', fontSize=fs, textColor=MUTED, alignment=TA_RIGHT)))
-        row.append(Paragraph(_fmt(item.total, cur),
+        # Pre-tax line value. item.total carries tax, so printing it made the
+        # AMOUNT column sum to the GRAND TOTAL while the Subtotal row directly
+        # underneath showed a different, smaller number — the tax counted twice
+        # on the page. The preview and the print page both show it pre-tax.
+        line_amt = (float(item.unit_price or 0) * float(item.quantity or 0)
+                    * (1 - float(getattr(item, 'discount', 0) or 0) / 100))
+        row.append(Paragraph(_fmt(round(line_amt, 2), cur),
                              _style('A', fontSize=fs-0.5, fontName=FONT_B,
                                     textColor=DARK, alignment=TA_RIGHT, splitLongWords=0)))
         rows.append(row)
@@ -712,6 +722,11 @@ def _footer_center(text, color=MUTED, rule=False, CW=None, rule_color=None, rule
     return parts
 
 
+def _fl(ctx, key, default):
+    """A user-renamed form-field label (layout_config.field_labels), else the built-in wording."""
+    return ctx['cfg'].get('field_labels', {}).get(key, default)
+
+
 def _party_blocks(ctx, from_first=True):
     """Return (from_lines, to_lines) lists filtered by section settings."""
     invoice = ctx['inv']
@@ -897,8 +912,7 @@ def _sec_minimal(ctx):
         sm = _style('SM2', fontSize=7.5, fontName=FONT_B, textColor=MUTED, leading=10, spaceAfter=2)
         bd = _style('BD2', fontSize=8.5, textColor=MUTED, leading=12)
         # Two label/value pairs as a row of columns, mirroring .pvw-meta.
-        # 'DUE' has no counterpart in the free generator's form, so it isn't renameable.
-        labels = [Paragraph(t, sm) for t in (date_label, 'DUE')]
+        labels = [Paragraph(t, sm) for t in (date_label, _fl(ctx, 'fi-due-date', 'DUE'))]
         values = [Paragraph(_fmt_date(inv.invoice_date), bd),
                   Paragraph(_fmt_date(inv.due_date), bd)]
         w = CW / 2.0
@@ -1024,7 +1038,7 @@ def _sec_modern(ctx):
         ml = _style('ML', fontSize=7.5, fontName=FONT_B, textColor=MUTED, leading=10, spaceAfter=3)
         mv = _style('MV', fontSize=9.5, fontName=FONT_B, textColor=DARK, leading=13)
         meta_t = Table(
-            [[Paragraph('DATE', ml), Paragraph('DUE DATE', ml)],
+            [[Paragraph(_fl(ctx, 'fi-inv-date', 'DATE'), ml), Paragraph(_fl(ctx, 'fi-due-date', 'DUE DATE'), ml)],
              [Paragraph(_fmt_date(inv.invoice_date), mv), Paragraph(_fmt_date(inv.due_date), mv)]],
             colWidths=[CW*0.5, CW*0.5],
         )
@@ -1108,9 +1122,9 @@ def _sec_professional(ctx):
         lbl = _style('LB', fontSize=7.5, fontName=FONT_B, textColor=MUTED, leading=10, spaceAfter=3)
         val = _style('VL', fontSize=9.5, fontName=FONT_B, textColor=DARK, leading=13)
         blk = [
-            Paragraph('INVOICE NO.', lbl), Paragraph(inv.invoice_number, val), Spacer(1, 5),
-            Paragraph('INVOICE DATE', lbl), Paragraph(_fmt_date(inv.invoice_date), val), Spacer(1, 5),
-            Paragraph('DUE DATE', lbl), Paragraph(_fmt_date(inv.due_date), val),
+            Paragraph(_fl(ctx, 'fi-inv-number', 'INVOICE NO.'), lbl), Paragraph(inv.invoice_number, val), Spacer(1, 5),
+            Paragraph(_fl(ctx, 'fi-inv-date', 'INVOICE DATE'), lbl), Paragraph(_fmt_date(inv.invoice_date), val), Spacer(1, 5),
+            Paragraph(_fl(ctx, 'fi-due-date', 'DUE DATE'), lbl), Paragraph(_fmt_date(inv.due_date), val),
         ]
         wrap = Table([[blk]], colWidths=[CW*0.34], hAlign='RIGHT')
         wrap.setStyle(TableStyle([
@@ -1393,9 +1407,9 @@ def _sec_sidebar(ctx):
     def meta():
         lbl = _style('ML2', fontSize=7, fontName=FONT_B, textColor=MUTED, leading=9)
         val = _style('MV2', fontSize=9, fontName=FONT_B, textColor=NAVY, leading=12)
-        rows = [[Paragraph('DATE', lbl), Paragraph(_fmt_date(inv.invoice_date), val)],
-                [Paragraph('DUE DATE', lbl), Paragraph(_fmt_date(inv.due_date), val)],
-                [Paragraph('NUMBER', lbl), Paragraph(inv.invoice_number, val)]]
+        rows = [[Paragraph(_fl(ctx, 'fi-inv-date', 'DATE'), lbl), Paragraph(_fmt_date(inv.invoice_date), val)],
+                [Paragraph(_fl(ctx, 'fi-due-date', 'DUE DATE'), lbl), Paragraph(_fmt_date(inv.due_date), val)],
+                [Paragraph(_fl(ctx, 'fi-inv-number', 'NUMBER'), lbl), Paragraph(inv.invoice_number, val)]]
         t = Table(rows, colWidths=[BODY_W*0.35, BODY_W*0.65], hAlign='RIGHT')
         t.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1501,11 +1515,11 @@ def _sec_boxed(ctx):
 
     def meta():
         cells = [
-            [Paragraph('NO.', _style('BM', fontSize=6.5, fontName=FONT_B,
+            [Paragraph(_fl(ctx, 'fi-inv-number', 'NO.'), _style('BM', fontSize=6.5, fontName=FONT_B,
                                      textColor=MUTED, alignment=TA_CENTER, leading=8)),
-             Paragraph('DATE', _style('BM2', fontSize=6.5, fontName=FONT_B,
+             Paragraph(_fl(ctx, 'fi-inv-date', 'DATE'), _style('BM2', fontSize=6.5, fontName=FONT_B,
                                       textColor=MUTED, alignment=TA_CENTER, leading=8)),
-             Paragraph('DUE', _style('BM3', fontSize=6.5, fontName=FONT_B,
+             Paragraph(_fl(ctx, 'fi-due-date', 'DUE'), _style('BM3', fontSize=6.5, fontName=FONT_B,
                                      textColor=MUTED, alignment=TA_CENTER, leading=8))],
             [Paragraph(inv.invoice_number, _style('BV1', fontSize=8, fontName=FONT_B,
                                                   textColor=DARK, alignment=TA_CENTER, leading=10)),
@@ -1646,11 +1660,11 @@ def _sec_statement(ctx):
 
     def meta():
         rows = [
-            [Paragraph('INVOICE NO.', _style('GM', fontSize=7, fontName=FONT_B,
+            [Paragraph(_fl(ctx, 'fi-inv-number', 'INVOICE NO.'), _style('GM', fontSize=7, fontName=FONT_B,
                                              textColor=MUTED, leading=9, alignment=TA_RIGHT)),
              Paragraph(inv.invoice_number, _style('GMV', fontSize=9, fontName=FONT_B,
                                                   textColor=DARK, leading=12, alignment=TA_RIGHT))],
-            [Paragraph('ISSUED', _style('GM2', fontSize=7, fontName=FONT_B,
+            [Paragraph(_fl(ctx, 'fi-inv-date', 'ISSUED'), _style('GM2', fontSize=7, fontName=FONT_B,
                                         textColor=MUTED, leading=9, alignment=TA_RIGHT)),
              Paragraph(_fmt_date(inv.invoice_date), _style('GMV2', fontSize=9, textColor=DARK,
                                                            leading=12, alignment=TA_RIGHT))],
@@ -2044,6 +2058,117 @@ def _sec_staffing(ctx):
                 totals=totals, notes=notes, terms=terms, signature=signature, footer=footer)
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Template: Receipt — narrow till-receipt column centred on the page
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _sec_receipt(ctx):
+    inv, cur, ACCENT = ctx['inv'], ctx['cur'], ctx['ACCENT']
+    RW = 8.4 * cm                       # receipt paper width, centred on A4
+    fl = lambda k, d: _fl(ctx, k, d)
+    ctr = lambda n, **kw: _style(n, alignment=TA_CENTER, **kw)
+    dash = lambda: HRFlowable(width=RW, thickness=0.7, color=DARK, dash=[2, 2],
+                              spaceBefore=4, spaceAfter=4, hAlign='CENTER')
+
+    def tbl(rows, widths, extra=()):
+        t = Table(rows, colWidths=widths, hAlign='CENTER')
+        t.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                               ('TOPPADDING', (0, 0), (-1, -1), 1), ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+                               ('VALIGN', (0, 0), (-1, -1), 'TOP')] + list(extra)))
+        return t
+
+    sm = _style('RSM', fontSize=7.5, leading=10)
+    smr = _style('RSMR', fontSize=7.5, leading=10, alignment=TA_RIGHT)
+    smb = _style('RSMB', fontSize=7.5, leading=10, fontName=FONT_B)
+
+    def header():
+        out = []
+        if ctx['logo_img']:
+            ctx['logo_img'].hAlign = 'CENTER'
+            out += [ctx['logo_img'], Spacer(1, 4)]
+        out.append(Paragraph((ctx['s_name'] or 'Your Store').upper(),
+                             ctr('RCO', fontSize=12, fontName=FONT_B, leading=15)))
+        ss = ctx['cfg'].get('section_settings', {}).get('header', {})
+        for line in (ctx['s_addr'], ctx['s_phone'], ctx['s_email']):
+            if line:
+                out.append(Paragraph(line, ctr('RCA', fontSize=7.5, leading=10, textColor=MUTED)))
+        if ctx['s_gst'] and ss.get('show_gstin', True):
+            out.append(Paragraph(f"{fl('fi-from-gst', 'GSTIN')}: {ctx['s_gst']}",
+                                 ctr('RCG', fontSize=7.5, leading=10, fontName=FONT_B)))
+        return out + [dash(), Paragraph('TAX INVOICE / CASH MEMO', ctr('RTI', fontSize=9, fontName=FONT_B, leading=12)), dash()]
+
+    def meta():
+        rows = [[Paragraph(f"{fl('fi-inv-number', 'Bill No')}: <b>{inv.invoice_number}</b>", sm),
+                 Paragraph(f"{fl('fi-inv-date', 'Date')}: <b>{_fmt_date(inv.invoice_date)}</b>", smr)]]
+        if inv.due_date:
+            rows.append([Paragraph(f"{fl('fi-due-date', 'Due')}: {_fmt_date(inv.due_date)}", sm), ''])
+        return [tbl(rows, [RW * 0.5, RW * 0.5]), dash()]
+
+    def bill_to():
+        _, to_lines = _party_blocks(ctx)
+        lines = [l for l in to_lines if l]
+        if not lines:
+            return []
+        out = [Paragraph('CUSTOMER', _style('RCL', fontSize=6.5, fontName=FONT_B, textColor=MUTED, leading=9)),
+               Paragraph(lines[0], smb)]
+        out += [Paragraph(l, _style('RCB', fontSize=7, leading=9.5, textColor=MUTED)) for l in lines[1:]]
+        return [tbl([[out]], [RW]), dash()]
+
+    def items():
+        it_st = _style('RIT', fontSize=8, leading=10.5, fontName=FONT_B)
+        qty_st = _style('RIQ', fontSize=7.5, leading=10, textColor=MUTED)
+        amt_st = _style('RIA', fontSize=8, leading=10.5, fontName=FONT_B, alignment=TA_RIGHT, splitLongWords=0)
+        rows = [[Paragraph('ITEM', _style('RH1', fontSize=6.5, fontName=FONT_B, textColor=MUTED)),
+                 Paragraph('AMOUNT', _style('RH2', fontSize=6.5, fontName=FONT_B, textColor=MUTED, alignment=TA_RIGHT))]]
+        for i in inv.items:
+            hsn = (getattr(i, 'hsn_code', '') or '').strip()
+            disc = float(getattr(i, 'discount', 0) or 0)
+            sub = (f"{float(i.quantity):g} x {_fmt(i.unit_price, cur)}"
+                   + (f"  ·  HSN {hsn}" if hsn else '') + (f"  ·  disc {disc:g}%" if disc else ''))
+            rows.append([[Paragraph(i.product_name, it_st), Paragraph(sub, qty_st)],
+                         Paragraph(_fmt(i.total, cur), amt_st)])
+        return [tbl(rows, [RW * 0.64, RW * 0.36], [('BOTTOMPADDING', (0, 1), (-1, -1), 3)]), dash()]
+
+    def totals():
+        lb = _style('RTL', fontSize=8, leading=11)
+        vb = _style('RTV', fontSize=8, leading=11, alignment=TA_RIGHT, splitLongWords=0)
+        rows = [[Paragraph('Subtotal', lb), Paragraph(_fmt(inv.subtotal, cur), vb)]]
+        rows += [[Paragraph(t, lb), Paragraph(_fmt(a, cur), vb)] for t, a in _active_gst_rows(ctx)]
+        gl = _style('RGL', fontSize=11, fontName=FONT_B, leading=14, textColor=WHITE)
+        gv = _style('RGV', fontSize=11, fontName=FONT_B, leading=14, textColor=WHITE, alignment=TA_RIGHT,
+                    splitLongWords=0)
+        big = tbl([[Paragraph('TOTAL', gl), Paragraph(_fmt(inv.grand_total, cur), gv)]], [RW * 0.4, RW * 0.6],
+                  [('BACKGROUND', (0, 0), (-1, -1), ACCENT), ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                   ('RIGHTPADDING', (0, 0), (-1, -1), 6), ('TOPPADDING', (0, 0), (-1, -1), 4),
+                   ('BOTTOMPADDING', (0, 0), (-1, -1), 4), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')])
+        out = [tbl(rows, [RW * 0.55, RW * 0.45]), dash(), big, Spacer(1, 4)]
+        try:
+            words = _amount_words(inv.grand_total)
+        except Exception:
+            words = ''
+        if words:
+            out.append(Paragraph(words, ctr('RAW', fontSize=6.8, leading=9, textColor=MUTED)))
+        return out
+
+    def notes():
+        body = inv.notes or (ctx.get('seller') or {}).get('thankyou_msg', '')
+        return [dash(), Paragraph(body, ctr('RN', fontSize=7.5, leading=10, textColor=MUTED))] if body else []
+
+    def terms():
+        return [Paragraph(inv.terms, ctr('RT', fontSize=7, leading=9.5, textColor=MUTED))] if inv.terms else []
+
+    def signature():
+        name = getattr(inv, 'signatory_name', '') or ''
+        return [Spacer(1, 8), Paragraph(f"Signed: {name}", ctr('RSG', fontSize=7.5, textColor=MUTED))] if name else []
+
+    def footer():
+        return [dash(), Paragraph('*** THANK YOU, VISIT AGAIN ***', ctr('RF', fontSize=8.5, fontName=FONT_B, leading=12)),
+                Paragraph(inv.invoice_number, ctr('RF2', fontSize=6.5, textColor=MUTED))]
+
+    return dict(header=header, invoice_meta=meta, bill_to=bill_to, items_table=items,
+                totals=totals, notes=notes, terms=terms, signature=signature, footer=footer)
+
+
 SECTION_BUILDERS = {
     'classic':      _sec_classic,
     'minimal':      _sec_minimal,
@@ -2054,6 +2179,7 @@ SECTION_BUILDERS = {
     'sidebar':      _sec_sidebar,
     'boxed':        _sec_boxed,
     'statement':    _sec_statement,
+    'receipt':      _sec_receipt,
     'staffing':     _sec_staffing,
     'payroll':      _sec_staffing,   # same engine, payroll labels via ctx['style_id']
 }
@@ -2100,7 +2226,7 @@ _BAR_USES_SECONDARY = {'minimal', 'modern', 'sidebar', 'boxed', 'statement'}
 # Templates that render their own footer block and must NOT get the solid
 # bottom strip appended — 'staffing' reproduces the reference document's
 # centered address / website / contact lines inside its own footer() section.
-_BAR_SUPPRESSED = {'staffing', 'payroll'}
+_BAR_SUPPRESSED = {'staffing', 'payroll', 'receipt'}
 
 
 def _bottom_bar(style_id, spec, ACCENT, s_name, CW, seller=None):

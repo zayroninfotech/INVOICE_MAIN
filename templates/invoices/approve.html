@@ -1,0 +1,309 @@
+{% comment %}
+Customer approval page — the only page in this project served to someone with
+no account. Reached from the emailed link; the share token in the URL is the
+sole credential, so nothing here links back into the vendor's workspace.
+
+The invoice itself is the same markup partial the live preview and the PDF use,
+so the customer approves exactly the document they were sent.
+{% endcomment %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Invoice {{ invoice_number }}{% if seller_name %} — {{ seller_name }}{% endif %}</title>
+<link rel="icon" href="/static/img/logo.png">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+{% include "invoices/_invoice_doc_css.html" %}
+
+<style>
+  :root{
+    --ap-bg:#F5F4F2; --ap-surface:#fff; --ap-line:#E5E4E1;
+    /* --ap-muted sits on white at body sizes, so it has to clear 4.5:1 (#5F636D
+       is 5.4:1; the #71757F it replaced measured 4.4:1). */
+    --ap-ink:#131416; --ap-ink-2:#4A4A4A; --ap-muted:#5F636D;
+    --ap-brand:#C1121F; --ap-brand-dark:#8C0F1B;
+    --ap-ok:#15803D; --ap-ok-bg:#F0FDF4; --ap-ok-line:#BBF7D0;
+    --ap-no:#B91C1C; --ap-no-bg:#FEF2F2; --ap-no-line:#FECACA;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ap-bg);color:var(--ap-ink);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       line-height:1.55;-webkit-font-smoothing:antialiased}
+
+  .ap-bar{background:var(--ap-surface);border-bottom:1px solid var(--ap-line);padding:14px 20px}
+  .ap-bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ap-seller{font-weight:700;font-size:1rem}
+  .ap-bar-meta{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--ap-muted)}
+
+  .ap-wrap{max-width:960px;margin:0 auto;padding:28px 20px 64px}
+
+  .ap-head{margin-bottom:22px}
+  .ap-h1{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;line-height:1.2}
+  .ap-lede{margin:0;color:var(--ap-ink-2);font-size:1rem;max-width:62ch}
+
+  .ap-facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .ap-fact{background:var(--ap-surface);border:1px solid var(--ap-line);border-radius:10px;
+           padding:10px 14px;min-width:140px}
+  .ap-fact dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+              color:var(--ap-muted);margin:0 0 3px}
+  .ap-fact dd{margin:0;font-size:1rem;font-weight:700}
+
+  /* Outcome banner — shown once the customer has responded */
+  .ap-done{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:12px;
+           border:1px solid var(--ap-line);background:var(--ap-surface);margin-bottom:22px}
+  .ap-done.ok{background:var(--ap-ok-bg);border-color:var(--ap-ok-line)}
+  .ap-done.no{background:var(--ap-no-bg);border-color:var(--ap-no-line)}
+  .ap-done i{font-size:1.3rem;line-height:1.2}
+  .ap-done.ok i{color:var(--ap-ok)} .ap-done.no i{color:var(--ap-no)}
+  .ap-done-t{font-weight:700;margin:0 0 2px}
+  .ap-done-b{margin:0;color:var(--ap-ink-2);font-size:.92rem}
+  /* Hairline rather than a slab: this marks quoted text, it is not a card accent. */
+  .ap-quote{margin:8px 0 0;padding-left:12px;border-left:1px solid var(--ap-line);
+            color:var(--ap-ink-2);font-size:.92rem;white-space:pre-wrap}
+
+  /* Invoice document: authored on a 411px canvas, scaled to the column */
+  .ap-doc{background:var(--ap-surface);border:1px solid var(--ap-line);border-radius:14px;
+          padding:22px;overflow:hidden}
+  /* A CSS transform doesn't change the layout box, so the 411px canvas is
+     wrapped in a frame that JS sizes to the SCALED dimensions. Without it,
+     centring works off the unscaled width and the document sits off to one side. */
+  .ap-doc-frame{margin:0 auto}
+  .ap-doc-scale{width:411px;transform-origin:top left}
+  .ap-doc .inv-preview{width:411px;box-shadow:none;border-radius:6px;border:1px solid var(--ap-line)}
+
+  /* Action bar */
+  .ap-actions{position:sticky;bottom:0;margin-top:22px;background:var(--ap-surface);
+              border:1px solid var(--ap-line);border-radius:14px;padding:16px 18px;
+              display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+              box-shadow:0 -2px 18px rgba(15,23,42,.06)}
+  .ap-actions p{margin:0;color:var(--ap-muted);font-size:.88rem;flex:1;min-width:180px}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:9px;
+       font-size:.92rem;font-weight:700;cursor:pointer;border:1px solid transparent;
+       text-decoration:none;font-family:inherit}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn-ok{background:var(--ap-ok);color:#fff}
+  .btn-ok:hover:not(:disabled){background:#166534}
+  .btn-no{background:var(--ap-surface);color:var(--ap-no);border-color:var(--ap-no-line)}
+  .btn-no:hover:not(:disabled){background:var(--ap-no-bg)}
+  .btn-ghost{background:transparent;color:var(--ap-ink);border-color:var(--ap-line)}
+  .btn-ghost:hover{background:var(--ap-bg)}
+  .btn-brand{background:var(--ap-brand);color:#fff}
+  .btn-brand:hover:not(:disabled){background:var(--ap-brand-dark)}
+  .btn:focus-visible,.ap-field:focus-visible{outline:2px solid var(--ap-brand);outline-offset:2px}
+
+  /* Decline dialog */
+  dialog.ap-dlg{border:none;border-radius:16px;padding:0;max-width:480px;width:calc(100% - 32px);
+                box-shadow:0 24px 60px rgba(15,23,42,.24)}
+  dialog.ap-dlg::backdrop{background:rgba(15,23,42,.45)}
+  .ap-dlg-in{padding:26px}
+  .ap-dlg h2{margin:0 0 6px;font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
+  .ap-dlg p{margin:0 0 18px;color:var(--ap-ink-2);font-size:.92rem}
+  .ap-label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;
+            text-transform:uppercase;color:var(--ap-muted);margin:0 0 6px}
+  .ap-field{width:100%;border:1px solid var(--ap-line);border-radius:9px;padding:10px 12px;
+            font-size:.94rem;font-family:inherit;color:var(--ap-ink);background:var(--ap-surface);
+            outline:none;margin-bottom:16px;resize:vertical}
+  .ap-field:focus{border-color:var(--ap-brand)}
+  .ap-dlg-btns{display:flex;gap:10px;justify-content:flex-end}
+  /* Scoped to .ap-dlg so it outranks the `.ap-dlg p` body colour above —
+     unscoped, the error message rendered in the same grey as the blurb. */
+  .ap-dlg .ap-err{color:var(--ap-no);font-size:.86rem;margin:0 0 12px;display:none;
+                  background:var(--ap-no-bg);border:1px solid var(--ap-no-line);
+                  border-radius:8px;padding:9px 12px}
+  .ap-dlg .ap-err.show{display:block}
+
+  .ap-foot{text-align:center;color:var(--ap-muted);font-size:.8rem;margin-top:28px}
+
+  @media(max-width:560px){
+    .ap-h1{font-size:1.4rem}
+    .ap-doc{padding:12px}
+    .ap-actions{flex-direction:column;align-items:stretch}
+    .ap-actions .btn{justify-content:center}
+  }
+  @media(prefers-reduced-motion:no-preference){
+    .ap-done{animation:apIn .3s ease-out}
+    @keyframes apIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  }
+</style>
+</head>
+<body>
+
+<header class="ap-bar">
+  <div class="ap-bar-in">
+    <span class="ap-seller">{{ seller_name|default:"Invoice" }}</span>
+    <span class="ap-bar-meta"><i class="bi bi-shield-lock"></i> Private link</span>
+  </div>
+</header>
+
+<main class="ap-wrap">
+
+  <div class="ap-head">
+    <h1 class="ap-h1">Invoice {{ invoice_number }}</h1>
+    <p class="ap-lede">
+      {% if approval_status == 'In Process' %}
+        Hello {{ customer_name }} — please review this invoice below, then approve it or send it back with a reason.
+      {% else %}
+        Hello {{ customer_name }} — you have already responded to this invoice. It is kept here for your records.
+      {% endif %}
+    </p>
+    <dl class="ap-facts">
+      <div class="ap-fact"><dt>Amount</dt><dd>{{ grand }}</dd></div>
+      <div class="ap-fact"><dt>Due</dt><dd>{{ bp_to }}</dd></div>
+      <div class="ap-fact"><dt>Payment</dt><dd>{{ payment_status }}</dd></div>
+    </dl>
+  </div>
+
+  <div id="ap-outcome">
+    {% if approval_status != 'In Process' %}
+    <div class="ap-done {% if approval_status == 'Approved' %}ok{% else %}no{% endif %}">
+      <i class="bi {% if approval_status == 'Approved' %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}"></i>
+      <div>
+        <p class="ap-done-t">
+          {% if approval_status == 'Approved' %}You approved this invoice{% else %}You declined this invoice{% endif %}
+        </p>
+        <p class="ap-done-b">
+          Recorded{% if approval_by %} for {{ approval_by }}{% endif %}{% if approval_at %} on {{ approval_at|date:"d M Y, H:i" }}{% endif %}.
+          {{ seller_name|default:"The sender" }} can see your response.
+        </p>
+        {% if approval_note %}<p class="ap-quote">{{ approval_note }}</p>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="ap-doc">
+    <div class="ap-doc-frame" id="ap-frame">
+      <div class="ap-doc-scale" id="ap-scale">
+        {% include "invoices/_invoice_doc.html" %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ap-actions" id="ap-actions">
+    <p id="ap-actions-hint">
+      {% if approval_status == 'In Process' %}Your response is sent straight to {{ seller_name|default:"the sender" }}.
+      {% else %}Changed your mind? Reply to the email and they can reissue the invoice.{% endif %}
+    </p>
+    <a class="btn btn-ghost" href="{{ pdf_url }}"><i class="bi bi-download"></i> Download PDF</a>
+    {% if approval_status == 'In Process' %}
+    <button class="btn btn-no" id="ap-decline"><i class="bi bi-x-lg"></i> Decline</button>
+    <button class="btn btn-ok" id="ap-approve"><i class="bi bi-check-lg"></i> Approve invoice</button>
+    {% endif %}
+  </div>
+
+  <p class="ap-foot">Sent with Zayro Invoice</p>
+</main>
+
+<dialog class="ap-dlg" id="ap-dlg">
+  <form method="dialog" class="ap-dlg-in" id="ap-form">
+    <h2>Decline this invoice</h2>
+    <p>Tell {{ seller_name|default:"the sender" }} what needs changing. They will see this note against the invoice.</p>
+    <p class="ap-err" id="ap-err"></p>
+
+    <label class="ap-label" for="ap-note">Reason</label>
+    <textarea class="ap-field" id="ap-note" rows="4" maxlength="2000"
+              placeholder="e.g. The quantity on line 2 should be 5, not 15."></textarea>
+
+    <label class="ap-label" for="ap-name">Your name <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
+    <input class="ap-field" id="ap-name" maxlength="120" placeholder="{{ customer_name }}">
+
+    <div class="ap-dlg-btns">
+      <button type="button" class="btn btn-ghost" id="ap-cancel">Cancel</button>
+      <button type="button" class="btn btn-brand" id="ap-send">Send response</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const TOKEN = "{{ token|escapejs }}";
+const SELLER = "{{ seller_name|default:'The sender'|escapejs }}";
+
+/* The invoice is authored on a fixed 411px canvas (shared with the PDF), so it
+   is scaled to whatever width the column actually has rather than restyled. */
+function fitDoc() {
+  const box = document.querySelector('.ap-doc');
+  const frame = document.getElementById('ap-frame');
+  const el = document.getElementById('ap-scale');
+  if (!box || !frame || !el) return;
+  const avail = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2;
+  // 1.7 keeps the type readable without blowing it up on a wide monitor.
+  const scale = Math.min(1.7, avail / 411);
+  el.style.transform = `scale(${scale})`;
+  frame.style.width = (411 * scale) + 'px';
+  frame.style.height = (el.scrollHeight * scale) + 'px';
+}
+addEventListener('resize', fitDoc);
+addEventListener('load', fitDoc);
+fitDoc();
+
+const dlg = document.getElementById('ap-dlg');
+const err = document.getElementById('ap-err');
+
+document.getElementById('ap-decline')?.addEventListener('click', () => {
+  err.classList.remove('show');
+  dlg.showModal();
+  document.getElementById('ap-note').focus();
+});
+document.getElementById('ap-cancel')?.addEventListener('click', () => dlg.close());
+
+document.getElementById('ap-approve')?.addEventListener('click', e => respond('approve', '', '', e.target));
+document.getElementById('ap-send')?.addEventListener('click', e => {
+  const note = document.getElementById('ap-note').value.trim();
+  if (!note) {
+    err.textContent = 'Please add a short reason so the sender knows what to fix.';
+    err.classList.add('show');
+    document.getElementById('ap-note').focus();
+    return;
+  }
+  respond('disapprove', note, document.getElementById('ap-name').value.trim(), e.target);
+});
+
+async function respond(action, note, name, btn) {
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = 'Sending…';
+  let data;
+  try {
+    const res = await fetch(`/api/invoices/public/${TOKEN}/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action, note, name}),
+    });
+    data = await res.json();
+  } catch (e) {
+    data = {success: false, message: 'Network error — please try again.'};
+  }
+
+  if (!data.success) {
+    btn.disabled = false;
+    btn.innerHTML = original;
+    if (dlg.open) { err.textContent = data.message || 'Something went wrong.'; err.classList.add('show'); }
+    else { alert(data.message || 'Something went wrong.'); }
+    return;
+  }
+
+  if (dlg.open) dlg.close();
+  const ok = action === 'approve';
+  document.getElementById('ap-outcome').innerHTML = `
+    <div class="ap-done ${ok ? 'ok' : 'no'}">
+      <i class="bi ${ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+      <div>
+        <p class="ap-done-t">${ok ? 'You approved this invoice' : 'You declined this invoice'}</p>
+        <p class="ap-done-b">Recorded just now. ${SELLER} can see your response.</p>
+        ${note ? `<p class="ap-quote"></p>` : ''}
+      </div>
+    </div>`;
+  if (note) document.querySelector('#ap-outcome .ap-quote').textContent = note;
+
+  document.getElementById('ap-approve')?.remove();
+  document.getElementById('ap-decline')?.remove();
+  document.getElementById('ap-actions-hint').textContent =
+    'Thank you. Your response has been sent to ' + SELLER + '.';
+  document.getElementById('ap-outcome').scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+</script>
+</body>
+</html>

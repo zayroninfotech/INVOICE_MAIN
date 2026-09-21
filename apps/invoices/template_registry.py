@@ -118,6 +118,14 @@ INVOICE_TEMPLATES = [
         'task': 'billing',
     },
     {
+        'id': 'receipt',
+        'name': 'Receipt',
+        'desc': 'Narrow shop-counter bill — centred store header, dashed rules, item lines and a big total',
+        'min_plan': 'plus',
+        'badge': '#FFFBEB',
+        'task': 'billing',
+    },
+    {
         'id': 'staffing',
         'name': 'Staffing',
         'desc': 'Professional services invoice with employee, role and working-days columns',
@@ -210,6 +218,12 @@ TEMPLATE_SPECS = {
         'muted': '#64748B', 'border': '#E2E8F0', 'tint': '#F8FAFC',
         'heading_font': 'Helvetica-Bold', 'body_font': 'Helvetica',
         'header_style': 'editorial, oversized type, asymmetric balance block',
+    },
+    'receipt': {
+        'accent': '#111827', 'secondary': '#111827', 'text': '#111827',
+        'muted': '#4B5563', 'border': '#9CA3AF', 'tint': '#FFFFFF',
+        'heading_font': 'Helvetica-Bold', 'body_font': 'Helvetica',
+        'header_style': 'narrow till-receipt column, centred store header, dashed rules',
     },
     # Editorial orange/white treatment, sampled from the reference invoice
     # (inv00123.pdf): #F97316 accent, #FFFBEB amount-in-words band with #92400E

@@ -180,6 +180,12 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'Invoice System <noreply@example.com>')
 
+# Public base URL used to build the customer approval link in emailed invoices.
+# Left blank, the link is built from the request that triggered the send, which
+# is right in dev but wrong behind a proxy that rewrites Host — set it in .env
+# for any real deployment.
+SITE_URL = env('SITE_URL', '')
+
 # Celery
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')

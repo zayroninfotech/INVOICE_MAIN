@@ -45,6 +45,37 @@ class TemplateConfig(me.Document):
         return super().save(*args, **kwargs)
 
 
+class SmtpConfig(me.Document):
+    """App-wide outgoing-mail settings, editable from the admin panel.
+
+    A singleton (key='default'). Anything left blank falls back to the matching
+    Django setting from .env, so an untouched install keeps working off the
+    environment alone. Invoices are sent from this one mailbox for every vendor;
+    the vendor's own address goes in Reply-To, so replies reach them directly.
+    """
+    key           = me.StringField(default='default', unique=True)
+    host          = me.StringField(default='')
+    port          = me.IntField(default=0)
+    use_tls       = me.BooleanField(default=True)
+    use_ssl       = me.BooleanField(default=False)
+    username      = me.StringField(default='')
+    password      = me.StringField(default='')
+    from_email    = me.StringField(default='')
+    enabled       = me.BooleanField(default=True)
+    updated_at    = me.DateTimeField(default=datetime.utcnow)
+    updated_by    = me.StringField(default='')
+
+    meta = {'collection': 'smtp_config'}
+
+    @classmethod
+    def load(cls):
+        return cls.objects(key='default').first() or cls(key='default')
+
+    def save(self, *args, **kwargs):
+        self.updated_at = datetime.utcnow()
+        return super().save(*args, **kwargs)
+
+
 class BusinessProfile(me.Document):
     user_id      = me.StringField(required=True, unique=True)
     company_name = me.StringField(default='')

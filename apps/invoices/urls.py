@@ -1,11 +1,15 @@
 from django.urls import path
 from .views import (InvoiceListCreateView, InvoiceDetailView,
                     InvoicePDFView, InvoiceEmailView, InvoiceStatusView,
-                    AvailableTemplatesView)
+                    AvailableTemplatesView, PublicInvoiceView,
+                    PublicInvoicePDFView)
 from .free_views import FreeInvoiceView, FreeInvoicePDFView
 
 urlpatterns = [
     path('free/', FreeInvoiceView.as_view(), name='free_invoice'),
+    # Public (token-authorised) — must stay above '<str:pk>/'.
+    path('public/<str:token>/', PublicInvoiceView.as_view(), name='invoice_public'),
+    path('public/<str:token>/pdf/', PublicInvoicePDFView.as_view(), name='invoice_public_pdf'),
     path('free/<str:pk>/pdf/', FreeInvoicePDFView.as_view(), name='free_invoice_pdf'),
     path('templates/', AvailableTemplatesView.as_view(), name='invoice_templates'),
     path('', InvoiceListCreateView.as_view(), name='invoice_list'),

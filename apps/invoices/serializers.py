@@ -203,6 +203,8 @@ class InvoiceListSerializer(serializers.Serializer):
     due_date = serializers.DateTimeField()
     grand_total = serializers.DecimalField(max_digits=12, decimal_places=2)
     status = serializers.CharField()
+    payment_status  = serializers.CharField(read_only=True)
+    approval_status = serializers.CharField(read_only=True)
     currency = serializers.CharField()
 
 
@@ -229,6 +231,15 @@ class InvoiceDetailSerializer(serializers.Serializer):
     tax_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
     grand_total = serializers.DecimalField(max_digits=12, decimal_places=2)
     status = serializers.CharField()
+    # Two tracked metrics. payment_status is derived from `status` (the payments
+    # ledger owns it); approval_status is set by the customer on the public page.
+    payment_status  = serializers.CharField(read_only=True)
+    approval_status = serializers.CharField(read_only=True)
+    approval_note   = serializers.CharField(read_only=True)
+    approval_by     = serializers.CharField(read_only=True)
+    approval_at     = serializers.DateTimeField(read_only=True)
+    share_token     = serializers.CharField(read_only=True)
+    sent_at         = serializers.DateTimeField(read_only=True)
     notes = serializers.CharField()
     terms = serializers.CharField()
     currency = serializers.CharField()

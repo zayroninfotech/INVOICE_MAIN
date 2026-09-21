@@ -270,3 +270,99 @@ def admin_templates_api(request):
     else:
         return JsonResponse({'error': 'Unknown action'}, status=400)
     return JsonResponse({'ok': True})
+
+
+@csrf_exempt
+@admin_required
+def admin_smtp_api(request):
+    """App-wide outgoing-mail settings.
+
+    The password is write-only: GET reports whether one is stored, never the
+    value, so opening this screen can't leak the mailbox credential.
+    """
+    from apps.invoices.emailer import smtp_settings, send_test_email, MailNotConfigured
+    from .models import SmtpConfig
+
+    if request.method == 'GET':
+        cfg = SmtpConfig.load()
+        eff = smtp_settings()
+        return JsonResponse({
+            'host': cfg.host, 'port': cfg.port, 'use_tls': cfg.use_tls,
+            'use_ssl': cfg.use_ssl, 'username': cfg.username,
+            'from_email': cfg.from_email, 'enabled': cfg.enabled,
+            'has_password': bool(cfg.password),
+            # What sending would actually use once .env is layered underneath.
+            'effective': {k: eff[k] for k in
+                          ('host', 'port', 'use_tls', 'use_ssl', 'username', 'from_email', 'enabled')},
+            'configured': bool(eff['host'] and eff['username']
+                               and not eff['username'].startswith('your@')),
+        })
+
+    body = json.loads(request.body or '{}')
+
+    if body.get('action') == 'test':
+        to = (body.get('to') or '').strip()
+        if not to:
+            return JsonResponse({'error': 'Enter an address to send the test to.'}, status=400)
+        try:
+            send_test_email(to)
+        except MailNotConfigured as exc:
+            return JsonResponse({'error': str(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'error': f'{type(exc).__name__}: {exc}'}, status=502)
+        AuditLog.log(request.admin_user, 'smtp_test', f'Test email to {to}', _get_ip(request))
+        return JsonResponse({'ok': True, 'message': f'Test email sent to {to}.'})
+
+    host = (body.get('host') or '').strip()
+    if '@' in host or ' ' in host:
+        return JsonResponse({'error': 'Host must be a server name like smtp.gmail.com, '
+                                      'not an email address. Put the address in Username.'}, status=400)
+    cfg = SmtpConfig.load()
+    cfg.host       = host
+    cfg.port       = int(body.get('port') or 0)
+    cfg.use_ssl    = bool(body.get('use_ssl'))
+    cfg.use_tls    = bool(body.get('use_tls')) and not cfg.use_ssl
+    cfg.username   = (body.get('username') or '').strip()
+    cfg.from_email = (body.get('from_email') or '').strip()
+    cfg.enabled    = bool(body.get('enabled'))
+    # Blank means "keep what is stored" — the form never receives the current
+    # password, so an empty field must not wipe it.
+    pw = body.get('password')
+    if pw:
+        cfg.password = pw
+    cfg.updated_by = str(request.admin_user.id)
+    cfg.save()
+    AuditLog.log(request.admin_user, 'smtp_config',
+                 f'SMTP updated: {cfg.host}:{cfg.port} as {cfg.username}', _get_ip(request))
+    return JsonResponse({'ok': True})
+
+
+@csrf_exempt
+def admin_sso(request):
+    """Open the admin workspace from an already-signed-in app session.
+
+    The main app authenticates with a JWT held in localStorage, which the
+    browser does not attach to a plain page navigation, so /z-admin/ used to
+    ask for a second sign-in. This takes the same JWT (Authorization header,
+    so it cannot be triggered cross-site), re-checks the role on the server,
+    and starts the admin session. admin_required still guards every admin
+    route, so hiding the menu item is not what protects it.
+    """
+    from rest_framework.exceptions import AuthenticationFailed
+    from .authentication import MongoJWTAuthentication
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only.'}, status=405)
+    try:
+        result = MongoJWTAuthentication().authenticate(request)
+    except AuthenticationFailed as exc:
+        return JsonResponse({'error': str(exc.detail)}, status=401)
+    if not result:
+        return JsonResponse({'error': 'Not signed in.'}, status=401)
+    user = result[0]
+    if user.role not in ('superadmin', 'admin'):
+        return JsonResponse({'error': 'Your account does not have admin access.'}, status=403)
+    request.session['zadmin_uid'] = str(user.id)
+    request.session.set_expiry(8 * 3600)
+    AuditLog.log(user, 'admin_login', f'Admin session from app login, {_get_ip(request)}', _get_ip(request))
+    return JsonResponse({'ok': True})

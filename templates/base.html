@@ -583,6 +583,12 @@
       letter-spacing: .01em;
     }
     .badge-Draft     { background: #F1F5F9; color: #64748B; }
+    /* Payment (derived) and customer-approval chips; tinted from theme tokens so they read in dark mode too. */
+    .pay-Paid, .apv-Approved { background: color-mix(in srgb, var(--color-success) 14%, transparent); color: var(--color-success); }
+    .pay-Cancelled           { background: var(--surface-subtle); color: var(--text-muted); }
+    .pay-Due                 { background: color-mix(in srgb, #D97706 14%, transparent); color: #B45309; }
+    .apv-Disapproved         { background: color-mix(in srgb, var(--color-danger) 14%, transparent); color: var(--color-danger); }
+    .apv-InProcess           { background: var(--surface-subtle); color: var(--text-secondary); }
     .badge-Sent      { background: #FFF4E6; color: #C2410C; }
     .badge-Paid      { background: #DCFCE7; color: #15803D; }
     .badge-Partial   { background: #FEF9C3; color: #854D0E; }
@@ -1028,22 +1034,6 @@
       </a>
     </div>
 
-    <!-- Superadmin only -->
-    <div id="admin-section" style="display:none">
-      <div class="sidebar-section-label" style="margin-top:4px">Admin</div>
-      <div class="nav-item-wrap">
-        <a href="/z-admin/" class="nav-link-main">
-          <span class="nav-icon"><i class="bi bi-shield-fill-check"></i></span>
-          Admin Panel
-        </a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="/auth/users/" class="nav-link-main {% block nav_users %}{% endblock %}">
-          <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
-          User Management
-        </a>
-      </div>
-    </div>
   </div>
 
   <div class="sidebar-footer">
@@ -1094,7 +1084,7 @@
         </div>
         <div class="user-dropdown" id="user-dropdown">
           <a href="/auth/profile/" class="ud-item"><i class="bi bi-person-circle"></i> My Profile</a>
-          <a href="/auth/profile/" class="ud-item"><i class="bi bi-shield-lock"></i> Change Password</a>
+          <a href="/z-admin/" class="ud-item" id="ud-admin" style="display:none" onclick="return openAdminPanel(event)"><i class="bi bi-shield-fill-check"></i> Admin Panel</a>
           <div class="ud-divider"></div>
           <a href="/auth/logout/" class="ud-item ud-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </div>
@@ -1227,7 +1217,24 @@
     if (pill && !pill.contains(e.target)) dd.classList.remove('open');
   });
 
+  /* Straight into the admin workspace: hand the app login to the server, then
+     navigate. Falls through to the normal /z-admin/ link (its own sign-in)
+     only if the handoff fails. */
+  async function openAdminPanel(e) {
+    e.preventDefault();
+    const call = () => fetch('/z-admin/sso/', { method: 'POST', headers: API.headers() });
+    try {
+      let r = await call();
+      if (r.status === 401 && await API._refreshToken()) r = await call();
+      if (r.ok) { window.location = '/z-admin/'; return false; }
+      toast(r.status === 403 ? 'Your account does not have admin access.' : 'Could not open the admin panel.', 'error');
+    } catch (err) { toast('Could not open the admin panel.', 'error'); }
+    return false;
+  }
+
   function doLogout() {
+    // End the admin session too, or it outlives this login for up to 8 hours.
+    try { fetch('/z-admin/logout/', { keepalive: true, redirect: 'manual' }); } catch (e) {}
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_email');
@@ -1321,9 +1328,8 @@
   document.getElementById('user-avatar-letter').textContent = (username[0] || 'U').toUpperCase();
   window.USER_ROLE = role;
 
-  if (role === 'superadmin') {
-    const adminSec = document.getElementById('admin-section');
-    if (adminSec) adminSec.style.display = 'block';
+  if (role === 'admin' || role === 'superadmin') {
+    document.getElementById('ud-admin').style.display = 'flex';
   }
 
   const _limitModal = new bootstrap.Modal(document.getElementById('limitModal'));
