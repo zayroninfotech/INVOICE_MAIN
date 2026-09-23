@@ -1,14 +1,12 @@
-﻿<!DOCTYPE html>
+﻿{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Zayro Invoice: GST Billing for Indian Businesses</title>
   <meta name="description" content="Professional GST invoicing, payment tracking and business management, built for Indian businesses. Create your first invoice in minutes."/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{% static 'fonts/geist/geist.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
 
   <style>
     :root {
@@ -78,7 +76,7 @@
 
     /* ── HERO ─────────────────────────────────────────── */
     .hero {
-      padding-top:56px;
+      padding-top:24px;
       display:flex; align-items:center;
       position:relative; overflow:hidden;
     }
@@ -100,7 +98,7 @@
     @media (prefers-reduced-motion: reduce) { #hero-fx { display:none; } }
     .hero-inner {
       position:relative; z-index:1; width:100%; max-width:1200px;
-      margin:0 auto; padding:72px 40px 64px;
+      margin:0 auto; padding:40px 40px 56px;
       display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
     }
 
@@ -287,10 +285,6 @@
     }
     .wf-step:last-child { border-right:none; }
     .wf-step:hover { background:rgba(19,20,22,.035); }
-    .wf-step:hover .wf-icon {
-      background:rgba(193,18,31,.16);
-      border-color:rgba(193,18,31,.3);
-    }
 
     .wf-num {
       font-size:.58rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
@@ -298,11 +292,13 @@
     }
     .wf-num::after { content:''; flex:1; height:1px; background:var(--dark-b); }
     .wf-icon {
-      width:36px; height:36px; border-radius:9px;
-      background:rgba(193,18,31,.09); border:1px solid rgba(193,18,31,.18);
+      width:56px; height:56px; border-radius:50%;
+      background:rgba(193,18,31,.12); border:none;
       display:flex; align-items:center; justify-content:center;
-      color:var(--ember); font-size:.88rem; margin-bottom:16px;
+      color:var(--ember); font-size:1.5rem; margin-bottom:20px;
+      transition:background .25s, transform .2s;
     }
+    .wf-step:hover .wf-icon { background:rgba(193,18,31,.2); transform:scale(1.06); }
     .wf-h { font-size:.92rem; font-weight:800; color:#131416; margin-bottom:8px; letter-spacing:-.012em; }
     .wf-p { font-size:.79rem; color:var(--text-2); line-height:1.72; }
 
@@ -710,7 +706,7 @@
     }
 
     @media (max-width:900px){
-      .hero-inner { grid-template-columns:1fr; gap:40px; padding:64px 20px 52px; }
+      .hero-inner { grid-template-columns:1fr; gap:40px; padding:28px 20px 44px; }
       /* The product shot used to be display:none here, so the hero lost its
          only visual on every phone and tablet. Keep it, stacked under the
          copy, sharing the copy's exact left/right edges. */
@@ -1110,12 +1106,6 @@
         <a href="#" onclick="showFreeForm();return false;" class="btn-primary-lg"><i class="bi bi-lightning-charge-fill me-1"></i>Try free invoice</a>
         <a href="#how-it-works" class="btn-outline-lg">See how it works</a>
       </div>
-      <div class="trust-row" aria-label="Key benefits">
-        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> No credit card</div>
-        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Free plan available</div>
-        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> GST-ready</div>
-        <div class="trust-item"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> PDF invoices</div>
-      </div>
     </div>
 
     <!-- Dashboard mock -->
@@ -1456,7 +1446,7 @@
     <div class="workflow-steps">
       <div class="wf-step reveal">
         <div class="wf-num">01</div>
-        <div class="wf-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-buildings-fill"></i></div>
         <div class="wf-h">Add your customers</div>
         <p class="wf-p">Store customer details, GSTIN and billing information. Reused automatically every time you create an invoice.</p>
       </div>
@@ -1474,7 +1464,7 @@
       </div>
       <div class="wf-step reveal reveal-delay-3">
         <div class="wf-num">04</div>
-        <div class="wf-icon" aria-hidden="true"><i class="bi bi-currency-rupee"></i></div>
+        <div class="wf-icon" aria-hidden="true"><i class="bi bi-credit-card-fill"></i></div>
         <div class="wf-h">Record payment</div>
         <p class="wf-p">Track paid, pending and overdue invoices. Log partial payments and watch outstanding balances update in real time.</p>
       </div>
@@ -2477,13 +2467,22 @@
     body.classList.toggle('open', !expanded);
   }
 
-  /* ── Scroll reveal ── */
+  /* ── Scroll reveal ──
+     rootMargin extends the "visible zone" 9999px below the viewport so every
+     element on the page fires immediately on observe() — this ensures the CSS
+     fade-in runs even in headless/screenshot contexts (Playwright, bots) that
+     never scroll. Real users still see the CSS transition; it just triggers on
+     load rather than on individual scroll positions. */
+  const revealAll = () => document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+  }, { threshold: 0.05, rootMargin: '0px 0px 9999px 0px' });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  // Belt-and-suspenders fallback: force-reveal everything after one frame,
+  // catching any browser that defers IntersectionObserver callbacks.
+  setTimeout(revealAll, 0);
 
   /* ── Smooth anchor scroll ── */
   document.querySelectorAll('a[href^="#"]').forEach(a => {

@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -7,8 +6,6 @@ from apps.authentication import admin_views
 from apps.invoices import web_views as invoice_web_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
     # API routes
     path('api/auth/', include('apps.authentication.urls')),
     path('api/customers/', include('apps.customers.urls')),

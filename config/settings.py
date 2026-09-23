@@ -1,7 +1,11 @@
 import os
+import mimetypes
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+
+mimetypes.add_type('font/woff2', '.woff2')
+mimetypes.add_type('font/woff', '.woff')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,7 +26,6 @@ DEBUG = env('DEBUG', 'True', cast=bool)
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') + ['*']
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -58,13 +61,14 @@ PLAN_LIMITS = {
 }
 PAID_PLANS = ('plus', 'pro', 'unlimited')
 
+SESSION_ENGINE = 'utils.mongo_session'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -80,7 +84,6 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -115,11 +118,11 @@ else:
     MONGO_URI = MONGODB_URI_FALLBACK
     print("[MongoDB] PRIMARY unreachable — using FALLBACK (localhost)")
 
-# Django default DB (SQLite) only for Django admin/sessions/auth tables
+# No relational DB — all data lives in MongoDB via MongoEngine.
+# A dummy backend satisfies Django's internal checks without connecting to anything.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.dummy',
     }
 }
 
@@ -139,6 +142,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MIMETYPES = {
+    '.woff2': 'font/woff2',
+    '.woff':  'font/woff',
+    '.ttf':   'font/ttf',
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
