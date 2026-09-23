@@ -917,8 +917,6 @@
     .tot-row.bal{font-weight:900;font-size:1rem;color:#fff;background:#C1121F;padding:10px 12px;border-radius:8px;margin-top:8px;}
     .gst-rate-input{width:44px;border:1px solid #E8E7E5;border-radius:4px;padding:2px 5px;font-size:.78rem;text-align:right;outline:none;background:#fff;}
     .gst-rate-input:focus{border-color:#C1121F;}
-    .tax-mode-btn{flex:1;padding:7px 8px;border:1px solid #E8E7E5;background:#fff;color:#64748B;font-size:.72rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all .15s;}
-    .tax-mode-btn.active{background:#C1121F;border-color:#C1121F;color:#fff;}
     .amount-words{margin-top:12px;padding:10px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;font-size:.78rem;color:#92400E;font-weight:600;line-height:1.5;}
     .amount-words strong{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:2px;}
     .gen-section-block{border-top:1px solid #E8E7E5;padding-top:14px;margin-top:14px;}
@@ -1324,15 +1322,10 @@
               </div>
               <div class="gen-totals" style="padding:0 16px 16px;">
                 <div class="totals-box">
-                  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-                    <button type="button" id="fi-mode-intra" class="tax-mode-btn active" onclick="setFreeTaxMode('intra')">CGST + SGST <span style="font-weight:400;opacity:.8">(Intra-state)</span></button>
-                    <button type="button" id="fi-mode-inter" class="tax-mode-btn" onclick="setFreeTaxMode('inter')">IGST <span style="font-weight:400;opacity:.8">(Inter-state)</span></button>
-                    <button type="button" id="fi-mode-all" class="tax-mode-btn" onclick="setFreeTaxMode('all')" title="Show CGST, SGST and IGST together for cases that need all three">All three</button>
-                  </div>
                   <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">&#8377;0.00</span></div>
                   <div class="tot-row gst-row" id="fi-row-cgst"><span style="display:flex;align-items:center;gap:6px">CGST @ <input class="gst-rate-input" type="number" id="fi-cgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-cgst-amt">&#8377;0.00</span></div>
                   <div class="tot-row gst-row" id="fi-row-sgst"><span style="display:flex;align-items:center;gap:6px">SGST @ <input class="gst-rate-input" type="number" id="fi-sgst-rate" value="9" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-sgst-amt">&#8377;0.00</span></div>
-                  <div class="tot-row gst-row" id="fi-row-igst" style="display:none"><span style="display:flex;align-items:center;gap:6px">IGST @ <input class="gst-rate-input" type="number" id="fi-igst-rate" value="0" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-igst-amt">&#8377;0.00</span></div>
+                  <div class="tot-row gst-row" id="fi-row-igst"><span style="display:flex;align-items:center;gap:6px">IGST @ <input class="gst-rate-input" type="number" id="fi-igst-rate" value="0" min="0" max="28" step="0.5" oninput="recalcFreeTotal()">%</span><span id="fi-igst-amt">&#8377;0.00</span></div>
                   <div class="tot-row total-gst-row"><span>Total GST (@ <span id="fi-gst-pct">27</span>%)</span><span id="fi-gst-total">&#8377;0.00</span></div>
                   <div class="tot-row bal"><span>Grand Total (incl. GST)</span><span id="fi-total">&#8377;0.00</span></div>
                 </div>
@@ -2436,7 +2429,7 @@
     <div>
       <div class="footer-col-title">Account</div>
       <nav class="footer-col-links" aria-label="Account links">
-        <a href="#" onclick="openModal('login-modal');return false;">Sign in</a>
+        <a href="#" onclick="openModal('login-modal');return false;">Login</a>
         <a href="#" onclick="openModal('reg-modal');return false;">Start for free</a>
         <a href="#" onclick="showFreeForm();return false;">Try without an account</a>
       </nav>
@@ -2511,12 +2504,12 @@
   <div class="auth-modal">
     <button class="modal-close" onclick="closeModal('login-modal')"><i class="bi bi-x-lg"></i></button>
     <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
-    <p class="modal-sub">Sign in to your account</p>
+    <p class="modal-sub">Login to your account</p>
     <div id="login-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
     <form id="login-form" onsubmit="doLogin(event)">
       <div class="mb-3"><label class="m-label">Email or Username</label><input type="text" class="m-input" id="l-ident" placeholder="email or username" autocomplete="username" required></div>
       <div class="mb-4"><label class="m-label">Password</label><div style="position:relative"><input type="password" class="m-input" id="l-pwd" placeholder="password" autocomplete="current-password" required style="padding-right:40px"><button type="button" class="pwd-eye-btn" onclick="toggleEye('l-pwd','eye-l')"><i class="bi bi-eye" id="eye-l"></i></button></div></div>
-      <button type="submit" class="btn-modal-submit" id="login-btn"><span id="login-btn-txt">Sign In</span><span id="login-spinner" class="d-none ms-2"></span></button>
+      <button type="submit" class="btn-modal-submit" id="login-btn"><span id="login-btn-txt">Login</span><span id="login-spinner" class="d-none ms-2"></span></button>
     </form>
     <div class="modal-foot">No account? <a onclick="switchModal('login-modal','reg-modal')">Register free</a></div>
   </div>
@@ -2564,7 +2557,7 @@
       <div class="mb-4"><label class="m-label">Password</label><div style="position:relative"><input type="password" class="m-input" id="r-pwd" placeholder="Min 8 characters" autocomplete="new-password" required minlength="8" style="padding-right:40px" oninput="checkStrength(this.value)"><button type="button" class="pwd-eye-btn" onclick="toggleEye('r-pwd','eye-r')"><i class="bi bi-eye" id="eye-r"></i></button></div><div class="strength-bar"><div class="strength-fill" id="s-fill"></div></div><div id="s-text" style="font-size:.7rem;margin-top:3px;color:#94A3B8"></div></div>
       <button type="submit" class="btn-modal-submit" id="reg-btn"><span id="reg-btn-txt">Create Account</span><span id="reg-spinner" class="d-none ms-2"></span></button>
     </form>
-    <div class="modal-foot">Have an account? <a onclick="switchModal('reg-modal','login-modal')">Sign In</a></div>
+    <div class="modal-foot">Have an account? <a onclick="switchModal('reg-modal','login-modal')">Login</a></div>
   </div>
 </div>
 <script>
@@ -2582,7 +2575,7 @@ function switchModal(from, to){ closeModal(from); openModal(to); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal('login-modal'); closeModal('reg-modal'); if(document.getElementById('preview-modal').classList.contains('open')) closePreviewModal(); }});
 function toggleEye(inputId, eyeId) { const inp = document.getElementById(inputId); const eye = document.getElementById(eyeId); inp.type = inp.type==='password' ? 'text' : 'password'; eye.className = inp.type==='password' ? 'bi bi-eye' : 'bi bi-eye-slash'; }
 function checkStrength(val) { let s=0; if(val.length>=8) s++; if(/[A-Z]/.test(val)) s++; if(/[0-9]/.test(val)) s++; if(/[^A-Za-z0-9]/.test(val)) s++; const L=[{w:0,c:'#EF4444',t:''},{w:.25,c:'#EF4444',t:'Weak'},{w:.5,c:'#F59E0B',t:'Fair'},{w:.75,c:'#C1121F',t:'Good'},{w:1,c:'#10B981',t:'Strong'}]; const l=L[s]; const f=document.getElementById('s-fill'); const t=document.getElementById('s-text'); f.style.transform='scaleX('+l.w+')'; f.style.background=l.c; t.textContent=l.t; t.style.color=l.c; }
-async function doLogin(e) { e.preventDefault(); const btn=document.getElementById('login-btn'); const err=document.getElementById('login-err'); err.classList.add('d-none'); btn.disabled=true; document.getElementById('login-btn-txt').textContent='Signing in...'; document.getElementById('login-spinner').classList.remove('d-none'); ZayroLoader.show('#login-spinner', null, {inline:true}); const ident=document.getElementById('l-ident').value.trim(); try { const r=await fetch('/api/auth/login/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[ident.includes('@')?'email':'username']:ident, password:document.getElementById('l-pwd').value})}); const d=await r.json(); if(d.success){ localStorage.setItem('access_token',d.data.tokens.access); localStorage.setItem('refresh_token',d.data.tokens.refresh); localStorage.setItem('user_email',d.data.user.email); localStorage.setItem('user_username',d.data.user.username); localStorage.setItem('user_role',d.data.user.role); localStorage.setItem('user_id',d.data.user.id); window.location='/dashboard/'; } else { const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message; err.textContent=msg||'Invalid credentials.'; err.classList.remove('d-none'); } } catch(ex) { err.textContent='Network error.'; err.classList.remove('d-none'); } btn.disabled=false; document.getElementById('login-btn-txt').textContent='Sign In'; document.getElementById('login-spinner').classList.add('d-none'); ZayroLoader.hide('#login-spinner'); }
+async function doLogin(e) { e.preventDefault(); const btn=document.getElementById('login-btn'); const err=document.getElementById('login-err'); err.classList.add('d-none'); btn.disabled=true; document.getElementById('login-btn-txt').textContent='Logging in...'; document.getElementById('login-spinner').classList.remove('d-none'); ZayroLoader.show('#login-spinner', null, {inline:true}); const ident=document.getElementById('l-ident').value.trim(); try { const r=await fetch('/api/auth/login/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[ident.includes('@')?'email':'username']:ident, password:document.getElementById('l-pwd').value})}); const d=await r.json(); if(d.success){ localStorage.setItem('access_token',d.data.tokens.access); localStorage.setItem('refresh_token',d.data.tokens.refresh); localStorage.setItem('user_email',d.data.user.email); localStorage.setItem('user_username',d.data.user.username); localStorage.setItem('user_role',d.data.user.role); localStorage.setItem('user_id',d.data.user.id); window.location='/dashboard/'; } else { const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message; err.textContent=msg||'Invalid credentials.'; err.classList.remove('d-none'); } } catch(ex) { err.textContent='Network error.'; err.classList.remove('d-none'); } btn.disabled=false; document.getElementById('login-btn-txt').textContent='Login'; document.getElementById('login-spinner').classList.add('d-none'); ZayroLoader.hide('#login-spinner'); }
 async function doRegister(e) { e.preventDefault(); const btn=document.getElementById('reg-btn'); const err=document.getElementById('reg-err'); const ok=document.getElementById('reg-ok'); err.classList.add('d-none'); ok.classList.add('d-none'); btn.disabled=true; document.getElementById('reg-btn-txt').textContent='Creating...'; document.getElementById('reg-spinner').classList.remove('d-none'); ZayroLoader.show('#reg-spinner', null, {inline:true}); try { const r=await fetch('/api/auth/register/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('r-user').value.trim(),email:document.getElementById('r-email').value.trim(),password:document.getElementById('r-pwd').value})}); const d=await r.json(); if(d.success){ localStorage.setItem('access_token',d.data.tokens.access); localStorage.setItem('refresh_token',d.data.tokens.refresh); localStorage.setItem('user_email',d.data.user.email); localStorage.setItem('user_username',d.data.user.username); localStorage.setItem('user_role',d.data.user.role); localStorage.setItem('user_id',d.data.user.id); ok.textContent='Account created! Redirecting...'; ok.classList.remove('d-none'); setTimeout(function(){window.location='/dashboard/';},900); } else { const msg=d.errors?Object.values(d.errors).flat().join(' '):d.message; err.textContent=msg||'Registration failed.'; err.classList.remove('d-none'); } } catch(ex) { err.textContent='Network error.'; err.classList.remove('d-none'); } btn.disabled=false; document.getElementById('reg-btn-txt').textContent='Create Account'; document.getElementById('reg-spinner').classList.add('d-none'); ZayroLoader.hide('#reg-spinner'); }
 </script>
 <script>
@@ -2713,22 +2706,6 @@ function renderFreeItems(){
   recalcFreeTotal();
 }
 function amountToWords(n){const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];function tw(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');}function convert(n){if(n===0)return'';if(n<100)return tw(n);if(n<1000)return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+tw(n%100):'');if(n<100000)return convert(Math.floor(n/1000))+' Thousand'+(n%1000?' '+convert(n%1000):'');if(n<10000000)return convert(Math.floor(n/100000))+' Lakh'+(n%100000?' '+convert(n%100000):'');return convert(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+convert(n%10000000):'');}const rupees=Math.floor(n);const paise=Math.round((n-rupees)*100);let words=convert(rupees)||'Zero';words+=' Rupee'+(rupees!==1?'s':'');if(paise>0)words+=' and '+tw(paise)+' Paise';return words+' Only.';}
-var _freeTaxMode='intra';
-function setFreeTaxMode(m){
-  _freeTaxMode=m;
-  const intra=m==='intra', inter=m==='inter', all=m==='all';
-  document.getElementById('fi-mode-intra').classList.toggle('active',intra);
-  document.getElementById('fi-mode-inter').classList.toggle('active',inter);
-  document.getElementById('fi-mode-all').classList.toggle('active',all);
-  document.getElementById('fi-row-cgst').style.display=(intra||all)?'':'none';
-  document.getElementById('fi-row-sgst').style.display=(intra||all)?'':'none';
-  document.getElementById('fi-row-igst').style.display=(inter||all)?'':'none';
-  const cg=document.getElementById('fi-cgst-rate'),sg=document.getElementById('fi-sgst-rate'),ig=document.getElementById('fi-igst-rate');
-  if(all){ if(!parseFloat(cg.value)) cg.value=9; if(!parseFloat(sg.value)) sg.value=9; }
-  else if(intra){const t=parseFloat(ig.value)||0;const half=t?Math.round(t/2*2)/2:9;cg.value=half;sg.value=half;ig.value=0;}
-  else if(inter){const t=(parseFloat(cg.value)||0)+(parseFloat(sg.value)||0);ig.value=t||18;cg.value=0;sg.value=0;}
-  recalcFreeTotal();
-}
 function recalcFreeTotal(){
   let sub=0;freeItems.forEach((it,i)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);sub+=amt;const el=document.getElementById('item-amt-'+i);if(el)el.textContent='₹'+amt.toFixed(2);});
   const cgstRate=parseFloat(document.getElementById('fi-cgst-rate').value)||0;const sgstRate=parseFloat(document.getElementById('fi-sgst-rate').value)||0;const igstRate=parseFloat(document.getElementById('fi-igst-rate').value)||0;
@@ -2964,8 +2941,7 @@ function createAnotherFree(){
   ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-recipient','fi-inv-number','fi-from-name','fi-from-email','fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   removeLogo();onLogoSize(110);removeSignature();document.getElementById('fi-sig-name').value='';document.getElementById('fi-sig-company').value='';
   document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('fi-cgst-rate').value='9';document.getElementById('fi-sgst-rate').value='9';
-  setFreeTaxMode(_freeTaxMode);
+  document.getElementById('fi-cgst-rate').value='9';document.getElementById('fi-sgst-rate').value='9';document.getElementById('fi-igst-rate').value='0';
   document.getElementById('fi-thankyou').value='Thank you for your business!';document.getElementById('fi-dept').value='Sales & Procurement Department';
   recalcFreeTotal();
 }

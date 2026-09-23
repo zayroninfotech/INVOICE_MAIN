@@ -38,7 +38,7 @@ Context supplied by the view (MVT): nav_links = [{label, href, active}].
     {% endfor %}
   </div>
   <div class="sn-right">
-    <a href="/?login" class="sn-btn-ghost">Sign in</a>
+    <a href="/?login" class="sn-btn-ghost">Login</a>
     {% if nav_cta %}
     <a href="{{ nav_cta.href }}" class="sn-btn-cta">{{ nav_cta.label }}</a>
     {% else %}
@@ -55,7 +55,7 @@ Context supplied by the view (MVT): nav_links = [{label, href, active}].
   {% endfor %}
   <div class="sn-menu-divider"></div>
   <div class="sn-menu-btns">
-    <a href="/?login" class="sn-btn-ghost" style="text-align:center">Sign in</a>
+    <a href="/?login" class="sn-btn-ghost" style="text-align:center">Login</a>
     {% if nav_cta %}
     <a href="{{ nav_cta.href }}" class="sn-btn-cta" style="justify-content:center">{{ nav_cta.label }}</a>
     {% else %}

@@ -529,18 +529,6 @@ canvas#sig-canvas{touch-action:none;}
 
           <div class="tax-row"><span style="min-width:90px">Subtotal</span><span style="margin-left:auto;font-weight:700" id="sum-sub">₹0.00</span></div>
 
-          <div class="tax-row">
-
-            <span style="min-width:60px">GST Type</span>
-
-            <select id="tax-mode" onchange="setTaxMode(this.value)" style="flex:1;padding:4px 6px;border:1px solid #E2E8F0;border-radius:6px;font-size:.84rem;background:#fff;">
-              <option value="intra" selected>CGST + SGST (Intra-state)</option>
-              <option value="inter">IGST (Inter-state)</option>
-              <option value="all">All three (CGST + SGST + IGST)</option>
-            </select>
-
-          </div>
-
           <div class="tax-row" id="tax-row-cgst">
 
             <span style="min-width:60px">CGST @</span>
@@ -565,7 +553,7 @@ canvas#sig-canvas{touch-action:none;}
 
           </div>
 
-          <div class="tax-row" id="tax-row-igst" style="display:none">
+          <div class="tax-row" id="tax-row-igst">
 
             <span style="min-width:60px">IGST @</span>
 
@@ -991,32 +979,6 @@ function removeItem(i) { document.getElementById(`row-${i}`)?.remove(); recalc()
 
 
 
-function setTaxMode(m) {
-  // CGST+SGST (intra-state) and IGST (inter-state) are mutually exclusive —
-  // switching modes hides the other rows, zeroes their rates and preserves
-  // the combined tax rate.
-  window._taxMode = m;
-  const intra = m === 'intra', all = m === 'all';
-  const sel = document.getElementById('tax-mode');
-  if (sel && sel.value !== m) sel.value = m;
-  document.getElementById('tax-row-cgst').style.display = (intra || all) ? '' : 'none';
-  document.getElementById('tax-row-sgst').style.display = (intra || all) ? '' : 'none';
-  document.getElementById('tax-row-igst').style.display = intra ? 'none' : '';
-  const cg = document.getElementById('cgst-rate'), sg = document.getElementById('sgst-rate'), ig = document.getElementById('igst-rate');
-  const cgVal = parseFloat(cg.value) || 0, sgVal = parseFloat(sg.value) || 0, igVal = parseFloat(ig.value) || 0;
-  if (all) {
-    if (!cgVal) cg.value = 9;
-    if (!sgVal) sg.value = 9;
-  } else if (intra) {
-    if (igVal > 0 && !cgVal && !sgVal) { const half = Math.round(igVal / 2 * 2) / 2; cg.value = half; sg.value = half; }
-    else if (!cgVal && !sgVal) { cg.value = 9; sg.value = 9; }
-    ig.value = 0;
-  } else {
-    ig.value = (cgVal + sgVal) || 18;
-    cg.value = 0; sg.value = 0;
-  }
-  recalc();
-}
 function recalc() {
 
   let sub = 0;
@@ -1739,7 +1701,7 @@ async function loadInvoice() {
 
   if (inv.igst_rate != null)  document.getElementById('igst-rate').value = inv.igst_rate;
 
-  { const _c = (parseFloat(inv.cgst_rate)||0)+(parseFloat(inv.sgst_rate)||0), _i = parseFloat(inv.igst_rate)||0; setTaxMode(_i > 0 ? (_c > 0 ? 'all' : 'inter') : 'intra'); }
+  recalc();
 
   document.getElementById('thankyou-msg').value  = inv.notes || 'Thank you for your business!';
 

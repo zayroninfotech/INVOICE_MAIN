@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Invoice Detail — Zayro ₹ Invoice{% endblock %}
-{% block nav_invoices %}active{% endblock %}
+{% block nav_list %}active{% endblock %}
 {% block page_title %}Invoice Detail{% endblock %}
 
 {% block page_back %}<a href="{% url 'invoice_list_page' %}" class="page-back-btn" aria-label="Back to invoices"><i class="bi bi-arrow-left"></i></a>{% endblock %}
@@ -64,7 +64,7 @@
 
   /* ── the real invoice preview, shared markup/CSS with form.html + edit.html ── */
   .idet-preview-wrap { display:flex; justify-content:center; padding:22px; background:var(--surface-sunken); border:1.5px solid var(--border); border-radius:14px; margin-bottom:20px; }
-  .inv-preview { --tpl-accent:#C1121F; --tpl-secondary:#0F172A; --tpl-text:#0F172A; --tpl-muted:#64748B; --tpl-border:#E2E8F0; --tpl-tint:#F8FAFC; background:#fff; border-radius:7px; overflow:hidden; box-shadow:0 4px 28px rgba(0,0,0,.14); font-family:Arial,sans-serif; font-size:13px; color:var(--tpl-text); width:100%; max-width:640px; }
+  .inv-preview { --tpl-accent:#C1121F; --tpl-secondary:#0F172A; --tpl-text:#0F172A; --tpl-muted:#64748B; --tpl-border:#E2E8F0; --tpl-tint:#F8FAFC; background:#fff; border-radius:7px; overflow:hidden; box-shadow:0 4px 28px rgba(0,0,0,.14); font-family:'Times New Roman',Times,serif; font-size:13px; color:var(--tpl-text); width:100%; max-width:640px; }
   .pvw-top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 10px;}
   .pvw-circle{width:48px;height:48px;border-radius:50%;background:var(--tpl-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:15px;flex-shrink:0;}
   .pvw-divider{height:3px;background:var(--tpl-accent);}

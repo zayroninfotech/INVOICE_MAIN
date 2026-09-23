@@ -35,7 +35,7 @@
 <div class="card">
   <div class="logo">Zayro<span>.</span></div>
   <div class="badge"><i class="bi bi-shield-fill-check"></i> Admin access</div>
-  <h1>Sign in to admin panel</h1>
+  <h1>Login to admin panel</h1>
   <p class="sub">Only accounts with admin or superadmin role can access this area.</p>
   <div class="err" id="err"></div>
   <form onsubmit="doLogin(event)">
@@ -48,7 +48,7 @@
       <label>Password</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required/>
     </div>
-    <button type="submit" class="btn" id="submit-btn"><i class="bi bi-shield-lock-fill"></i> Sign in</button>
+    <button type="submit" class="btn" id="submit-btn"><i class="bi bi-shield-lock-fill"></i> Login</button>
   </form>
   <a href="/" class="back">← Back to Zayro</a>
 </div>
@@ -59,7 +59,7 @@ async function doLogin(e) {
   const err = document.getElementById('err');
   err.style.display = 'none';
   btn.disabled = true;
-  btn.innerHTML = '<div class="spin"></div> Signing in…';
+  btn.innerHTML = '<div class="spin"></div> Logging in…';
   const res = await fetch('/z-admin/login/', {
     method: 'POST',
     headers: {'Content-Type':'application/json','X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value},
@@ -69,10 +69,10 @@ async function doLogin(e) {
   if (data.ok) {
     window.location.href = '/z-admin/';
   } else {
-    err.textContent = data.error || 'Sign in failed.';
+    err.textContent = data.error || 'Login failed.';
     err.style.display = 'block';
     btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-shield-lock-fill"></i> Sign in';
+    btn.innerHTML = '<i class="bi bi-shield-lock-fill"></i> Login';
   }
 }
 </script>
