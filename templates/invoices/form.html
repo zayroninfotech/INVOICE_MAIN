@@ -6,7 +6,7 @@
 
 {% block page_title %}{% if action == 'create' %}New Invoice{% else %}Edit Invoice{% endif %}{% endblock %}
 
-{% block page_back %}<a href="{% url 'invoice_list_page' %}" class="page-back-btn" aria-label="Back to invoices"><i class="bi bi-arrow-left"></i></a>{% endblock %}
+{% block page_back %}<a href="{% url 'invoice_list_page' %}" class="page-back-btn" aria-label="Back" onclick="return pageBack(event)"><i class="bi bi-arrow-left"></i></a>{% endblock %}
 
 
 
@@ -398,6 +398,10 @@ canvas#sig-canvas{touch-action:none;}
 
 .from-bar{flex-wrap:wrap;align-items:flex-start;padding:16px 18px 18px;border-radius:12px;box-shadow:0 1px 2px rgba(19,20,22,.04);}
 .from-head{flex-basis:100%;}
+.from-bar .from-logo-col{width:112px !important;max-width:112px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.from-bar .from-logo-col .logo-size-wrap{width:112px !important;box-sizing:border-box;margin:2px 0 0;padding:0;border:none;background:none;gap:6px;flex-wrap:nowrap;align-items:center;}
+.from-bar .from-logo-col .logo-slider{flex:1;min-width:0;width:auto;accent-color:var(--ember);}
+.from-bar .from-logo-col #logo-size-val{min-width:0;flex-shrink:0;font-size:.72rem;line-height:1;padding:4px 6px;border-radius:6px;background:var(--ember-light);color:var(--ember);font-variant-numeric:tabular-nums;}
 .from-logo-wrap{width:96px;height:96px;background:var(--surface-subtle);}
 .from-logo-wrap .logo-ph{font-size:.75rem;font-weight:700;color:var(--text-secondary);}
 .from-fields{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -932,6 +936,7 @@ canvas#sig-canvas{touch-action:none;}
     {% include "invoices/_invoice_doc.html" %}
 
   </div>
+
 
 </div><!-- /gen-preview -->
 
@@ -2576,7 +2581,6 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     if (res.success) {
 
       toast(ACTION === 'edit' ? 'Invoice updated!' : 'Invoice created!');
-
       setTimeout(() => window.location = `/invoices/${res.data.id}/`, 800);
 
     } else {
@@ -2619,7 +2623,19 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
 
 
 /* ── Stage toggle: State 1 (template select) <-> State 2 (details entry) ── */
-function goToStage(n) {
+function pageBack(e) {
+  if (!document.getElementById('gen-layout').classList.contains('stage-2')) return true;
+  e.preventDefault();
+  if (history.state && history.state.stage === 2) history.back();
+  else goToStage(1);
+  return false;
+}
+
+window.addEventListener('popstate', () => {
+  if (!new URLSearchParams(location.search).get('template')) goToStage(1, {fromPop: true});
+});
+
+function goToStage(n, opts = {}) {
   document.querySelectorAll('.stage1-only').forEach(el => el.classList.toggle('stg-hidden', n !== 1));
   document.querySelectorAll('.stage2-only').forEach(el => el.classList.toggle('stg-hidden', n !== 2));
   const gl = document.getElementById('gen-layout');
@@ -2627,10 +2643,16 @@ function goToStage(n) {
   gl.classList.toggle('stage-2', n === 2);
   if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); }
   // Keep the chosen template in the URL so a refresh reopens the editor, not the picker.
+  // Entering the editor pushes a history entry so Back returns to the picker.
   const url = new URL(location.href);
-  if (n === 2) url.searchParams.set('template', window._selectedTemplate);
-  else url.searchParams.delete('template');
-  history.replaceState(null, '', url);
+  if (n === 2) {
+    url.searchParams.set('template', window._selectedTemplate);
+    if (opts.init || (history.state && history.state.stage === 2)) history.replaceState({stage: 2}, '', url);
+    else history.pushState({stage: 2}, '', url);
+  } else if (!opts.fromPop) {
+    url.searchParams.delete('template');
+    history.replaceState(null, '', url);
+  }
 }
 
 function toggleMobilePreview() {
@@ -2644,13 +2666,21 @@ function toggleMobilePreview() {
 /* ── Init ── */
 
 const _resumeTpl = new URLSearchParams(location.search).get('template');
-goToStage(1);
+if (_resumeTpl) {
+  // Refresh inside the editor: reopen it immediately instead of flashing the picker.
+  window._selectedTemplate = _resumeTpl;
+  goToStage(2, {init: true});
+} else {
+  goToStage(1);
+}
 loadTemplates().then(() => {
-  const t = _resumeTpl && window._tplList.find(x => x.id === _resumeTpl);
+  if (!_resumeTpl) return;
+  const t = window._tplList.find(x => x.id === _resumeTpl);
   if (t && t.unlocked) selectTemplate(t.id);
+  else { window._selectedTemplate = 'classic'; goToStage(1); buildTplGrid(); }
 });
 renderSectionEditor();
-applyPreviewSkin('classic');
+applyPreviewSkin(window._selectedTemplate);
 applyLayoutToPreview();
 
 (async () => {

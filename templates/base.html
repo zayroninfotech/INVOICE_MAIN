@@ -357,34 +357,9 @@
     .sidebar-divider { border-top: 1px solid var(--sidebar-border); margin: 8px 14px; }
     .sidebar-footer { margin-top: auto; padding: 10px 10px 16px; }
 
-    /* ── User mini-card ── */
-    .sb-user-card {
-      display: flex; align-items: center; gap: 10px;
-      background: var(--surface-subtle); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 12px; margin: 4px 0;
-    }
-    .sb-user-avatar {
-      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-      background: var(--ember); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; font-weight: 800;
-    }
-    .sb-user-info { flex: 1; min-width: 0; }
-    .sb-user-name {
-      font-size: .82rem; font-weight: 700; color: var(--text-primary);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .sb-user-role {
-      font-size: .72rem; color: var(--sidebar-text-dim); font-weight: 500; margin-top: 1px;
-    }
-    .sb-logout-btn {
-      flex-shrink: 0; width: 28px; height: 28px; border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--sidebar-text-dim); background: transparent;
-      border: 1px solid var(--border); font-size: .85rem;
-      text-decoration: none; transition: background .15s, color .15s, border-color .15s;
-    }
-    .sb-logout-btn:hover { background: rgba(220,38,38,.08); color: var(--color-danger); border-color: rgba(220,38,38,.2); }
+    .nav-link-main.sb-logout { color: var(--color-danger); }
+    .nav-link-main.sb-logout .nav-icon-box { background: var(--color-danger-bg); color: var(--color-danger); }
+    .nav-link-main.sb-logout:hover { background: rgba(220,38,38,.08); color: var(--color-danger); }
 
     /* ─────────────────────── MAIN ────────────────────────── */
     #main {
@@ -941,33 +916,25 @@
     }
     .zl-svg { width: 56px; height: 56px; overflow: visible; }
     .zl-inline .zl-svg { width: 18px; height: 18px; }
-    .zl-svg .zl-outline {
-      fill: none; stroke: var(--ember); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round;
+    .zl-svg { animation: zl-spin .9s linear infinite; }
+    .zl-svg .zl-track { fill: none; stroke: var(--border, #E8E7E5); stroke-width: 6; }
+    .zl-svg .zl-arc {
+      fill: none; stroke: var(--ember); stroke-width: 6; stroke-linecap: round;
+      stroke-dasharray: 164; stroke-dashoffset: 120; transform-origin: center;
+      animation: zl-dash 1.4s ease-in-out infinite;
     }
-    .zl-svg .zl-ink {
-      fill: var(--ember);
-      clip-path: inset(100% 0 0 0);
-      animation: zl-fill 1.35s cubic-bezier(.65,0,.35,1) infinite;
-      transform-origin: center;
-    }
-    .zl-svg .zl-nib {
-      fill: var(--ember);
-      opacity: 0;
-      animation: zl-nib-pulse 1.35s cubic-bezier(.65,0,.35,1) infinite;
-    }
-    @keyframes zl-fill {
-      0%   { clip-path: inset(100% 0 0 0); }
-      55%  { clip-path: inset(0% 0 0 0); }
-      100% { clip-path: inset(0% 0 100% 0); }
-    }
-    @keyframes zl-nib-pulse {
-      0%, 100% { opacity: 0; }
-      50%      { opacity: 1; }
+    .zl-inline .zl-track { stroke: currentColor; opacity: .25; stroke-width: 8; }
+    .zl-inline .zl-arc { stroke: currentColor; stroke-width: 8; }
+    @keyframes zl-spin { to { transform: rotate(360deg); } }
+    @keyframes zl-dash {
+      0%   { stroke-dashoffset: 150; }
+      50%  { stroke-dashoffset: 45; }
+      100% { stroke-dashoffset: 150; }
     }
     .zl-msg { font-size: .82rem; font-weight: 600; color: var(--text-secondary, #6B7280); letter-spacing: -.01em; }
     .zl-inline .zl-msg { font-size: .78rem; }
     @media (prefers-reduced-motion: reduce) {
-      .zl-ink, .zl-nib { animation: none !important; clip-path: inset(0 0 0 0) !important; opacity: .55 !important; }
+      .zl-svg, .zl-arc { animation-duration: 2.4s !important; }
     }
   </style>
   {% block extra_css %}{% endblock %}
@@ -1034,15 +1001,10 @@
 
   <div class="sidebar-footer">
     <div class="sidebar-divider"></div>
-    <!-- User mini-card -->
-    <div class="sb-user-card">
-      <div class="sb-user-avatar" id="sb-avatar">V</div>
-      <div class="sb-user-info">
-        <div class="sb-user-name" id="sb-name">—</div>
-        <div class="sb-user-role" id="sb-role">—</div>
-      </div>
-      <a href="/auth/logout/" class="sb-logout-btn" title="Logout">
-        <i class="bi bi-box-arrow-right"></i>
+    <div class="nav-item-wrap">
+      <a href="/auth/logout/" class="nav-link-main sb-logout">
+        <span class="nav-icon-box"><i class="bi bi-box-arrow-right"></i></span>
+        Logout
       </a>
     </div>
   </div>
@@ -1140,9 +1102,8 @@
   window.ZayroLoader = (function() {
     const svg = () => `
       <svg class="zl-svg" viewBox="0 0 64 64" aria-hidden="true">
-        <path class="zl-outline" d="M32 6 L52 46 Q52 56 32 58 Q12 56 12 46 Z"/>
-        <path class="zl-ink" d="M32 6 L52 46 Q52 56 32 58 Q12 56 12 46 Z"/>
-        <circle class="zl-nib" cx="32" cy="14" r="3"/>
+        <circle class="zl-track" cx="32" cy="32" r="26"/>
+        <circle class="zl-arc" cx="32" cy="32" r="26"/>
       </svg>`;
     function show(container, message, opts) {
       const el = typeof container === 'string' ? document.querySelector(container) : container;
@@ -1346,13 +1307,6 @@
   document.getElementById('user-avatar-letter').textContent = (username[0] || 'U').toUpperCase();
   window.USER_ROLE = role;
 
-  /* ── Sidebar user mini-card ── */
-  const _sbAvatar = document.getElementById('sb-avatar');
-  const _sbName   = document.getElementById('sb-name');
-  const _sbRole   = document.getElementById('sb-role');
-  if (_sbAvatar) _sbAvatar.textContent = (username[0] || 'U').toUpperCase();
-  if (_sbName)   _sbName.textContent   = username;
-  if (_sbRole)   _sbRole.textContent   = role.charAt(0).toUpperCase() + role.slice(1);
 
   if (role === 'admin' || role === 'superadmin') {
     document.getElementById('ud-admin').style.display = 'flex';
