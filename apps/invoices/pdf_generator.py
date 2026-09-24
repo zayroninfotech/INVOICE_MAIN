@@ -208,7 +208,9 @@ def _thank_you_stamp(ctx):
     if ctx.get('style_id') == 'minimal':
         return []
     s = ctx.get('seller') or {}
-    msg = s.get('thankyou_msg') or ctx['inv'].notes or 'Thank you for your business!'
+    msg = s.get('thankyou_msg') or ctx['inv'].notes or ''
+    if not msg:
+        return []
     txt_color = ctx.get('ACCENT', MUTED)
     p = Paragraph(msg, _style('ThanksLine', fontSize=8, fontName=FONT_I, textColor=txt_color))
     wrap = Table([[p]], colWidths=[ctx['CW']], hAlign='CENTER')
@@ -637,19 +639,26 @@ def _notes_sec(ctx, label_color=DARK, body_color=MUTED, rule=True, fs=8.5):
     # seller sidecar, so read that as the fallback body.
     note_1 = invoice.notes or s.get('thankyou_msg', '')
     note_2 = s.get('note_2', '')
-    if not note_1 and not note_2:
+    bank = (s.get('bank_details') or '').strip()
+    if not note_1 and not note_2 and not bank:
         return []
     parts = []
     if rule:
         parts += [Spacer(1, 14), HRFlowable(width=CW, thickness=0.5, color=BORDER, spaceAfter=8)]
     else:
         parts += [Spacer(1, 10)]
-    parts.append(Paragraph('Notes', _style('NH', fontSize=fs, fontName=FONT_B, textColor=label_color, spaceAfter=3)))
+    if note_1 or note_2:
+        parts.append(Paragraph('Notes', _style('NH', fontSize=fs, fontName=FONT_B, textColor=label_color, spaceAfter=3)))
     nt_st = _style('NT', fontSize=fs, textColor=body_color, leading=fs+4.5)
     if note_1:
         parts.append(Paragraph(f'• {note_1}', nt_st))
     if note_2:
         parts.append(Paragraph(f'• {note_2}', nt_st))
+    if bank:
+        from xml.sax.saxutils import escape
+        parts.append(Spacer(1, 4))
+        parts.append(Paragraph('Bank Details', _style('BKH', fontSize=fs, fontName=FONT_B, textColor=label_color, spaceAfter=2)))
+        parts.append(Paragraph(escape(bank).replace(chr(10), '<br/>'), nt_st))
     return parts
 
 
@@ -681,6 +690,8 @@ def _signature_sec(ctx, label='Authorised Signatory', label_color=MUTED, line_co
     sig_co = getattr(inv, 'signature_company', '') or s.get('sig_company', '') or ''
     dept = s.get('department', '') or ''
     img = _sig_image_flowable(sig_image)
+    if img is None and not sig_name and not sig_co:
+        return _thank_you_stamp(ctx) if stamp else []
 
     top_cell = img
     if top_cell is None and sig_name:
@@ -777,6 +788,9 @@ def _party_blocks(ctx, from_first=True):
         to_lines.append(f"{fl.get('fi-cust-gst', 'GST')}: {invoice.customer_gst}")
     if s.get('customer_pan'):
         to_lines.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
+    ship = (s.get('ship_address') or '').strip()
+    if ship and ship != (getattr(invoice, 'customer_address', '') or '').strip():
+        to_lines.append(f"Ship to: {ship}")
     return from_lines, to_lines
 
 

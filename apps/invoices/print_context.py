@@ -205,7 +205,8 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'grand': _rs(invoice.grand_total),
         'words': _amount_words(float(invoice.grand_total or 0)) if float(invoice.grand_total or 0) > 0 else '',
 
-        'notes': getattr(invoice, 'notes', '') or 'Thank you for your business!',
+        'notes': getattr(invoice, 'notes', '') or '',
+        'hide_notes': not (getattr(invoice, 'notes', '') or '').strip(),
         # No invented terms: an invoice without terms prints no Terms block at all.
         'terms': (getattr(invoice, 'terms', '') or '').strip(),
         'hide_terms': not (getattr(invoice, 'terms', '') or '').strip(),
@@ -213,7 +214,7 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'sig_url': s.get('sig_path') or '',
         'dept': '' if staffing else (s.get('department') or ''),
 
-        'foot_thanks': (s.get('thankyou_msg') or 'Thank you for your business!') if staffing else '',
+        'foot_thanks': (s.get('thankyou_msg') or '') if staffing else '',
         'foot_dept': (s.get('department') or '') if staffing else '',
         'foot_addr': (s.get('address') or '').replace('\n', ', ') if staffing else '',
         'foot_web': (s.get('website') or '') if staffing else '',

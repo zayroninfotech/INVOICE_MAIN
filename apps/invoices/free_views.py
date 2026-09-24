@@ -119,9 +119,11 @@ class FreeInvoiceView(APIView):
             igst_rate = 0.0
 
         # ── Invoice footer / signatory ────────────────────────────────────────
-        thankyou_msg = str(data.get('thankyou_msg', 'Thank you for your business!')).strip()
+        thankyou_msg = str(data.get('thankyou_msg', '')).strip()
         note_2       = str(data.get('note_2',       '')).strip()
         department   = str(data.get('department',   '')).strip()
+        bank_details = str(data.get('bank_details', '')).strip()[:500]
+        ship_address = str(data.get('ship_address', '')).strip()[:500]
         sig_name     = str(data.get('sig_name',     '')).strip()
         sig_company  = str(data.get('sig_company',  '')).strip()
         sig_datetime = str(data.get('sig_datetime', '')).strip()[:40]
@@ -246,6 +248,8 @@ class FreeInvoiceView(APIView):
             'thankyou_msg': thankyou_msg,
             'note_2': note_2,
             'department': department,
+            'bank_details': bank_details,
+            'ship_address': ship_address,
             'sig_name': sig_name,
             'sig_company': sig_company,
             'sig_path': sig_path,
