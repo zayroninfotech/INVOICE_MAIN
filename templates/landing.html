@@ -1441,7 +1441,7 @@
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px"><div><div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em">Invoice Created</div><div class="result-inv-number" id="res-number"></div><div style="color:#94A3B8;font-size:.82rem;margin-top:4px" id="res-customer"></div></div><div style="text-align:right"><div style="color:#64748B;font-size:.75rem;margin-bottom:4px">Balance Due</div><div style="font-size:1.6rem;font-weight:900;color:#F0576B" id="res-total"></div></div></div>
       <table class="result-table"><thead><tr><th>Description</th><th style="text-align:right">QTY</th><th style="text-align:right">Rate (&#8377;)</th><th style="text-align:right">Amount (&#8377;)</th></tr></thead><tbody id="res-items"></tbody></table>
       <div class="result-total-bar"><span style="color:rgba(255,255,255,.8);font-weight:600">Balance Due</span><span style="color:#fff;font-weight:900;font-size:1.2rem" id="res-total2"></span></div>
-      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap"><a id="res-pdf-btn" href="#" target="_blank" class="btn-result-primary"><i class="bi bi-file-earmark-pdf-fill"></i> Download PDF</a><button onclick="openPreviewModal()" class="btn-result-sec"><i class="bi bi-eye-fill"></i> Preview</button><button onclick="createAnotherFree()" class="btn-result-sec"><i class="bi bi-arrow-repeat"></i> New Invoice</button></div>
+      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap"><a id="res-pdf-btn" href="#" target="_blank" class="btn-result-primary"><i class="bi bi-file-earmark-pdf-fill"></i> Download PDF</a><button onclick="createAnotherFree()" class="btn-result-sec"><i class="bi bi-arrow-repeat"></i> New Invoice</button></div>
       <div class="upsell"><div style="font-size:1rem;font-weight:800;color:#7C3AED;margin-bottom:6px"><i class="bi bi-stars me-2"></i>Want unlimited invoices + customer management?</div><div style="color:#64748B;font-size:.85rem;margin-bottom:16px">Register free to save invoices, manage customers, track payments, and download anytime.</div><button onclick="openModal('reg-modal')" style="padding:10px 24px;background:#C1121F;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer"><i class="bi bi-person-plus-fill me-1"></i> Register Free</button></div>
     </div>
   </div>
@@ -2661,7 +2661,18 @@ function showFreeResult(data){
   dlBtn.onclick=null;
 }
 function createAnotherFree(){
-  document.getElementById('free-form-card').classList.remove('d-none');document.getElementById('free-result-card').classList.add('d-none');freeItems=[];addFreeItem();
+  document.getElementById('free-form-card').classList.remove('d-none');document.getElementById('free-result-card').classList.add('d-none');
+  // Put EVERY field back to the value it had when the page loaded (its HTML default),
+  // so nothing from the previous invoice — terms, bank details, shipping address… — leaks through.
+  document.querySelectorAll('#free-form-card input, #free-form-card textarea, #free-form-card select').forEach(el=>{
+    if(el.type==='file'){el.value='';return;}
+    if(el.type==='checkbox'||el.type==='radio'){el.checked=el.defaultChecked;return;}
+    if(el.tagName==='SELECT'){[...el.options].forEach(o=>o.selected=o.defaultSelected);return;}
+    el.value=el.defaultValue;
+    el.classList.remove('error');el.style.borderColor='';
+  });
+  const fe=document.getElementById('fi-error');if(fe)fe.style.display='none';
+  freeItems=[];addFreeItem();
   ['fi-name','fi-email','fi-cust-address','fi-cust-phone','fi-cust-gst','fi-cust-pan','fi-recipient','fi-inv-number','fi-from-name','fi-from-email','fi-from-address','fi-from-phone','fi-from-gst','fi-from-cin','fi-from-pan','fi-from-website'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   removeLogo();onLogoSize(110);removeSignature();document.getElementById('fi-sig-name').value='';document.getElementById('fi-sig-company').value='';
   document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
