@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from apps.authentication.authentication import MongoJWTAuthentication
 from apps.authentication.permissions import IsReadOnlyForUser, IsAdminOrSuperAdmin
@@ -9,12 +9,13 @@ from apps.subscriptions.entitlements import can_create_invoice, increment_usage,
 from .models import Invoice
 from .serializers import InvoiceSerializer, InvoiceListSerializer, InvoiceDetailSerializer
 from .pdf_generator import generate_invoice_pdf
-from . import template_registry
+from . import template_registry, report_export
 from .emailer import send_invoice_email, approval_url, MailNotConfigured
 from utils.response import success, error
 from datetime import datetime
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -67,31 +68,124 @@ def _invoice_qs(user):
     return Invoice.objects(created_by=str(user.pk))
 
 
+def _filtered_invoice_qs(request):
+    qp = request.query_params
+    queryset = _invoice_qs(request.user)
+    if qp.get('status'):
+        queryset = queryset.filter(status=qp['status'])
+    payment_filter = qp.get('payment', '')
+    if payment_filter == 'Due':
+        queryset = queryset.filter(status__nin=['Paid', 'Cancelled'])
+    elif payment_filter in ('Paid', 'Cancelled'):
+        queryset = queryset.filter(status=payment_filter)
+    approval_filter = qp.get('approval', '')
+    if approval_filter in ('In Process', 'Approved', 'Disapproved'):
+        queryset = queryset.filter(approval_status=approval_filter)
+    search = qp.get('search', '').strip()
+    if search:
+        pattern = re.escape(search)
+        queryset = queryset.filter(__raw__={'$or': [
+            {'invoice_number': {'$regex': pattern, '$options': 'i'}},
+            {'customer_name': {'$regex': pattern, '$options': 'i'}},
+        ]})
+    return queryset
+
+
+class InvoiceExportView(APIView):
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def get(self, request):
+        fmt = request.query_params.get('format', 'pdf')
+        if fmt not in ('pdf', 'csv'):
+            return error("Format must be pdf or csv.")
+        invoices = list(_filtered_invoice_qs(request).order_by('-invoice_date'))
+        stamp = datetime.now().strftime('%Y%m%d-%H%M')
+        if fmt == 'csv':
+            resp = HttpResponse(report_export.build_csv(invoices), content_type='text/csv; charset=utf-8')
+            resp['Content-Disposition'] = f'attachment; filename="invoices-{stamp}.csv"'
+            return resp
+
+        qp = request.query_params
+        parts = [f"Payment: {qp['payment']}" if qp.get('payment') else '',
+                 f"Approval: {qp['approval']}" if qp.get('approval') else '',
+                 f"Search: \"{qp['search'].strip()[:40]}\"" if qp.get('search', '').strip() else '']
+        filters_text = ' · '.join(p for p in parts if p) or 'All invoices'
+        bp = BusinessProfile.objects(user_id=str(request.user.pk)).first()
+        pdf = report_export.build_pdf(invoices, company=(bp.company_name if bp else ''),
+                                      filters_text=filters_text,
+                                      generated_by=getattr(request.user, 'username', ''))
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'attachment; filename="invoice-report-{stamp}.pdf"'
+        return resp
+
+
+class InvoiceSummaryView(APIView):
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def get(self, request):
+        qs = _invoice_qs(request.user)
+        all_list = list(qs.only('grand_total', 'status', 'invoice_date', 'customer_name'))
+        total_count = len(all_list)
+        total_amount = sum(float(inv.grand_total or 0) for inv in all_list)
+        due_list = [inv for inv in all_list if inv.status not in ('Paid', 'Cancelled')]
+        due_count = len(due_list)
+        due_amount = sum(float(inv.grand_total or 0) for inv in due_list)
+        paid_list = [inv for inv in all_list if inv.status == 'Paid']
+        paid_count = len(paid_list)
+        paid_amount = sum(float(inv.grand_total or 0) for inv in paid_list)
+        cancelled_count = sum(1 for inv in all_list if inv.status == 'Cancelled')
+
+        now = datetime.utcnow()
+        months = []
+        for i in range(5, -1, -1):
+            y, m = now.year, now.month - i
+            while m <= 0:
+                m += 12
+                y -= 1
+            months.append((y, m))
+        buckets = {k: {'billed': 0.0, 'paid': 0.0} for k in months}
+        customers = {}
+        for inv in all_list:
+            if inv.status == 'Cancelled':
+                continue
+            amt = float(inv.grand_total or 0)
+            d = inv.invoice_date
+            if d and (d.year, d.month) in buckets:
+                buckets[(d.year, d.month)]['billed'] += amt
+                if inv.status == 'Paid':
+                    buckets[(d.year, d.month)]['paid'] += amt
+            name = (inv.customer_name or '').strip() or '—'
+            c = customers.setdefault(name, {'name': name, 'amount': 0.0, 'count': 0})
+            c['amount'] += amt
+            c['count'] += 1
+        monthly = [{'label': datetime(y, m, 1).strftime('%b'),
+                    'billed': round(buckets[(y, m)]['billed'], 2),
+                    'paid': round(buckets[(y, m)]['paid'], 2)} for y, m in months]
+        top_customers = sorted(customers.values(), key=lambda c: -c['amount'])[:5]
+        for c in top_customers:
+            c['amount'] = round(c['amount'], 2)
+
+        return success({
+            'monthly': monthly,
+            'top_customers': top_customers,
+            'total_count': total_count,
+            'total_amount': round(total_amount, 2),
+            'due_count': due_count,
+            'due_amount': round(due_amount, 2),
+            'paid_count': paid_count,
+            'paid_amount': round(paid_amount, 2),
+            'cancelled_count': cancelled_count,
+        })
+
+
 class InvoiceListCreateView(APIView):
     authentication_classes = [MongoJWTAuthentication]
     permission_classes = [IsReadOnlyForUser]
 
     def get(self, request):
-        status_filter = request.query_params.get('status', '')
-        search = request.query_params.get('search', '')
-        queryset = _invoice_qs(request.user)
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-        payment_filter = request.query_params.get('payment', '')
-        if payment_filter == 'Due':
-            queryset = queryset.filter(status__nin=['Paid', 'Cancelled'])
-        elif payment_filter in ('Paid', 'Cancelled'):
-            queryset = queryset.filter(status=payment_filter)
-        approval_filter = request.query_params.get('approval', '')
-        if approval_filter in ('In Process', 'Approved', 'Disapproved'):
-            queryset = queryset.filter(approval_status=approval_filter)
-        if search:
-            queryset = queryset.filter(
-                __raw__={'$or': [
-                    {'invoice_number': {'$regex': search, '$options': 'i'}},
-                    {'customer_name': {'$regex': search, '$options': 'i'}},
-                ]}
-            )
+        queryset = _filtered_invoice_qs(request)
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 20))
         offset = (page - 1) * page_size

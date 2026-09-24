@@ -61,20 +61,56 @@
 .fi-sec-lbl{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ember-border);}
 
 /* template picker */
-.tpl-card{border:2px solid var(--border);border-radius:12px;padding:14px 12px 12px;cursor:pointer;text-align:center;transition:border-color .15s,box-shadow .15s;position:relative;background:var(--surface);}
-.tpl-card:hover{border-color:var(--ember);}
+.tpl-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.tpl-h{font-size:1.45rem;font-weight:800;letter-spacing:-.025em;color:var(--text-primary);margin:0;line-height:1.2;}
+.tpl-lede{font-size:.9rem;color:var(--text-secondary);margin:6px 0 0;max-width:60ch;}
+.tpl-filters{display:flex;gap:6px;flex-wrap:wrap;}
+.tpl-chip{height:34px;padding:0 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:.8rem;font-weight:700;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px;transition:border-color .15s,color .15s,background .15s;}
+.tpl-chip:hover{border-color:var(--text-primary);color:var(--text-primary);}
+.tpl-chip.on{background:var(--text-primary);border-color:var(--text-primary);color:#fff;}
+.tpl-chip b{font-weight:700;font-size:.75rem;opacity:.65;font-variant-numeric:tabular-nums;}
+
+#tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;margin-bottom:8px;}
+.tpl-card{position:relative;display:flex;flex-direction:column;border:1.5px solid var(--border);border-radius:14px;background:var(--surface);cursor:pointer;overflow:hidden;
+  transition:border-color .2s,box-shadow .25s cubic-bezier(.16,1,.3,1),transform .25s cubic-bezier(.16,1,.3,1);outline:none;}
+.tpl-card:hover{border-color:var(--border-strong);box-shadow:0 14px 34px rgba(19,20,22,.09);transform:translateY(-3px);}
+.tpl-card:focus-visible{box-shadow:0 0 0 3px var(--focus-ring);border-color:var(--ember);}
 .tpl-card.active{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
-.tpl-card.locked{opacity:.55;cursor:not-allowed;}
-.tpl-thumb{width:100%;height:120px;border-radius:7px;margin-bottom:10px;overflow:hidden;}
-.tpl-name{font-size:.85rem;font-weight:700;color:var(--text-primary);}
-.tpl-badge{font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;margin-top:5px;}
+.tpl-stage{position:relative;height:190px;background:var(--surface-sunken);display:flex;align-items:flex-end;justify-content:center;padding:18px 26px 0;overflow:hidden;}
+.tpl-card.active .tpl-stage{background:var(--ember-light);}
+.tpl-thumb{width:100%;max-width:170px;height:100%;border-radius:4px 4px 0 0;display:flex;flex-direction:column;gap:4px;padding:10px 10px 12px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 24px rgba(19,20,22,.12);transition:transform .35s cubic-bezier(.16,1,.3,1);transform-origin:bottom center;}
+.tpl-card:hover .tpl-thumb{transform:translateY(-6px);}
+.tpl-check{position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;background:var(--ember);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  transform:scale(0);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.tpl-card.active .tpl-check{transform:scale(1);}
+.tpl-actions{position:absolute;inset:auto 12px 12px 12px;display:flex;gap:8px;justify-content:center;opacity:0;transform:translateY(6px);transition:opacity .2s,transform .25s cubic-bezier(.16,1,.3,1);}
+.tpl-card:hover .tpl-actions,.tpl-card:focus-within .tpl-actions{opacity:1;transform:none;}
+.tpl-act{height:32px;padding:0 12px;border-radius:8px;border:none;font-size:.78rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.tpl-act.ghost{background:var(--surface);color:var(--text-primary);}
+.tpl-act.ghost:hover{background:var(--text-primary);color:#fff;}
+.tpl-act.go{background:var(--ember);color:#fff;}
+.tpl-act.go:hover{background:var(--ember-dark);}
+.tpl-act:focus-visible{outline:2px solid var(--ember);outline-offset:2px;}
+.tpl-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1;border-top:1px solid var(--border);}
+.tpl-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tpl-name{font-size:.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-.01em;}
+.tpl-desc{font-size:.8rem;color:var(--text-secondary);line-height:1.5;margin:0;}
+.tpl-badge{font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;}
 .tpl-badge.free{background:var(--color-success-bg);color:var(--color-success);}
-.tpl-badge.plus{background:var(--color-warning-bg);color:var(--color-warning);}
+.tpl-badge.plus{background:var(--color-warning-bg);color:#92400E;}
 .tpl-badge.pro{background:var(--color-purple-bg);color:var(--color-purple);}
-.tpl-lock{position:absolute;top:6px;right:6px;color:var(--text-muted);font-size:.85rem;}
-.tpl-preview-btn{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--text-primary);color:var(--surface);border:none;display:flex;align-items:center;justify-content:center;font-size:.7rem;opacity:.55;transition:opacity .15s,background .15s;z-index:2;}
-.tpl-card:hover .tpl-preview-btn{opacity:1;}
-.tpl-preview-btn:hover{background:var(--ember);}
+.tpl-tag{align-self:flex-start;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#E6FFFA;color:#0F766E;}
+.tpl-card.locked{cursor:default;}
+.tpl-card.locked .tpl-thumb{filter:grayscale(.35);opacity:.8;}
+.tpl-lockbar{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--text-muted);margin-top:auto;padding-top:4px;}
+.tpl-lockbar a{color:var(--ember);text-decoration:none;margin-left:auto;}
+.tpl-lockbar a:hover{text-decoration:underline;}
+.tpl-empty{grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-size:.9rem;}
+@keyframes tplIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tpl-card{animation:tplIn .45s cubic-bezier(.16,1,.3,1) both;}
+@media (prefers-reduced-motion:reduce){.tpl-card,.tpl-thumb,.tpl-actions,.tpl-check{animation:none;transition:none;}}
+@media (hover:none){.tpl-actions{opacity:1;transform:none;}}
 #tplPreviewModal .modal-dialog{max-width:min(760px,calc(100vw - 32px));}
 #tplPreviewModal .preview-wrap{padding:20px;background:var(--surface-sunken);display:flex;justify-content:center;overflow:auto;}
 #tplPreviewModal .inv-preview{width:100%;max-width:700px;cursor:zoom-in;transform-origin:top center;transition:transform .2s ease;}
@@ -227,7 +263,12 @@ canvas#sig-canvas{touch-action:none;}
 <style>
 @media(max-width:1024px){.gen-layout{grid-template-columns:1fr;}.gen-preview{position:static;height:auto;border-radius:16px;margin-top:16px;}}
 @media(max-width:600px){
-  #tpl-grid{grid-template-columns:repeat(2,1fr) !important;}
+  #tpl-grid{grid-template-columns:repeat(2,1fr) !important;gap:12px;}
+  .tpl-stage{height:140px;padding:12px 14px 0;}
+  .tpl-act.go{display:none;}
+  .tpl-body{padding:12px;}
+  .tpl-row{flex-wrap:wrap;}
+  .tpl-h{font-size:1.2rem;}
   .sec-row{padding:9px 8px;gap:6px;}
   .sec-name{font-size:.74rem;}
   .logo-size-wrap{flex-direction:column;align-items:stretch;gap:6px;}
@@ -266,7 +307,7 @@ canvas#sig-canvas{touch-action:none;}
 /* The Template & Layout header carries a "Change template" action. It was
    floated, which lifts it out of the line box so the label's border-bottom
    drew straight through it. Flex keeps both halves on the rule. */
-#layout-sec .fi-sec-lbl{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+#layout-sec .fi-sec-lbl{display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:nowrap;text-align:left;}
 
 @media (max-width:600px) {
   .from-fields{ grid-template-columns:1fr; }
@@ -280,6 +321,132 @@ canvas#sig-canvas{touch-action:none;}
   .fi-grid    { grid-template-columns:1fr; }
   .items-hdr  { display:none; }
   .item-row   { grid-template-columns:1fr 70px 55px 55px 28px; }
+}
+
+/* ══════════ Editor redesign (impeccable pass) ══════════ */
+.gen-main{background:var(--bg);box-shadow:none;border:1px solid var(--border);}
+.form-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
+.fi-sec{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px 22px;}
+#template-sec{background:transparent;border:none;padding:4px 4px 0;}
+.fi-sec-lbl{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:0 0 14px;border-bottom:1px solid var(--border);
+  text-transform:none;letter-spacing:0;color:var(--text-primary);font-size:1rem;}
+.fi-ic{width:34px;height:34px;border-radius:9px;background:var(--ember-light);color:var(--ember);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.fi-t{display:block;font-size:1rem;font-weight:800;letter-spacing:-.01em;line-height:1.25;}
+.fi-s{display:block;font-size:.8rem;font-weight:500;color:var(--text-muted);margin-top:1px;}
+
+/* seller strip */
+.from-bar{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:20px 20px 0;padding:18px 20px;gap:20px;}
+.from-logo-wrap{width:76px;height:76px;border-radius:12px;transition:border-color .15s,background .15s;}
+.from-logo-wrap:hover{border-color:var(--ember);background:var(--ember-light);}
+.from-logo-wrap .logo-ph{font-size:.75rem;}
+.from-fields{gap:8px 10px;}
+.from-inp{font-size:.85rem;padding:9px 11px;border-radius:8px;border-width:1.5px;transition:border-color .15s,box-shadow .15s;}
+.from-inp:hover{border-color:var(--border-strong);}
+.from-inp:focus{background:var(--surface);}
+
+/* fields */
+.fi-grid{gap:14px 18px;}
+.fi-row{gap:6px;}
+.fi-lbl{font-size:.8rem;color:var(--text-primary);}
+.fi-sec .form-control,.fi-sec .form-select{min-height:42px;border-radius:9px;border:1.5px solid var(--border);font-size:.88rem;transition:border-color .15s,box-shadow .15s;}
+.fi-sec .form-control:hover,.fi-sec .form-select:hover{border-color:var(--border-strong);}
+.fi-sec .form-control:focus,.fi-sec .form-select:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--focus-ring);}
+.fi-sec .form-control::placeholder{color:var(--placeholder);}
+.fi-sec textarea.form-control{min-height:84px;}
+
+/* items table */
+.items-hdr{border-radius:10px 10px 0 0;padding:11px 10px;background:var(--text-primary);}
+.items-hdr span{font-size:.72rem;letter-spacing:.04em;}
+.item-row{padding:8px 10px;gap:6px;}
+.item-row:nth-child(even){background:transparent;}
+.item-row:hover{background:var(--surface-subtle);}
+.item-row .form-control,.item-row .form-select,.item-row input,.item-row select{min-height:38px;font-size:.85rem;}
+
+/* totals */
+.tots-box{width:340px;max-width:100%;margin-top:20px;background:var(--surface-subtle);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.tot-r{padding:8px 0;font-size:.88rem;font-variant-numeric:tabular-nums;}
+.tot-r.amber{background:transparent;color:var(--text-primary);padding:8px 0;border-radius:0;border-top:1px dashed var(--border-strong);margin-top:4px;}
+.tot-r.grand{font-size:1.05rem;padding:13px 14px;border-radius:10px;margin-top:10px;font-variant-numeric:tabular-nums;}
+
+/* signature */
+.sig-tabs{background:var(--surface-subtle);padding:4px;border-radius:10px;display:inline-flex;gap:2px;}
+.sig-tab{border:none;background:transparent;padding:7px 16px;font-size:.82rem;border-radius:7px;}
+.sig-tab.active{background:var(--surface);color:var(--ember);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.sig-canvas{border-radius:12px;}
+.sig-clear-row{font-size:.8rem;}
+
+/* sticky action bar */
+.act-bar{position:sticky;bottom:0;z-index:20;margin:0;padding:14px 20px;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(8px);border-top:1px solid var(--border);box-shadow:0 -8px 24px rgba(19,20,22,.06);}
+.btn-pdf{border-radius:10px;padding:12px 26px;transition:background .15s,transform .15s,box-shadow .15s;}
+.btn-pdf:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.14);}
+.btn-cancel{border-radius:10px;}
+
+/* live preview panel */
+.gen-preview{background:var(--surface-sunken);}
+
+/* ── Reference-layout pass: compact cards like the approved mock ── */
+.fi-sec{padding:16px 18px 18px;border-radius:12px;box-shadow:0 1px 2px rgba(19,20,22,.04);}
+.fi-sec-lbl{margin-bottom:14px;padding-bottom:12px;}
+.fi-ic{width:32px;height:32px;border-radius:50%;background:var(--ember);color:#fff;font-size:.85rem;}
+.fi-t{font-size:.95rem;}
+.fi-s{font-size:.78rem;}
+.fi-grid{gap:12px 14px;}
+.fi-grid-3{grid-template-columns:repeat(3,1fr);}
+.fi-lbl{font-size:.78rem;font-weight:700;}
+.fi-sec .form-control,.fi-sec .form-select,.fi-sec input.fi,.fi-sec select.fi,.fi-sec textarea.fi{min-height:38px;font-size:.85rem;border-radius:8px;}
+
+.from-bar{flex-wrap:wrap;align-items:flex-start;padding:16px 18px 18px;border-radius:12px;box-shadow:0 1px 2px rgba(19,20,22,.04);}
+.from-head{flex-basis:100%;}
+.from-logo-wrap{width:96px;height:96px;background:var(--surface-subtle);}
+.from-logo-wrap .logo-ph{font-size:.75rem;font-weight:700;color:var(--text-secondary);}
+.from-fields{grid-template-columns:repeat(3,minmax(0,1fr));}
+
+.items-hdr{background:var(--ember);border-radius:8px 8px 0 0;}
+.items-hdr span{color:#fff;}
+#items-wrap{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;}
+.item-row{border-bottom:1px solid var(--border);}
+.item-row:last-child{border-bottom:none;}
+
+.sec-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+.sec-pair > .fi-sec{height:100%;}
+.fi-sum{order:2;}
+.fi-sum .tots-box{width:100%;margin:0;background:transparent;border:none;padding:0;}
+.fi-sum .tax-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.86rem;color:var(--text-secondary);border-bottom:1px solid var(--border);}
+.fi-sum .tax-pct{width:56px;min-height:32px;border:1.5px solid var(--border);border-radius:7px;text-align:center;font-size:.84rem;}
+.fi-sum .tax-pct:focus{border-color:var(--ember);outline:none;box-shadow:0 0 0 3px var(--focus-ring);}
+.fi-sum .tot-r.grand{background:var(--ember-light);color:var(--ember);border:1px solid var(--ember-border);}
+.fi-sum .tot-r.grand span{white-space:nowrap;}
+.fi-sum .tot-r.grand{gap:12px;}
+/* Laptop widths (≈1280–1500): the 440px preview leaves the form ~450px wide,
+   so pairs and 3-column strips must collapse before they start truncating. */
+@media (max-width:1500px){
+  .gen-layout:not(.stage-1){grid-template-columns:minmax(0,1fr) 380px;}
+  .sec-pair{grid-template-columns:1fr;}
+  .fi-sum{order:0;}
+  .from-fields{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .from-fields > *{grid-column:auto !important;}
+  .from-fields > :first-child{grid-column:1 / -1 !important;}
+  .fi-sum .tots-box{max-width:420px;margin-left:auto;}
+}
+@media (max-width:1100px){ .sec-pair{grid-template-columns:1fr;} .fi-sum{order:0;} }
+@media (max-width:760px){ .fi-grid-3,.from-fields{grid-template-columns:1fr 1fr;} }
+@media (max-width:640px){
+  .from-logo-col{flex-basis:100%;display:flex;align-items:center;gap:14px;}
+  .from-fields{flex-basis:100%;grid-template-columns:1fr !important;}
+  .fi-grid-3{grid-template-columns:1fr 1fr;}
+  #items-wrap{overflow-x:auto;}
+  #items-wrap .item-row{min-width:520px;grid-template-columns:1fr 70px 60px 80px 80px 28px;}
+}
+
+@keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.gen-layout:not(.stage-1) .fi-sec.stage2-only{animation:secIn .4s cubic-bezier(.16,1,.3,1) both;}
+@media (prefers-reduced-motion:reduce){.fi-sec.stage2-only{animation:none !important;}}
+@media (max-width:640px){
+  .form-body{padding:12px;gap:12px;}
+  .fi-sec{padding:16px;}
+  .from-bar{margin:12px 12px 0;}
+  .tots-box{width:100%;}
 }
 </style>
 
@@ -310,13 +477,14 @@ canvas#sig-canvas{touch-action:none;}
     <!-- FROM bar (auto-filled from profile) -->
 
     <div class="from-bar stage2-only">
+      <div class="fi-sec-lbl from-head"><span class="fi-ic"><i class="bi bi-building"></i></span><span><span class="fi-t">Company information</span><span class="fi-s">Your business details — saved to your profile and printed on every invoice</span></span></div>
 
       <div class="from-logo-col">
       <div class="from-logo-wrap" id="logo-wrap" onclick="document.getElementById('logo-input').click()" title="Click to upload logo">
 
         <img id="logo-preview" alt="Logo">
 
-        <div class="logo-ph" id="logo-ph"><i class="bi bi-image" style="font-size:1.2rem;display:block;color:rgba(255,255,255,.4)"></i>Logo</div>
+        <div class="logo-ph" id="logo-ph"><i class="bi bi-cloud-arrow-up" style="font-size:1.3rem;display:block;color:var(--ember)"></i>Upload logo</div>
 
       </div>
       {% include "invoices/_logo_size.html" %}
@@ -355,29 +523,24 @@ canvas#sig-canvas{touch-action:none;}
       <!-- STAGE 1: Template selection ONLY — nothing else visible until a template is chosen -->
       <div class="fi-sec stage1-only" id="template-sec">
 
-        <div class="fi-sec-lbl">Choose a Template</div>
-        <p style="font-size:.8rem;color:var(--text-secondary);margin:-4px 0 14px">Pick a template to start building your invoice. Click the eye icon for a full preview.</p>
-
-        <!-- Template cards (built from /api/invoices/templates/) -->
-        <div id="tpl-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;margin-bottom:16px">
+        <div class="tpl-intro">
+          <div>
+            <h2 class="tpl-h">Choose how your invoice looks</h2>
+            <p class="tpl-lede">Every template prints your business profile, GST details and line items. You can change it later without losing anything.</p>
+          </div>
+          <div class="tpl-filters" id="tpl-filters" role="tablist" aria-label="Filter templates"></div>
         </div>
+
+        <div id="tpl-grid"></div>
 
       </div>
 
       <!-- STAGE 2: Layout controls for the chosen template (logo size + section order) -->
       <div class="fi-sec stage2-only" id="layout-sec">
 
-        <div class="fi-sec-lbl">Invoice Template &amp; Layout        </div>
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-file-earmark-text"></i></span><span><span class="fi-t">Invoice details</span><span class="fi-s">Number, dates and layout of this invoice</span></span></div>
 
-      </div>
-
-
-
-      <!-- Invoice meta -->
-
-      <div class="fi-sec stage2-only">
-
-        <div class="fi-grid">
+        <div class="fi-grid fi-grid-3">
 
           <div class="fi-row">
 
@@ -413,7 +576,7 @@ canvas#sig-canvas{touch-action:none;}
 
       <div class="fi-sec stage2-only">
 
-        <div class="fi-sec-lbl">Bill To <span style="color:var(--color-danger)">*</span> <span style="color:var(--text-muted);font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Required Fields</span></div>
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-person-vcard"></i></span><span><span class="fi-t">Bill to</span><span class="fi-s">Who is paying — fields marked * are required</span></span></div>
 
         <select class="fi" id="customer_id" onchange="onCustomerChange()" style="display:none"></select>
 
@@ -493,7 +656,7 @@ canvas#sig-canvas{touch-action:none;}
 
       <div class="fi-sec stage2-only">
 
-        <div class="fi-sec-lbl">Items / Services <span style="float:right;color:var(--text-muted);font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">Description and Rate* required</span></div>
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-list-ul"></i></span><span><span class="fi-t">Items &amp; services</span><span class="fi-s">Each line needs a description and a rate</span></span></div>
 
         <div class="items-hdr">
 
@@ -523,8 +686,9 @@ canvas#sig-canvas{touch-action:none;}
 
       <!-- GST rates + Totals -->
 
-      <div class="stage2-only" style="display:flex;justify-content:flex-end;margin-bottom:12px">
-
+      <div class="sec-pair stage2-only">
+      <div class="fi-sec fi-sum">
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-calculator"></i></span><span><span class="fi-t">Summary</span><span class="fi-s">Tax rates and totals — edit the % to change GST</span></span></div>
         <div class="tots-box">
 
           <div class="tax-row"><span style="min-width:90px">Subtotal</span><span style="margin-left:auto;font-weight:700" id="sum-sub">₹0.00</span></div>
@@ -579,7 +743,7 @@ canvas#sig-canvas{touch-action:none;}
 
       <div class="fi-sec stage2-only">
 
-        <div class="fi-sec-lbl">Invoice Footer</div>
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-chat-left-text"></i></span><span><span class="fi-t">Notes &amp; terms</span><span class="fi-s">Printed at the bottom of the invoice</span></span></div>
 
         <div class="fi-grid" style="margin-bottom:10px">
 
@@ -615,9 +779,11 @@ canvas#sig-canvas{touch-action:none;}
 
       <!-- Authorized Signatory -->
 
+      </div><!-- /sec-pair -->
+
       <div class="fi-sec stage2-only">
 
-        <div class="fi-sec-lbl">Authorized Signatory</div>
+        <div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-pen"></i></span><span><span class="fi-t">Signature</span><span class="fi-s">Appears bottom-right on the PDF</span></span></div>
 
         <div class="sig-tabs">
 
@@ -745,7 +911,7 @@ canvas#sig-canvas{touch-action:none;}
 
     <span style="font-size:.72rem;font-weight:700;color:var(--on-dark-dim);text-transform:uppercase;letter-spacing:.08em"><i class="bi bi-eye-fill me-1" style="color:var(--color-success)"></i>Live Preview</span>
 
-    <span style="font-size:.68rem;color:var(--on-dark-dim)">Updates as you type</span>
+    <span style="font-size:.75rem;color:var(--on-dark-dim)">Updates as you type</span>
 
   </div>
 
@@ -1846,23 +2012,69 @@ function tplBadgeLabel(plan) {
   return plan === 'free' ? 'Free' : plan === 'plus' ? 'Plus+' : plan === 'pro' ? 'Pro+' : 'All plans';
 }
 
+const tplEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+window._tplFilter = 'all';
+const TPL_FILTERS = [
+  ['all', 'All', () => true],
+  ['mine', 'Available to you', t => t.unlocked],
+  ['free', 'Free', t => t.min_plan === 'free'],
+  ['plus', 'Plus', t => t.min_plan === 'plus'],
+  ['pro', 'Pro', t => t.min_plan !== 'free' && t.min_plan !== 'plus'],
+];
+
+function buildTplFilters() {
+  const box = document.getElementById('tpl-filters');
+  if (!box) return;
+  box.innerHTML = TPL_FILTERS.map(([key, label, fn]) => {
+    const n = window._tplList.filter(fn).length;
+    if (!n && key !== 'all') return '';
+    const on = window._tplFilter === key;
+    return `<button type="button" role="tab" aria-selected="${on}" class="tpl-chip ${on ? 'on' : ''}" onclick="setTplFilter('${key}')">${label} <b>${n}</b></button>`;
+  }).join('');
+}
+function setTplFilter(key) { window._tplFilter = key; buildTplGrid(); }
+
 function buildTplGrid() {
   const grid = document.getElementById('tpl-grid');
   if (!grid) return;
-  grid.innerHTML = '';
-  window._tplList.forEach(t => {
+  buildTplFilters();
+  const fn = (TPL_FILTERS.find(f => f[0] === window._tplFilter) || TPL_FILTERS[0])[2];
+  const list = window._tplList.filter(fn);
+  grid.innerHTML = list.length ? '' : '<div class="tpl-empty">No templates in this group.</div>';
+  list.forEach((t, i) => {
+    const id = tplEsc(t.id), name = tplEsc(t.name);
+    const active = t.id === window._selectedTemplate;
     const card = document.createElement('div');
-    card.className = 'tpl-card' + (t.unlocked ? '' : ' locked') + (t.id === window._selectedTemplate ? ' active' : '');
+    card.className = 'tpl-card' + (t.unlocked ? '' : ' locked') + (active ? ' active' : '');
     card.id = 'tpl-' + t.id;
+    card.style.animationDelay = Math.min(i * 40, 400) + 'ms';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', active);
+    card.setAttribute('aria-label', `${t.name} template${t.unlocked ? '' : ' (locked)'}`);
+    const badge = t.blocked
+      ? '<span class="tpl-badge" style="background:var(--color-danger-bg);color:var(--color-danger)">Unavailable</span>'
+      : `<span class="tpl-badge ${tplBadgeClass(t.min_plan)}">${tplBadgeLabel(t.min_plan)}</span>`;
+    const footer = t.unlocked ? '' : t.blocked
+      ? '<div class="tpl-lockbar"><i class="bi bi-slash-circle"></i> Disabled by your admin</div>'
+      : `<div class="tpl-lockbar"><i class="bi bi-lock-fill"></i> Needs ${tplBadgeLabel(t.min_plan).replace('+','')} plan <a href="/pricing/upgrade/" onclick="event.stopPropagation()">Upgrade →</a></div>`;
     card.innerHTML = `
-      ${t.blocked ? '<i class="bi bi-slash-circle tpl-lock" title="Blocked by admin"></i>' : (!t.unlocked ? '<i class="bi bi-lock-fill tpl-lock"></i>' : '')}
-      <button type="button" class="tpl-preview-btn" title="Preview ${t.name}" onclick="event.stopPropagation();openTemplatePreview('${t.id}')"><i class="bi bi-eye-fill"></i></button>
-      <div class="tpl-thumb" style="background:${t.id==='bold' ? '#C1121F' : t.badge || '#F8FAFC'};border:1px solid #E2E8F0;display:flex;flex-direction:column;gap:3px;padding:6px">${TPL_THUMBS[t.id] || TPL_THUMBS.classic}</div>
-      <div class="tpl-name">${t.name}</div>
-      <span class="tpl-badge ${tplBadgeClass(t.min_plan)}" ${t.blocked ? 'style="background:var(--color-danger-bg);color:var(--color-danger)"' : ''}>${t.blocked ? 'Blocked' : tplBadgeLabel(t.min_plan)}</span>
-      ${t.task && t.task !== 'billing' ? `<span style="display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;font-size:.62rem;font-weight:700;background:#E6FFFA;color:#0F766E;border:1px solid #99F6E4;vertical-align:middle">${t.task_label || t.task}</span>` : ''}
-      <div style="font-size:.72rem;color:var(--text-muted);margin-top:5px;line-height:1.4">${t.desc}</div>`;
+      <div class="tpl-stage">
+        <div class="tpl-thumb" style="background:${t.id === 'bold' ? '#C1121F' : tplEsc(t.badge || '#FFFFFF')}">${TPL_THUMBS[t.id] || TPL_THUMBS.classic}</div>
+        <span class="tpl-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+        <div class="tpl-actions">
+          <button type="button" class="tpl-act ghost" onclick="event.stopPropagation();openTemplatePreview('${id}')"><i class="bi bi-eye"></i> Preview</button>
+          ${t.unlocked ? `<button type="button" class="tpl-act go" onclick="event.stopPropagation();selectTemplate('${id}')">Use template <i class="bi bi-arrow-right"></i></button>` : ''}
+        </div>
+      </div>
+      <div class="tpl-body">
+        <div class="tpl-row"><span class="tpl-name">${name}</span>${badge}</div>
+        ${t.task && t.task !== 'billing' ? `<span class="tpl-tag">${tplEsc(t.task_label || t.task)}</span>` : ''}
+        <p class="tpl-desc">${tplEsc(t.desc)}</p>
+        ${footer}
+      </div>`;
     card.onclick = () => selectTemplate(t.id);
+    card.onkeydown = e => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectTemplate(t.id); } };
     grid.appendChild(card);
   });
 }
@@ -1944,7 +2156,7 @@ function selectTemplate(id) {
   const t = window._tplList.find(x => x.id === id);
   if (t && !t.unlocked) {
     toast(t.blocked
-      ? `"${t.name}" template is currently unavailable. Please contact support.`
+      ? `"${t.name}" template has been disabled. Ask your admin to enable it.`
       : `The "${t.name}" template needs an upgrade. Upgrade your plan to unlock it.`, 'error');
     if (!t.blocked && confirm(`The "${t.name}" template is available on higher plans. Go to pricing page?`)) {
       window.location = '/pricing/';
@@ -1952,8 +2164,9 @@ function selectTemplate(id) {
     return;
   }
   window._selectedTemplate = id;
-  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('tpl-' + id)?.classList.add('active');
+  document.querySelectorAll('.tpl-card').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
+  const picked = document.getElementById('tpl-' + id);
+  if (picked) { picked.classList.add('active'); picked.setAttribute('aria-pressed', 'true'); }
   applyPreviewSkin(id);
   updateItemsLabels(id);
   applyLayoutToPreview();   // rebuilds the preview items header for this template
@@ -2413,6 +2626,11 @@ function goToStage(n) {
   gl.classList.toggle('stage-1', n === 1);
   gl.classList.toggle('stage-2', n === 2);
   if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+  // Keep the chosen template in the URL so a refresh reopens the editor, not the picker.
+  const url = new URL(location.href);
+  if (n === 2) url.searchParams.set('template', window._selectedTemplate);
+  else url.searchParams.delete('template');
+  history.replaceState(null, '', url);
 }
 
 function toggleMobilePreview() {
@@ -2425,8 +2643,12 @@ function toggleMobilePreview() {
 
 /* ── Init ── */
 
+const _resumeTpl = new URLSearchParams(location.search).get('template');
 goToStage(1);
-loadTemplates();
+loadTemplates().then(() => {
+  const t = _resumeTpl && window._tplList.find(x => x.id === _resumeTpl);
+  if (t && t.unlocked) selectTemplate(t.id);
+});
 renderSectionEditor();
 applyPreviewSkin('classic');
 applyLayoutToPreview();

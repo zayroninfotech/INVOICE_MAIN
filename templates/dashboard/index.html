@@ -103,168 +103,174 @@
 
 
 
-<!-- Superadmin: User stats row -->
+<style>
+  @keyframes dbUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .db-anim { animation:dbUp .45s cubic-bezier(.16,1,.3,1) both; }
+  @media (prefers-reduced-motion:reduce) { .db-anim { animation:none; } .db-bar, .ag-fill, .ap-fill { transition:none !important; } }
 
-<div id="superadmin-cards" class="row g-3 mb-4" style="display:none">
+  .db-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+  .db-greet { font-size:1.35rem; font-weight:800; letter-spacing:-.02em; color:var(--text-primary); margin:0; }
+  .db-date { font-size:.85rem; color:var(--text-muted); margin-top:2px; }
+  .db-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .db-act { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 14px; border-radius:8px;
+    font-size:.84rem; font-weight:700; text-decoration:none; border:1.5px solid var(--border); background:var(--surface);
+    color:var(--text-primary); transition:transform .15s, border-color .15s, background .15s; }
+  .db-act:hover { transform:translateY(-1px); border-color:var(--text-primary); color:var(--text-primary); }
+  .db-act.primary { background:var(--ember); border-color:var(--ember); color:#fff; }
+  .db-act.primary:hover { background:var(--ember-dark); border-color:var(--ember-dark); color:#fff; }
 
-  <div class="col-sm-4">
+  .db-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  @media(max-width:1100px){ .db-kpis { grid-template-columns:1fr 1fr; } }
+  @media(max-width:560px){ .db-kpis { grid-template-columns:1fr; } }
+  .kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px;
+    position:relative; overflow:hidden; transition:transform .15s, box-shadow .15s; }
+  .kpi:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
+  .kpi::after { content:''; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--k); }
+  .kpi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .kpi-lbl { font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); }
+  .kpi-ic { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    background:var(--kb); color:var(--k); font-size:.95rem; }
+  .kpi-val { font-size:1.55rem; font-weight:900; letter-spacing:-.03em; color:var(--text-primary); line-height:1.1; }
+  .kpi-sub { font-size:.8rem; color:var(--text-muted); margin-top:5px; font-weight:500; }
+  .chg { display:inline-flex; align-items:center; gap:2px; font-weight:700; border-radius:6px; padding:1px 6px; margin-right:4px; }
+  .chg.up { background:#DCFCE7; color:#15803D; } .chg.down { background:#FEE2E2; color:#B91C1C; }
 
-    <div class="stat-card">
+  .db-grid { display:grid; grid-template-columns:1.65fr 1fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:1100px){ .db-grid { grid-template-columns:1fr; } }
+  .db-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+  .db-card-h { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .db-card-t { font-size:.92rem; font-weight:800; color:var(--text-primary); }
+  .db-card-s { font-size:.78rem; color:var(--text-muted); margin-top:1px; }
+  .db-legend { display:flex; gap:12px; font-size:.75rem; color:var(--text-muted); font-weight:600; }
+  .db-legend i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px; }
+  .db-link { font-size:.8rem; font-weight:700; color:var(--ember); text-decoration:none; }
+  .db-link:hover { text-decoration:underline; color:var(--ember-dark); }
 
-      <div class="d-flex align-items-center gap-3">
+  .db-chart { display:flex; align-items:flex-end; gap:8px; height:190px; border-bottom:1px solid var(--border); position:relative; }
+  .db-chart::before { content:''; position:absolute; inset:0 0 50% 0; border-bottom:1px dashed var(--border); pointer-events:none; }
+  .db-col { flex:1; height:100%; display:flex; align-items:flex-end; justify-content:center; gap:3px; position:relative; }
+  .db-bar { width:38%; max-width:16px; border-radius:4px 4px 0 0; height:0; transition:height .8s cubic-bezier(.16,1,.3,1); }
+  .db-bar.b { background:var(--ember); } .db-bar.c { background:#16A34A; }
+  .db-col.now .db-bar.b { box-shadow:0 0 0 2px var(--ember-light); }
+  .db-tip { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--text-primary); color:#fff;
+    font-size:.75rem; font-weight:600; padding:6px 9px; border-radius:6px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s; z-index:3; }
+  .db-col:hover .db-tip { opacity:1; }
+  .db-lbls { display:flex; gap:8px; margin-top:6px; }
+  .db-lbls span { flex:1; text-align:center; font-size:.75rem; font-weight:600; color:var(--text-muted); }
+  .db-lbls span.now { color:var(--ember); font-weight:800; }
 
-        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-people-fill" style="color:var(--ember);font-size:1.2rem"></i></div>
+  .att-list { display:flex; flex-direction:column; }
+  .att { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); text-decoration:none; }
+  .att:last-child { border-bottom:none; }
+  .att:hover .att-num { text-decoration:underline; }
+  .att-badge { width:44px; flex-shrink:0; text-align:center; border-radius:8px; padding:5px 0; line-height:1.05; }
+  .att-badge b { display:block; font-size:.95rem; font-weight:900; }
+  .att-badge small { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .att-badge.late { background:#FEE2E2; color:#B91C1C; }
+  .att-badge.soon { background:#FEF3C7; color:#B45309; }
+  .att-info { flex:1; min-width:0; }
+  .att-num { font-size:.84rem; font-weight:800; color:var(--ember); }
+  .att-cust { font-size:.8rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .att-amt { font-size:.86rem; font-weight:800; color:var(--text-primary); white-space:nowrap; }
+  .db-empty { display:flex; flex-direction:column; align-items:center; gap:6px; padding:26px 0; color:var(--text-muted); font-size:.84rem; text-align:center; }
+  .db-empty i { font-size:1.6rem; color:#16A34A; }
 
-        <div>
+  .db-grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media(max-width:1100px){ .db-grid3 { grid-template-columns:1fr 1fr; } }
+  @media(max-width:700px){ .db-grid3 { grid-template-columns:1fr; } }
+  .ag-row { display:grid; grid-template-columns:78px 1fr auto; align-items:center; gap:10px; padding:6px 0; }
+  .ag-lbl { font-size:.8rem; font-weight:600; color:var(--text-secondary); }
+  .ag-track { height:8px; background:var(--surface-subtle); border-radius:8px; overflow:hidden; }
+  .ag-fill { height:100%; width:0; border-radius:8px; transition:width .8s cubic-bezier(.16,1,.3,1); }
+  .ag-val { font-size:.8rem; font-weight:800; color:var(--text-primary); text-align:right; min-width:70px; }
+  .ag-val small { display:block; font-size:.72rem; font-weight:600; color:var(--text-muted); }
 
-          <div class="stat-label">Total Users</div>
+  .ap-stack { display:flex; height:12px; border-radius:8px; overflow:hidden; background:var(--surface-subtle); margin:4px 0 16px; }
+  .ap-fill { height:100%; width:0; transition:width .8s cubic-bezier(.16,1,.3,1); }
+  .ap-item { display:flex; align-items:center; justify-content:space-between; padding:7px 0; font-size:.84rem; border-bottom:1px solid var(--border); }
+  .ap-item:last-child { border-bottom:none; }
+  .ap-item span { display:flex; align-items:center; gap:8px; color:var(--text-secondary); font-weight:600; }
+  .ap-item i { width:9px; height:9px; border-radius:3px; display:inline-block; }
+  .ap-item b { color:var(--text-primary); font-weight:800; }
 
-          <div class="stat-value" id="stat-total-users">—</div>
+  .mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .mini { background:var(--surface-subtle); border-radius:10px; padding:12px 14px; text-decoration:none; transition:background .15s; }
+  a.mini:hover { background:var(--ember-light); }
+  .mini-v { font-size:1.25rem; font-weight:900; color:var(--text-primary); letter-spacing:-.02em; }
+  .mini-l { font-size:.75rem; font-weight:600; color:var(--text-muted); }
+  .plan-bar { height:8px; background:var(--surface-subtle); border-radius:8px; overflow:hidden; margin:10px 0 6px; }
+  .plan-bar i { display:block; height:100%; background:var(--ember); border-radius:8px; transition:width .8s; }
+  .sk { background:linear-gradient(90deg,var(--surface-subtle),var(--border),var(--surface-subtle)); background-size:200% 100%;
+    animation:skl 1.2s infinite; border-radius:6px; color:transparent !important; }
+  @keyframes skl { to { background-position:-200% 0; } }
+</style>
 
-        </div>
-
-      </div>
-
-    </div>
-
+<div class="db-head db-anim">
+  <div>
+    <h2 class="db-greet" id="db-greet">Welcome back</h2>
+    <div class="db-date" id="db-date"></div>
   </div>
-
-  <div class="col-sm-4">
-
-    <div class="stat-card">
-
-      <div class="d-flex align-items-center gap-3">
-
-        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-shield-check" style="color:var(--ember);font-size:1.2rem"></i></div>
-
-        <div>
-
-          <div class="stat-label">Admins</div>
-
-          <div class="stat-value" id="stat-admins">—</div>
-
-        </div>
-
-      </div>
-
-    </div>
-
+  <div class="db-actions">
+    <a class="db-act" href="/invoices/"><i class="bi bi-list-ul"></i> All invoices</a>
+    <a class="db-act primary" href="/invoices/create/"><i class="bi bi-plus-lg"></i> New invoice</a>
   </div>
-
-  <div class="col-sm-4">
-
-    <div class="stat-card">
-
-      <div class="d-flex align-items-center gap-3">
-
-        <div class="stat-icon" style="background:var(--surface-subtle)"><i class="bi bi-person" style="color:var(--text-secondary);font-size:1.2rem"></i></div>
-
-        <div>
-
-          <div class="stat-label">Regular Users</div>
-
-          <div class="stat-value" id="stat-reg-users">—</div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
 </div>
 
-
-
-<!-- Plan usage card (non-superadmin only) -->
-
-<div id="plan-usage-card" class="mb-4" style="display:none">
-
-  <div class="stat-card">
-
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-
-      <div class="d-flex align-items-center gap-3">
-
-        <div class="stat-icon" style="background:var(--ember-light)"><i class="bi bi-lightning-charge-fill" style="color:var(--ember);font-size:1.2rem"></i></div>
-
-        <div>
-
-          <div class="stat-label">Plan</div>
-
-          <div class="stat-value" id="plan-label" style="font-size:1rem">—</div>
-
-          <div class="stat-sub" id="plan-usage-sub">Loading…</div>
-
-        </div>
-
-      </div>
-
-      <a id="plan-upgrade-cta" href="/pricing/upgrade/" class="btn btn-sm btn-primary" style="font-size:.8rem;display:none"><i class="bi bi-arrow-up-circle me-1"></i>Upgrade</a>
-
-    </div>
-
+<div class="db-kpis">
+  <div class="kpi db-anim" style="--k:var(--ember);--kb:var(--ember-light)">
+    <div class="kpi-top"><span class="kpi-lbl">Billed this month</span><span class="kpi-ic"><i class="bi bi-graph-up-arrow"></i></span></div>
+    <div class="kpi-val sk" id="k-billed">₹00,000</div>
+    <div class="kpi-sub" id="k-billed-sub">&nbsp;</div>
   </div>
-
+  <div class="kpi db-anim" style="--k:#16A34A;--kb:#DCFCE7;animation-delay:.05s">
+    <div class="kpi-top"><span class="kpi-lbl">Collected</span><span class="kpi-ic"><i class="bi bi-wallet2"></i></span></div>
+    <div class="kpi-val sk" id="k-collected">₹00,000</div>
+    <div class="kpi-sub" id="k-collected-sub">&nbsp;</div>
+  </div>
+  <div class="kpi db-anim" style="--k:#D97706;--kb:#FEF3C7;animation-delay:.1s">
+    <div class="kpi-top"><span class="kpi-lbl">Outstanding</span><span class="kpi-ic"><i class="bi bi-hourglass-split"></i></span></div>
+    <div class="kpi-val sk" id="k-out">₹00,000</div>
+    <div class="kpi-sub" id="k-out-sub">&nbsp;</div>
+  </div>
+  <div class="kpi db-anim" style="--k:#B91C1C;--kb:#FEE2E2;animation-delay:.15s">
+    <div class="kpi-top"><span class="kpi-lbl">Overdue</span><span class="kpi-ic"><i class="bi bi-exclamation-triangle"></i></span></div>
+    <div class="kpi-val sk" id="k-overdue">₹00,000</div>
+    <div class="kpi-sub" id="k-overdue-sub">&nbsp;</div>
+  </div>
 </div>
 
-
-
-
-
-
-<!-- Recent Invoices -->
-
-<div class="card-ms">
-
-  <div class="d-flex align-items-center justify-content-between p-4 pb-0">
-
-    <span class="section-title">Recent Invoices</span>
-
-    <a href="/invoices/" class="btn btn-sm btn-outline-primary">View All <i class="bi bi-arrow-right ms-1"></i></a>
-
+<div class="db-grid">
+  <div class="db-card db-anim" style="animation-delay:.2s">
+    <div class="db-card-h">
+      <div><div class="db-card-t">Billing trend</div><div class="db-card-s">Last 12 months · cancelled invoices excluded</div></div>
+      <div class="db-legend"><span><i style="background:var(--ember)"></i>Billed</span><span><i style="background:#16A34A"></i>Collected</span></div>
+    </div>
+    <div class="db-chart" id="db-chart"></div>
+    <div class="db-lbls" id="db-lbls"></div>
   </div>
-
-  <div style="overflow-x:auto; margin-top: 16px;">
-
-    <table class="ms-table">
-
-      <thead>
-
-        <tr>
-
-          <th>Invoice #</th>
-
-          <th>Customer</th>
-
-          <th>Amount</th>
-
-          <th>Date</th>
-
-          <th>Payment</th>
-          <th>Approval</th>
-
-          <th>Action</th>
-
-        </tr>
-
-      </thead>
-
-      <tbody id="recent-invoices">
-
-        <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">
-
-          <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading…
-
-        </td></tr>
-
-      </tbody>
-
-    </table>
-
+  <div class="db-card db-anim" style="animation-delay:.25s">
+    <div class="db-card-h">
+      <div><div class="db-card-t">Needs attention</div><div class="db-card-s">Overdue or due within 7 days</div></div>
+      <a class="db-link" href="/invoices/?payment=Due">See all due →</a>
+    </div>
+    <div class="att-list" id="db-att"><div class="db-empty">Loading…</div></div>
   </div>
+</div>
 
+<div class="db-grid3">
+  <div class="db-card db-anim" style="animation-delay:.3s">
+    <div class="db-card-h"><div><div class="db-card-t">Receivables ageing</div><div class="db-card-s">Unpaid amount by days past due</div></div></div>
+    <div id="db-aging"></div>
+  </div>
+  <div class="db-card db-anim" style="animation-delay:.35s">
+    <div class="db-card-h"><div><div class="db-card-t">Approval pipeline</div><div class="db-card-s">Customer responses to sent invoices</div></div></div>
+    <div class="ap-stack" id="db-ap-stack"></div>
+    <div id="db-ap-list"></div>
+  </div>
+  <div class="db-card db-anim" style="animation-delay:.4s" id="db-side-card">
+    <div class="db-card-h"><div><div class="db-card-t" id="db-side-title">Workspace</div><div class="db-card-s" id="db-side-sub">&nbsp;</div></div></div>
+    <div id="db-side"></div>
+  </div>
 </div>
 
 {% endblock %}
@@ -275,102 +281,108 @@
 
 <script>
 
-async function loadDashboard() {
+const dbEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dbRs = n => '₹' + Number(n || 0).toLocaleString('en-IN', {maximumFractionDigits: 0});
+const dbShort = n => { n = Number(n || 0); return n >= 1e7 ? '₹' + (n/1e7).toFixed(2) + 'Cr' : n >= 1e5 ? '₹' + (n/1e5).toFixed(1) + 'L' : n >= 1e3 ? '₹' + (n/1e3).toFixed(1) + 'K' : '₹' + Math.round(n); };
 
-  document.getElementById('recent-invoices').innerHTML = skeletonRows(6);
+function dbSet(id, html) { const el = document.getElementById(id); el.classList.remove('sk'); el.innerHTML = html; }
+
+async function loadDashboard() {
+  const who = localStorage.getItem('user_username') || '';
+  const h = new Date().getHours();
+  document.getElementById('db-greet').textContent =
+    (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (who ? ', ' + who : '');
+  document.getElementById('db-date').textContent =
+    new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
   const res = await API.get('/api/dashboard/stats/');
-
   if (!res.success) {
-
-    document.getElementById('recent-invoices').innerHTML =
-
-      '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--color-danger)">Failed to load dashboard data. Please refresh.</td></tr>';
-
+    document.getElementById('db-att').innerHTML = '<div class="db-empty" style="color:var(--color-danger)">Failed to load dashboard. Please refresh.</div>';
     return;
+  }
+  const d = res.data, k = d.kpi, c = d.counts;
 
+  const chg = k.billed_change_pct;
+  const chgHtml = chg === null ? '' :
+    `<span class="chg ${chg >= 0 ? 'up' : 'down'}"><i class="bi bi-arrow-${chg >= 0 ? 'up' : 'down'}-short"></i>${Math.abs(chg)}%</span>`;
+  dbSet('k-billed', dbRs(k.billed_this_month));
+  dbSet('k-billed-sub', `${chgHtml}${chg === null ? '' : 'vs last month · '}${k.invoices_this_month} invoice${k.invoices_this_month === 1 ? '' : 's'}`);
+  dbSet('k-collected', dbRs(k.collected));
+  dbSet('k-collected-sub', `${k.collection_rate}% of billed · ${c.paid} paid`);
+  dbSet('k-out', dbRs(k.outstanding));
+  dbSet('k-out-sub', `${k.outstanding_count} unpaid invoice${k.outstanding_count === 1 ? '' : 's'}`);
+  dbSet('k-overdue', dbRs(k.overdue));
+  dbSet('k-overdue-sub', k.overdue_count ? `${k.overdue_count} past due date` : 'Nothing overdue 🎉');
+
+  // Trend
+  const max = Math.max(1, ...d.trend.map(t => t.billed));
+  const last = d.trend.length - 1;
+  document.getElementById('db-chart').innerHTML = d.trend.map((t, i) => `
+    <div class="db-col ${i === last ? 'now' : ''}">
+      <div class="db-tip">${dbEsc(t.label)} ${t.year}: ${dbRs(t.billed)} billed · ${dbRs(t.collected)} collected</div>
+      <div class="db-bar b" data-h="${t.billed / max * 100}"></div>
+      <div class="db-bar c" data-h="${t.collected / max * 100}"></div>
+    </div>`).join('');
+  document.getElementById('db-lbls').innerHTML = d.trend.map((t, i) => `<span class="${i === last ? 'now' : ''}">${dbEsc(t.label)}</span>`).join('');
+
+  // Needs attention
+  const att = d.attention || [];
+  document.getElementById('db-att').innerHTML = att.length ? att.map(a => {
+    const late = a.days_late >= 1;
+    const n = late ? a.days_late : Math.max(0, -a.days_late);
+    const badge = late ? `<b>${n}</b><small>days late</small>` : n === 0 ? `<b>Today</b><small>due</small>` : `<b>${n}</b><small>days left</small>`;
+    return `<a class="att" href="/invoices/${encodeURIComponent(a.id)}/">
+      <div class="att-badge ${late ? 'late' : 'soon'}">${badge}</div>
+      <div class="att-info"><div class="att-num">${dbEsc(a.invoice_number)}</div><div class="att-cust">${dbEsc(a.customer_name)}</div></div>
+      <div class="att-amt">${dbRs(a.amount)}</div></a>`;
+  }).join('') : '<div class="db-empty"><i class="bi bi-check-circle-fill"></i>All caught up — nothing overdue or due this week.</div>';
+
+  // Ageing
+  const ag = d.aging;
+  const agRows = [['Not yet due','current','#94A3B8'],['1–30 days','1_30','#F59E0B'],['31–60 days','31_60','#EA580C'],['61–90 days','61_90','#DC2626'],['90+ days','90_plus','#7F1D1D']];
+  const agMax = Math.max(1, ...agRows.map(r => ag[r[1]].amount));
+  document.getElementById('db-aging').innerHTML = agRows.map(([l, key, col]) => `
+    <div class="ag-row"><span class="ag-lbl">${l}</span>
+      <div class="ag-track"><div class="ag-fill" style="background:${col}" data-w="${ag[key].amount / agMax * 100}"></div></div>
+      <span class="ag-val">${dbShort(ag[key].amount)}<small>${ag[key].count} inv</small></span></div>`).join('');
+
+  // Approvals
+  const ap = d.approvals, apTot = Math.max(1, ap['In Process'] + ap['Approved'] + ap['Disapproved']);
+  const apRows = [['Approved','#16A34A'],['In Process','#94A3B8'],['Disapproved','#DC2626']];
+  document.getElementById('db-ap-stack').innerHTML = apRows.map(([l, col]) => `<div class="ap-fill" style="background:${col}" data-w="${(ap[l] || 0) / apTot * 100}"></div>`).join('');
+  document.getElementById('db-ap-list').innerHTML = apRows.map(([l, col]) =>
+    `<div class="ap-item"><span><i style="background:${col}"></i>${l}</span><b>${ap[l] || 0} <small style="color:var(--text-muted);font-weight:600">· ${Math.round((ap[l] || 0) / apTot * 100)}%</small></b></div>`).join('');
+
+  // Side card: users (superadmin) or plan usage
+  const side = document.getElementById('db-side');
+  if (d.users) {
+    const u = d.users;
+    document.getElementById('db-side-title').textContent = 'Users';
+    document.getElementById('db-side-sub').textContent = `${u.new_this_month} joined this month`;
+    side.innerHTML = `<div class="mini-grid">
+      <a class="mini" href="/z-admin/" onclick="return openAdminPanel(event)"><div class="mini-v">${u.total}</div><div class="mini-l">Active users</div></a>
+      <div class="mini"><div class="mini-v">${u.superadmins}</div><div class="mini-l">Superadmins</div></div>
+      <div class="mini"><div class="mini-v">${u.admins}</div><div class="mini-l">Admins</div></div>
+      <div class="mini"><div class="mini-v">${u.users}</div><div class="mini-l">Regular users</div></div>
+      <a class="mini" href="/customers/"><div class="mini-v">${c.customers}</div><div class="mini-l">Customers</div></a>
+      <a class="mini" href="/products/"><div class="mini-v">${c.products}</div><div class="mini-l">Products</div></a></div>`;
+  } else {
+    const p = d.plan || {};
+    const lim = p.daily_limit || p.monthly_limit;
+    const used = p.daily_limit ? (p.used_today || 0) : (p.used_month || 0);
+    document.getElementById('db-side-title').textContent = `${p.label || 'Your'} plan`;
+    document.getElementById('db-side-sub').textContent = lim ? `${used} / ${lim} invoices ${p.daily_limit ? 'today' : 'this month'}` : 'Unlimited invoices';
+    side.innerHTML = `${lim ? `<div class="plan-bar"><i style="width:${Math.min(100, used / lim * 100)}%"></i></div>` : ''}
+      <div class="mini-grid" style="margin-top:12px">
+        <a class="mini" href="/customers/"><div class="mini-v">${c.customers}</div><div class="mini-l">Customers</div></a>
+        <a class="mini" href="/products/"><div class="mini-v">${c.products}</div><div class="mini-l">Products</div></a></div>
+      ${p.slug !== 'unlimited' ? '<a class="db-act primary" style="margin-top:12px;width:100%;justify-content:center" href="/pricing/upgrade/"><i class="bi bi-lightning-charge"></i> Upgrade plan</a>' : ''}`;
   }
 
-  const d = res.data;
-
-  const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits: 2});
-
-
-
-
-
-
-  if (d.role === 'superadmin') {
-
-    const el = document.getElementById('superadmin-cards');
-
-    el.style.display = '';
-
-    document.getElementById('stat-total-users').textContent = d.total_users ?? 0;
-
-    document.getElementById('stat-admins').textContent      = d.total_admins ?? 0;
-
-    document.getElementById('stat-reg-users').textContent   = d.total_regular_users ?? 0;
-
-  } else if (d.plan) {
-
-    const p = d.plan;
-
-    document.getElementById('plan-usage-card').style.display = '';
-
-    document.getElementById('plan-label').textContent = p.label;
-
-    let sub = '';
-
-    if (p.daily_limit) sub = `${p.used_today ?? 0} / ${p.daily_limit} invoices today`;
-
-    else if (p.monthly_limit) sub = `${p.used_month ?? 0} / ${p.monthly_limit} invoices this month`;
-
-    else sub = 'Unlimited invoices';
-
-    document.getElementById('plan-usage-sub').textContent = sub;
-
-    if (p.slug !== 'unlimited') document.getElementById('plan-upgrade-cta').style.display = '';
-
-  }
-
-  const tbody = document.getElementById('recent-invoices');
-
-  if (!d.recent_invoices.length) {
-
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">
-
-      No invoices yet. <a href="/invoices/create/">Create your first invoice →</a>
-
-    </td></tr>`;
-
-    return;
-
-  }
-
-  tbody.innerHTML = d.recent_invoices.map(inv => `
-
-    <tr class="recent-row" onclick="window.location='/invoices/${inv.id}/'">
-
-      <td><a href="/invoices/${inv.id}/" class="fw-700 text-primary text-decoration-none" onclick="event.stopPropagation()">${inv.invoice_number}</a></td>
-
-      <td style="color:var(--text-secondary)">${inv.customer_name}</td>
-
-      <td class="fw-700">₹${Number(inv.grand_total).toLocaleString('en-IN',{minimumFractionDigits:2})}</td>
-
-      <td style="color:var(--text-secondary)">${new Date(inv.invoice_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
-
-      <td><span class="badge-ms pay-${inv.payment_status}">${inv.payment_status}</span></td>
-      <td><span class="badge-ms apv-${(inv.approval_status||'In Process').replace(' ','')}">${inv.approval_status||'In Process'}</span></td>
-
-      <td>
-
-        <a href="/invoices/${inv.id}/" class="btn-icon btn-icon-primary" title="View" onclick="event.stopPropagation()"><i class="bi bi-eye"></i></a>
-
-      </td>
-
-    </tr>`).join('');
-
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('#db-chart .db-bar').forEach(b => b.style.height = (b.dataset.h > 0 ? Math.max(2, b.dataset.h) : 0) + '%');
+    document.querySelectorAll('.ag-fill, .ap-fill').forEach(b => b.style.width = b.dataset.w + '%');
+  }));
 }
 
 loadDashboard();

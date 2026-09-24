@@ -203,15 +203,14 @@ class _CircleBadge(Flowable):
 
 
 def _thank_you_stamp(ctx):
-    """Small italic 'Thank you for your business!' line near the signature
-    area — skipped for the 'minimal' template, matching the web preview's
-    `.pvw-thanks` (and its `.inv-preview.tpl-minimal` hide rule). Previously a
-    large circular 'Thank YOU!' badge; simplified to match the web preview
-    after the badge was replaced there with plain text."""
+    """Small italic thank-you line near the signature area — skipped for
+    'minimal' template, matching the web preview's `.pvw-thanks` hide rule."""
     if ctx.get('style_id') == 'minimal':
         return []
-    p = Paragraph('Thank you for your business!',
-                  _style('ThanksLine', fontSize=8, fontName=FONT_I, textColor=MUTED))
+    s = ctx.get('seller') or {}
+    msg = s.get('thankyou_msg') or ctx['inv'].notes or 'Thank you for your business!'
+    txt_color = ctx.get('ACCENT', MUTED)
+    p = Paragraph(msg, _style('ThanksLine', fontSize=8, fontName=FONT_I, textColor=txt_color))
     wrap = Table([[p]], colWidths=[ctx['CW']], hAlign='CENTER')
     wrap.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -504,15 +503,17 @@ def _amount_words_block(ctx):
     total = float(ctx['inv'].grand_total or 0)
     if total <= 0:
         return []
-    amber_bg, amber_bd = colors.HexColor('#FFFBEB'), colors.HexColor('#FDE68A')
+    ACCENT = ctx.get('ACCENT', colors.HexColor('#1A3A2A'))
+    words_bg = colors.HexColor('#EFF8EF')
+    words_bd = colors.HexColor('#B5DEBB')
     lbl = Paragraph('AMOUNT IN WORDS', _style('AWL', fontSize=6.5, fontName=FONT_B,
-                                              textColor=colors.HexColor('#B45309'), leading=9))
+                                              textColor=colors.HexColor('#2D6B3A'), leading=9))
     txt = Paragraph(_amount_words(total), _style('AWT', fontSize=8, fontName=FONT_B,
-                                                 textColor=colors.HexColor('#92400E'), leading=11))
+                                                 textColor=colors.HexColor('#1A3A2A'), leading=11))
     t = Table([[lbl], [txt]], colWidths=[ctx['CW']])
     t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), amber_bg),
-        ('BOX', (0, 0), (-1, -1), 0.5, amber_bd),
+        ('BACKGROUND', (0, 0), (-1, -1), words_bg),
+        ('BOX', (0, 0), (-1, -1), 0.5, words_bd),
         ('LEFTPADDING', (0, 0), (-1, -1), 8), ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('TOPPADDING', (0, 0), (0, 0), 5), ('BOTTOMPADDING', (0, 0), (0, 0), 0),
         ('TOPPADDING', (0, 1), (0, 1), 1), ('BOTTOMPADDING', (0, 1), (0, 1), 5),
@@ -631,20 +632,24 @@ def _totals_inline(ctx):
 
 def _notes_sec(ctx, label_color=DARK, body_color=MUTED, rule=True, fs=8.5):
     invoice, CW = ctx['inv'], ctx['CW']
+    s = ctx.get('seller') or {}
     # The no-login generator posts notes='' and keeps its thank-you line in the
     # seller sidecar, so read that as the fallback body.
-    body = invoice.notes or (ctx.get('seller') or {}).get('thankyou_msg', '')
-    if not body:
+    note_1 = invoice.notes or s.get('thankyou_msg', '')
+    note_2 = s.get('note_2', '')
+    if not note_1 and not note_2:
         return []
     parts = []
     if rule:
         parts += [Spacer(1, 14), HRFlowable(width=CW, thickness=0.5, color=BORDER, spaceAfter=8)]
     else:
         parts += [Spacer(1, 10)]
-    parts += [
-        Paragraph('Notes', _style('NH', fontSize=fs, fontName=FONT_B, textColor=label_color, spaceAfter=3)),
-        Paragraph(body, _style('NT', fontSize=fs, textColor=body_color, leading=fs+4.5)),
-    ]
+    parts.append(Paragraph('Notes', _style('NH', fontSize=fs, fontName=FONT_B, textColor=label_color, spaceAfter=3)))
+    nt_st = _style('NT', fontSize=fs, textColor=body_color, leading=fs+4.5)
+    if note_1:
+        parts.append(Paragraph(f'• {note_1}', nt_st))
+    if note_2:
+        parts.append(Paragraph(f'• {note_2}', nt_st))
     return parts
 
 

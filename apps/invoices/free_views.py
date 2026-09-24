@@ -9,7 +9,6 @@ from .template_registry import normalize_layout_config
 from utils.response import success, error
 from apps.subscriptions.entitlements import can_create_invoice, increment_usage
 from datetime import datetime, date
-from mongoengine.errors import NotUniqueError
 import base64
 import os
 import re
@@ -106,7 +105,7 @@ class FreeInvoiceView(APIView):
         # (pdf_generator._accent reads Invoice.template_color).
         template_color = str(data.get('template_color', '') or '').strip()
         if not re.fullmatch(r'#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})', template_color):
-            template_color = '#C1121F'   # the generator preview's default
+            template_color = '#1A3A2A'   # the generator preview's default (Forest Green)
 
         # ── GST rates ────────────────────────────────────────────────────────
         cgst_rate = float(data.get('cgst_rate', 9) or 0)
@@ -121,6 +120,7 @@ class FreeInvoiceView(APIView):
 
         # ── Invoice footer / signatory ────────────────────────────────────────
         thankyou_msg = str(data.get('thankyou_msg', 'Thank you for your business!')).strip()
+        note_2       = str(data.get('note_2',       '')).strip()
         department   = str(data.get('department',   '')).strip()
         sig_name     = str(data.get('sig_name',     '')).strip()
         sig_company  = str(data.get('sig_company',  '')).strip()
@@ -178,37 +178,37 @@ class FreeInvoiceView(APIView):
         grand_total = round(raw_sub + tax_total, 2)
 
         free_count = Invoice.objects(created_by='anonymous').count()
-        inv_number = inv_number_custom or \
+        base_number = inv_number_custom or \
             f"INV-{date.today().strftime('%Y%m%d')}-{free_count + 1:03d}"
 
-        try:
-            invoice = Invoice(
-                invoice_number=inv_number,
-                customer_id='anonymous',
-                customer_name=customer_name,
-                customer_email=customer_email,
-                customer_address=customer_address,
-                customer_gst=customer_gst,
-                invoice_date=datetime.utcnow(),
-                due_date=datetime.utcnow(),
-                items=built,
-                subtotal=raw_sub,
-                tax_amount=tax_total,
-                grand_total=grand_total,
-                status='Draft',
-                notes='',
-                terms=terms,
-                currency='INR',
-                template_color=template_color,
-                layout_config=layout_config,
-                created_by='anonymous',
-            ).save()
-        except NotUniqueError:
-            return error(
-                f"Invoice number '{inv_number}' already exists. "
-                "Please use a different invoice number.",
-                status=409
-            )
+        # Auto-resolve duplicate invoice numbers — try base, then base-2, base-3 …
+        inv_number = base_number
+        suffix = 1
+        while Invoice.objects(invoice_number=inv_number).first():
+            suffix += 1
+            inv_number = f"{base_number}-{suffix}"
+
+        invoice = Invoice(
+            invoice_number=inv_number,
+            customer_id='anonymous',
+            customer_name=customer_name,
+            customer_email=customer_email,
+            customer_address=customer_address,
+            customer_gst=customer_gst,
+            invoice_date=datetime.utcnow(),
+            due_date=datetime.utcnow(),
+            items=built,
+            subtotal=raw_sub,
+            tax_amount=tax_total,
+            grand_total=grand_total,
+            status='Draft',
+            notes='',
+            terms=terms,
+            currency='INR',
+            template_color=template_color,
+            layout_config=layout_config,
+            created_by='anonymous',
+        ).save()
 
         # ── Save logo ─────────────────────────────────────────────────────────
         logo_path = ''
@@ -243,6 +243,7 @@ class FreeInvoiceView(APIView):
             'sgst_amt': sgst_amt,
             'igst_amt': igst_amt,
             'thankyou_msg': thankyou_msg,
+            'note_2': note_2,
             'department': department,
             'sig_name': sig_name,
             'sig_company': sig_company,

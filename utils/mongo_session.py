@@ -20,15 +20,28 @@ class SessionStore(SessionBase):
     def _get_doc(self):
         try:
             return MongoSessionDoc.objects.get(session_key=self.session_key)
-        except MongoSessionDoc.DoesNotExist:
+        except (MongoSessionDoc.DoesNotExist, Exception):
             return None
 
     def load(self):
         doc = self._get_doc()
-        if doc is None or (doc.expire_date and doc.expire_date < datetime.now(tz=timezone.utc)):
+        if doc is None:
             self._session_key = None
-            return self.create()
-        return self.decode(doc.session_data)
+            return {}
+        if doc.expire_date:
+            now = datetime.now(tz=timezone.utc)
+            # Strip timezone from stored date if it's naive, to allow comparison
+            exp = doc.expire_date
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if exp < now:
+                self._session_key = None
+                return {}
+        try:
+            return self.decode(doc.session_data)
+        except Exception:
+            self._session_key = None
+            return {}
 
     def exists(self, session_key):
         return MongoSessionDoc.objects(session_key=session_key).count() > 0

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from apps.authentication.web_views import landing_page, about_page, support_page
+from apps.authentication.web_views import landing_page, about_page
 from apps.authentication import admin_views
 from apps.invoices import web_views as invoice_web_views
 
@@ -22,7 +22,6 @@ urlpatterns = [
     # Short public link emailed to customers — kept top-level and terse so it
     # survives being copied out of an email client.
     path('i/<str:token>/', invoice_web_views.invoice_approve, name='invoice_approve_page'),
-    path('support/', support_page, name='support'),
     path('dashboard/', include('apps.dashboard.web_urls')),
     path('customers/', include('apps.customers.web_urls')),
     path('products/', include('apps.products.web_urls')),

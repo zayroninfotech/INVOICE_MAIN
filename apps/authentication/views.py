@@ -5,7 +5,7 @@ from django.conf import settings
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ChangePasswordSerializer, CreateUserSerializer
 from .jwt_utils import generate_tokens, decode_token
 from .authentication import MongoJWTAuthentication
-from .permissions import IsSuperAdmin
+from .permissions import IsSuperAdmin, IsReadOnlyForUser
 from .models import User, BusinessProfile, AuditLog
 
 
@@ -95,7 +95,7 @@ class MeView(APIView):
 
 class ChangePasswordView(APIView):
     authentication_classes = [MongoJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsReadOnlyForUser]
 
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)

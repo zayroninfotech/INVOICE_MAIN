@@ -41,13 +41,13 @@
       --text-secondary: #4A4A4A;
       --text-muted:     #717585;
 
-      /* Sidebar */
-      --sidebar-bg:         var(--dark-surface);
-      --sidebar-border:     var(--dark-border);
-      --sidebar-hover:      rgba(255,255,255,.04);
-      --sidebar-active-bg:  rgba(193,18,31,.16);
-      --sidebar-text:       #B8B8B8;
-      --sidebar-text-dim:   #6E6E6E;
+      /* Sidebar — light white theme */
+      --sidebar-bg:         #FFFFFF;
+      --sidebar-border:     #E8E7E5;
+      --sidebar-hover:      rgba(193,18,31,.06);
+      --sidebar-active-bg:  rgba(193,18,31,.08);
+      --sidebar-text:       #3A3A3A;
+      --sidebar-text-dim:   #6B6B6B;
 
       /* Shape */
       --radius-sm: 6px;
@@ -160,6 +160,7 @@
       width: var(--sidebar-w);
       height: 100vh;
       background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
       position: fixed;
       top: 0; left: 0;
       z-index: 200;
@@ -167,10 +168,10 @@
       flex-direction: column;
       overflow-y: auto;
       overflow-x: hidden;
-      scrollbar-width: none;
+      scrollbar-width: none !important;
       transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
     }
-    #sidebar::-webkit-scrollbar { display: none; }
+    #sidebar::-webkit-scrollbar { display: none !important; width: 0 !important; }
 
     /* Mobile sidebar hamburger button */
     #sidebar-toggle {
@@ -258,135 +259,132 @@
       white-space: nowrap;
     }
 
+    /* ── Brand ── */
     .sidebar-brand {
-      padding: 18px 16px 16px;
+      padding: 20px 16px 18px;
       border-bottom: 1px solid var(--sidebar-border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
+      display: flex; align-items: center; gap: 11px;
+      flex-shrink: 0; text-decoration: none;
     }
     .sidebar-brand .logo-icon {
-      width: 36px; height: 36px;
-      flex-shrink: 0;
-      border-radius: var(--radius);
-      overflow: hidden;
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 10px; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      transition: transform var(--duration-base) var(--ease-out);
+      box-shadow: 0 1px 3px rgba(0,0,0,.12);
+      transition: transform .2s;
     }
-    .sidebar-brand:hover .logo-icon { transform: scale(1.05); }
-    .sidebar-brand .logo-icon img {
-      width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius);
-    }
+    .sidebar-brand:hover .logo-icon { transform: scale(1.06); }
+    .sidebar-brand .logo-icon img { width:100%; height:100%; object-fit:contain; border-radius:10px; }
     .sidebar-brand .brand-text {
-      color: #fff;
-      font-weight: 700;
-      font-size: .9rem;
-      letter-spacing: -.02em;
-      line-height: 1.2;
+      color: var(--text-primary); font-weight: 800;
+      font-size: .92rem; letter-spacing: -.025em; line-height: 1.2;
     }
     .sidebar-brand .brand-sub {
-      color: var(--sidebar-text-dim);
-      font-size: .65rem;
-      margin-top: 1px;
-      letter-spacing: .02em;
+      color: var(--sidebar-text-dim); font-size: .75rem;
+      margin-top: 1px; font-weight: 500;
     }
 
+    /* ── Section labels ── */
     .sidebar-section-label {
-      color: var(--sidebar-text-dim);
-      font-size: .7rem;
-      font-weight: 600;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      padding: 18px 16px 5px;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--sidebar-text-dim); font-size: .72rem;
+      font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      padding: 20px 16px 6px; user-select: none;
+    }
+    .sidebar-section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border); opacity: .6;
     }
 
-    .nav-item-wrap { padding: 1px 8px; }
+    /* ── Nav items ── */
+    .nav-item-wrap { padding: 1px 10px; }
 
     .nav-link-main {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 7px 10px;
-      border-radius: var(--radius-sm);
-      color: var(--sidebar-text);
-      text-decoration: none;
-      font-size: .835rem;
-      font-weight: 500;
-      transition: all var(--duration-fast) var(--ease-out);
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      position: relative;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 8px;
+      color: var(--sidebar-text); text-decoration: none;
+      font-size: .845rem; font-weight: 500;
+      transition: all 150ms cubic-bezier(0.16,1,0.3,1);
+      cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; position: relative;
     }
     .nav-link-main:hover {
-      background: var(--sidebar-hover);
-      color: #fff;
-    }
-    .nav-link-main:focus-visible {
-      outline: 2px solid var(--ember);
-      outline-offset: -2px;
-    }
-    .nav-link-main.active {
-      background: var(--sidebar-active-bg);
+      background: rgba(193,18,31,.06);
       color: var(--ember);
+      transform: translateX(3px);
     }
+    .nav-link-main:hover .nav-icon-box-box { background: rgba(193,18,31,.1); color: var(--ember); }
+    .nav-link-main:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; }
+    .nav-link-main.active { background: rgba(193,18,31,.08); color: var(--ember); font-weight: 600; }
+    .nav-link-main.active .nav-icon-box-box { background: rgba(193,18,31,.12); color: var(--ember); }
     .nav-link-main.active::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 6px; bottom: 6px;
-      width: 2px;
-      border-radius: 0 2px 2px 0;
-      background: var(--ember);
+      content: ''; position: absolute;
+      left: 0; top: 7px; bottom: 7px; width: 3px;
+      border-radius: 0 3px 3px 0; background: var(--ember);
     }
-    .nav-link-main .nav-icon {
-      width: 18px;
-      text-align: center;
-      font-size: .9rem;
-      flex-shrink: 0;
-      opacity: .7;
-    }
-    .nav-link-main.active .nav-icon { opacity: 1; }
-    .nav-link-main:hover .nav-icon { opacity: 1; }
-    .nav-link-main .nav-arrow {
-      margin-left: auto;
-      font-size: .65rem;
-      transition: transform .2s;
+
+    /* ── Icon box ── */
+    .nav-icon-box-box {
+      width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .88rem; background: var(--surface-subtle);
       color: var(--sidebar-text-dim);
+      transition: background .15s, color .15s;
+    }
+
+    .nav-link-main .nav-arrow {
+      margin-left: auto; font-size: .6rem;
+      transition: transform .2s; color: var(--sidebar-text-dim);
     }
     .nav-link-main[aria-expanded="true"] .nav-arrow { transform: rotate(90deg); }
-    .nav-link-main[aria-expanded="true"] { color: #CBD5E1; }
+    .nav-link-main[aria-expanded="true"] { color: var(--ember); }
 
-    .nav-sub { padding: 1px 0 3px 30px; }
+    /* ── Sub-nav ── */
+    .nav-sub { padding: 1px 0 3px 20px; }
     .nav-sub-link {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      color: var(--sidebar-text-dim);
-      text-decoration: none;
-      font-size: .8rem;
-      transition: color .12s, background .12s;
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 6px;
+      color: var(--sidebar-text-dim); text-decoration: none;
+      font-size: .8rem; transition: color .12s, background .12s;
     }
-    .nav-sub-link:hover { color: #CBD5E1; background: var(--sidebar-hover); }
-    .nav-sub-link.active { color: #F0576B; font-weight: 600; }
+    .nav-sub-link:hover { color: var(--ember); background: rgba(193,18,31,.05); }
+    .nav-sub-link.active { color: var(--ember); font-weight: 600; }
     .nav-sub-link::before {
-      content: '';
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: .4;
-      flex-shrink: 0;
+      content: ''; width: 4px; height: 4px; border-radius: 50%;
+      background: currentColor; opacity: .45; flex-shrink: 0;
     }
 
-    .sidebar-divider {
-      border-top: 1px solid var(--sidebar-border);
-      margin: 6px 14px;
+    /* ── Divider + footer ── */
+    .sidebar-divider { border-top: 1px solid var(--sidebar-border); margin: 8px 14px; }
+    .sidebar-footer { margin-top: auto; padding: 10px 10px 16px; }
+
+    /* ── User mini-card ── */
+    .sb-user-card {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface-subtle); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px; margin: 4px 0;
     }
-    .sidebar-footer { margin-top: auto; padding: 8px 8px 14px; }
+    .sb-user-avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: var(--ember); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 800;
+    }
+    .sb-user-info { flex: 1; min-width: 0; }
+    .sb-user-name {
+      font-size: .82rem; font-weight: 700; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sb-user-role {
+      font-size: .72rem; color: var(--sidebar-text-dim); font-weight: 500; margin-top: 1px;
+    }
+    .sb-logout-btn {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sidebar-text-dim); background: transparent;
+      border: 1px solid var(--border); font-size: .85rem;
+      text-decoration: none; transition: background .15s, color .15s, border-color .15s;
+    }
+    .sb-logout-btn:hover { background: rgba(220,38,38,.08); color: var(--color-danger); border-color: rgba(220,38,38,.2); }
 
     /* ─────────────────────── MAIN ────────────────────────── */
     #main {
@@ -994,7 +992,7 @@
 
     <div class="nav-item-wrap">
       <a href="/dashboard/" class="nav-link-main {% block nav_dashboard %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-grid-1x2"></i></span>
+        <span class="nav-icon-box"><i class="bi bi-grid-1x2"></i></span>
         Dashboard
       </a>
     </div>
@@ -1003,14 +1001,14 @@
 
     <div class="nav-item-wrap">
       <a href="/invoices/create/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
+        <span class="nav-icon-box"><i class="bi bi-plus-circle"></i></span>
         New Invoice
       </a>
     </div>
 
     <div class="nav-item-wrap">
       <a href="/invoices/" class="nav-link-main {% block nav_list %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
+        <span class="nav-icon-box"><i class="bi bi-file-earmark-text"></i></span>
         All Invoices
       </a>
     </div>
@@ -1020,14 +1018,14 @@
 
     <div class="nav-item-wrap">
       <a href="/pricing/upgrade/" class="nav-link-main {% block nav_upgrade %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-lightning-charge"></i></span>
+        <span class="nav-icon-box"><i class="bi bi-lightning-charge"></i></span>
         Upgrade
       </a>
     </div>
 
     <div class="nav-item-wrap">
       <a href="/pricing/manage/" class="nav-link-main {% block nav_subscriptions %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-sliders"></i></span>
+        <span class="nav-icon-box"><i class="bi bi-sliders"></i></span>
         Subscription
       </a>
     </div>
@@ -1036,22 +1034,15 @@
 
   <div class="sidebar-footer">
     <div class="sidebar-divider"></div>
-    <div class="nav-item-wrap">
-      <a href="/support/" class="nav-link-main">
-        <span class="nav-icon"><i class="bi bi-question-circle"></i></span>
-        Support
-      </a>
-    </div>
-    <div class="nav-item-wrap">
-      <a href="/auth/profile/" class="nav-link-main {% block nav_profile %}{% endblock %}">
-        <span class="nav-icon"><i class="bi bi-person-circle"></i></span>
-        My Profile
-      </a>
-    </div>
-    <div class="nav-item-wrap">
-      <a href="/auth/logout/" class="nav-link-main" style="color:var(--sidebar-text-dim)">
-        <span class="nav-icon"><i class="bi bi-box-arrow-right"></i></span>
-        Logout
+    <!-- User mini-card -->
+    <div class="sb-user-card">
+      <div class="sb-user-avatar" id="sb-avatar">V</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="sb-name">—</div>
+        <div class="sb-user-role" id="sb-role">—</div>
+      </div>
+      <a href="/auth/logout/" class="sb-logout-btn" title="Logout">
+        <i class="bi bi-box-arrow-right"></i>
       </a>
     </div>
   </div>
@@ -1082,6 +1073,7 @@
         </div>
         <div class="user-dropdown" id="user-dropdown">
           <a href="/auth/profile/" class="ud-item"><i class="bi bi-person-circle"></i> My Profile</a>
+          <a href="#" class="ud-item" onclick="openChangePwd(event)"><i class="bi bi-lock"></i> Change Password</a>
           <a href="/z-admin/" class="ud-item" id="ud-admin" style="display:none" onclick="return openAdminPanel(event)"><i class="bi bi-shield-fill-check"></i> Admin Panel</a>
           <div class="ud-divider"></div>
           <a href="/auth/logout/" class="ud-item ud-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
@@ -1230,6 +1222,34 @@
     return false;
   }
 
+  function openChangePwd(e) {
+    e.preventDefault();
+    document.getElementById('user-dropdown').classList.remove('open');
+    document.getElementById('cpwd-modal').classList.add('cpwd-open');
+    document.getElementById('cpwd-old').value = '';
+    document.getElementById('cpwd-new').value = '';
+    document.getElementById('cpwd-old').focus();
+  }
+  function closeCpwd() { document.getElementById('cpwd-modal').classList.remove('cpwd-open'); }
+  async function submitCpwd(e) {
+    e.preventDefault();
+    const btn = document.getElementById('cpwd-submit');
+    const old = document.getElementById('cpwd-old').value;
+    const nw  = document.getElementById('cpwd-new').value;
+    if (nw.length < 8) { toast('New password must be at least 8 characters.', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const res = await API.post('/api/auth/change-password/', { old_password: old, new_password: nw });
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Update Password';
+    if (res.success) { toast('Password updated.', 'success'); closeCpwd(); }
+    else { toast(res.message || 'Could not update password.', 'error'); }
+  }
+  function toggleCpwdField(id, eyeId) {
+    const f = document.getElementById(id);
+    const i = document.getElementById(eyeId);
+    f.type = f.type === 'password' ? 'text' : 'password';
+    i.className = f.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  }
+
   function doLogout() {
     // End the admin session too, or it outlives this login for up to 8 hours.
     try { fetch('/z-admin/logout/', { keepalive: true, redirect: 'manual' }); } catch (e) {}
@@ -1326,6 +1346,14 @@
   document.getElementById('user-avatar-letter').textContent = (username[0] || 'U').toUpperCase();
   window.USER_ROLE = role;
 
+  /* ── Sidebar user mini-card ── */
+  const _sbAvatar = document.getElementById('sb-avatar');
+  const _sbName   = document.getElementById('sb-name');
+  const _sbRole   = document.getElementById('sb-role');
+  if (_sbAvatar) _sbAvatar.textContent = (username[0] || 'U').toUpperCase();
+  if (_sbName)   _sbName.textContent   = username;
+  if (_sbRole)   _sbRole.textContent   = role.charAt(0).toUpperCase() + role.slice(1);
+
   if (role === 'admin' || role === 'superadmin') {
     document.getElementById('ud-admin').style.display = 'flex';
   }
@@ -1418,5 +1446,43 @@
   }
 </script>
 {% block extra_js %}{% endblock %}
+
+<!-- ── Change Password Modal ── -->
+<div id="cpwd-modal" style="position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(3px)">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:32px 28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative">
+    <button onclick="closeCpwd()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;color:var(--text-muted);cursor:pointer;line-height:1"><i class="bi bi-x-lg"></i></button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(26,58,42,.1);display:flex;align-items:center;justify-content:center;color:#1A3A2A;font-size:1.1rem;flex-shrink:0"><i class="bi bi-lock-fill"></i></div>
+      <div>
+        <div style="font-weight:800;font-size:1rem;color:var(--text-primary)">Change Password</div>
+        <div style="font-size:.8rem;color:var(--text-muted)">Update your account password</div>
+      </div>
+    </div>
+    <form onsubmit="submitCpwd(event)">
+      <div style="margin-bottom:14px">
+        <label style="font-size:.8rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:5px">Current Password</label>
+        <div style="position:relative">
+          <input type="password" id="cpwd-old" required style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 38px 9px 12px;font-size:.875rem;background:var(--surface);color:var(--text-primary);outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#1A3A2A'" onblur="this.style.borderColor=''" placeholder="Enter current password">
+          <button type="button" onclick="toggleCpwdField('cpwd-old','cpwd-eye0')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer"><i class="bi bi-eye" id="cpwd-eye0"></i></button>
+        </div>
+      </div>
+      <div style="margin-bottom:22px">
+        <label style="font-size:.8rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:5px">New Password</label>
+        <div style="position:relative">
+          <input type="password" id="cpwd-new" required minlength="8" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 38px 9px 12px;font-size:.875rem;background:var(--surface);color:var(--text-primary);outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#1A3A2A'" onblur="this.style.borderColor=''" placeholder="At least 8 characters">
+          <button type="button" onclick="toggleCpwdField('cpwd-new','cpwd-eye1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer"><i class="bi bi-eye" id="cpwd-eye1"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="button" onclick="closeCpwd()" style="flex:1;padding:10px;border:1.5px solid var(--border);background:transparent;border-radius:8px;font-size:.875rem;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancel</button>
+        <button type="submit" id="cpwd-submit" style="flex:2;padding:10px;background:var(--primary);border:none;border-radius:8px;font-size:.875rem;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="bi bi-shield-check me-1"></i>Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+<style>
+  #cpwd-modal { display:none; }
+  #cpwd-modal.cpwd-open { display:flex; }
+</style>
 </body>
 </html>

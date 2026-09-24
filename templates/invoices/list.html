@@ -22,6 +22,116 @@
 
   .back-btn:hover { color:var(--primary); }
 
+  /* ── Invoice summary cards ── */
+  .inv-stats-bar {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;
+  }
+  @media(max-width:768px){ .inv-stats-bar { grid-template-columns:1fr 1fr; } }
+  @media(max-width:480px){ .inv-stats-bar { grid-template-columns:1fr; } }
+
+  .ist-card {
+    border-radius:12px; padding:14px 16px; position:relative; overflow:hidden;
+    border:1px solid var(--border); background:var(--surface);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .ist-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,.08); }
+  .ist-card-inner { display:flex; align-items:center; gap:12px; }
+  .ist-icon {
+    width:38px; height:38px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:1rem;
+  }
+  .ist-total .ist-icon { background:var(--ember-light); color:var(--ember); }
+  .ist-due   .ist-icon { background:rgba(245,158,11,.12); color:#D97706; }
+  .ist-paid  .ist-icon { background:rgba(34,197,94,.1); color:#16A34A; }
+  .ist-cancel .ist-icon { background:rgba(148,163,184,.1); color:#64748B; }
+  .ist-lbl { font-size:.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+  .ist-val { font-size:1.25rem; font-weight:900; color:var(--text-primary); letter-spacing:-.02em; line-height:1; }
+  .ist-sub { font-size:.78rem; font-weight:600; margin-top:2px; }
+  .ist-total .ist-sub { color:var(--ember); }
+  .ist-due   .ist-sub { color:#D97706; }
+  .ist-paid  .ist-sub { color:#16A34A; }
+  .ist-cancel .ist-sub { color:#64748B; }
+  .ist-accent {
+    position:absolute; bottom:0; left:0; height:3px; width:100%; border-radius:0 0 12px 12px;
+  }
+  .ist-total .ist-accent { background:var(--ember); }
+  .ist-due   .ist-accent { background:#D97706; }
+  .ist-paid  .ist-accent { background:#16A34A; }
+  .ist-cancel .ist-accent { background:#94A3B8; }
+  .ist-val { font-size:1.5rem; }
+
+  @keyframes invUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .ist-card, .ins-card { animation:invUp .45s cubic-bezier(.16,1,.3,1) both; }
+  .ist-card:nth-child(2) { animation-delay:.05s; } .ist-card:nth-child(3) { animation-delay:.1s; }
+  .ist-card:nth-child(4) { animation-delay:.15s; }
+
+  /* ── Insights row ── */
+  .ins-row { display:grid; grid-template-columns:1.7fr 1fr 1.1fr; gap:12px; margin-bottom:18px; }
+  @media(max-width:1100px){ .ins-row { grid-template-columns:1fr 1fr; } .ins-chart { grid-column:1/-1; } }
+  @media(max-width:640px){ .ins-row { grid-template-columns:1fr; } }
+  .ins-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; animation-delay:.2s; }
+  .ins-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .ins-title { font-size:.85rem; font-weight:800; color:var(--text-primary); white-space:nowrap; }
+  .ins-head { gap:10px; flex-wrap:wrap; }
+
+  /* ── Export menu ── */
+  .exp-wrap { position:relative; margin-left:auto; margin-right:8px; }
+  .exp-btn { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 14px;
+    border:1.5px solid var(--border); background:var(--surface); border-radius:8px;
+    font-size:.85rem; font-weight:700; color:var(--text-primary); transition:border-color .15s, background .15s, transform .15s; }
+  .exp-btn:hover { border-color:var(--text-primary); transform:translateY(-1px); }
+  .exp-btn:disabled { opacity:.6; transform:none; }
+  .exp-menu { position:absolute; right:0; top:calc(100% + 6px); width:250px; background:var(--surface);
+    border:1px solid var(--border); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.12);
+    padding:6px; z-index:50; opacity:0; transform:translateY(-4px); pointer-events:none; transition:opacity .15s, transform .15s; }
+  .exp-menu.open { opacity:1; transform:none; pointer-events:auto; }
+  .exp-menu button { display:flex; align-items:center; gap:10px; width:100%; padding:9px 10px; border:none;
+    background:none; border-radius:8px; text-align:left; transition:background .12s; }
+  .exp-menu button:hover { background:var(--surface-subtle); }
+  .exp-menu b { display:block; font-size:.84rem; color:var(--text-primary); }
+  .exp-menu small { display:block; font-size:.75rem; color:var(--text-muted); }
+  .exp-ic { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .exp-note { font-size:.75rem; color:var(--text-muted); padding:8px 10px 4px; border-top:1px solid var(--border); margin-top:4px; }
+  .ins-legend { display:flex; gap:12px; font-size:.75rem; color:var(--text-muted); font-weight:600; }
+  .ins-legend i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px; }
+
+  .bar-chart { display:flex; align-items:flex-end; gap:14px; height:140px; padding-top:6px; border-bottom:1px solid var(--border); }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; position:relative; }
+  .bar-pair { display:flex; gap:4px; align-items:flex-end; height:100%; width:100%; justify-content:center; }
+  .bar { width:40%; max-width:22px; border-radius:4px 4px 0 0; height:0; transition:height .8s cubic-bezier(.16,1,.3,1); }
+  .bar.b-billed { background:var(--ember); }
+  .bar.b-paid { background:#16A34A; }
+  .bar-col:hover .bar { filter:brightness(1.1); }
+  .bar-tip { position:absolute; bottom:calc(100% + 4px); background:var(--text-primary); color:#fff; font-size:.75rem; font-weight:600;
+    padding:5px 8px; border-radius:6px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s; z-index:2; }
+  .bar-col:hover .bar-tip { opacity:1; }
+  .bar-lbls { display:flex; gap:14px; margin-top:6px; }
+  .bar-lbls span { flex:1; text-align:center; font-size:.75rem; color:var(--text-muted); font-weight:600; }
+
+  .ring-wrap { display:flex; align-items:center; gap:18px; }
+  .ring { width:112px; height:112px; border-radius:50%; flex-shrink:0; position:relative;
+    background:conic-gradient(#16A34A 0deg, var(--surface-subtle) 0deg); transition:background .6s; }
+  .ring::after { content:''; position:absolute; inset:12px; border-radius:50%; background:var(--surface); }
+  .ring-val { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1; }
+  .ring-val b { font-size:1.35rem; font-weight:900; color:var(--text-primary); line-height:1; }
+  .ring-val span { font-size:.75rem; color:var(--text-muted); font-weight:600; margin-top:3px; }
+  .ring-stats { display:flex; flex-direction:column; gap:10px; font-size:.8rem; }
+  .ring-stats div { display:flex; flex-direction:column; }
+  .ring-stats span { color:var(--text-muted); font-weight:600; font-size:.75rem; }
+  .ring-stats b { color:var(--text-primary); font-weight:800; }
+
+  .top-list { display:flex; flex-direction:column; gap:11px; }
+  .top-item { display:flex; align-items:center; gap:10px; }
+  .top-av { width:30px; height:30px; border-radius:8px; background:var(--ember-light); color:var(--ember);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
+  .top-info { flex:1; min-width:0; }
+  .top-name { font-size:.82rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top-bar { height:4px; background:var(--surface-subtle); border-radius:4px; margin-top:4px; overflow:hidden; }
+  .top-bar i { display:block; height:100%; width:0; background:var(--ember); border-radius:4px; transition:width .8s cubic-bezier(.16,1,.3,1); }
+  .top-amt { font-size:.8rem; font-weight:800; color:var(--text-primary); white-space:nowrap; }
+  .ins-empty { font-size:.8rem; color:var(--text-muted); padding:20px 0; text-align:center; }
+  @media (prefers-reduced-motion:reduce) { .ist-card,.ins-card { animation:none; } .bar,.top-bar i { transition:none; } }
+
 
 
   /* ── Free-form style cards ───────────────────────────── */
@@ -36,7 +146,7 @@
 
   .fi-section-label {
 
-    font-size:.65rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
 
     color:var(--text-muted); margin-bottom:10px;
 
@@ -94,7 +204,7 @@
 
     display:flex; align-items:center; gap:8px;
 
-    font-size:.65rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
 
     color:var(--text-muted); padding-bottom:8px; border-bottom:1.5px solid var(--primary);
 
@@ -193,9 +303,9 @@
 
   .fi-sb-label {
 
-    display:block; font-size:.62rem; font-weight:800; text-transform:uppercase;
+    display:block; font-size:.75rem; font-weight:800; text-transform:uppercase;
 
-    letter-spacing:.1em; color:var(--text-muted); margin-bottom:6px;
+    letter-spacing:.08em; color:var(--text-muted); margin-bottom:6px;
 
   }
 
@@ -293,7 +403,7 @@
 
     display:flex; flex-direction:column; align-items:center; justify-content:center;
 
-    gap:4px; background:var(--surface-subtle); cursor:pointer; color:var(--text-muted); font-size:.7rem; text-align:center;
+    gap:4px; background:var(--surface-subtle); cursor:pointer; color:var(--text-muted); font-size:.75rem; text-align:center;
 
   }
 
@@ -312,6 +422,79 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LIST VIEW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 
 <div id="list-view">
+
+  <!-- Invoice summary stat cards -->
+  <div class="inv-stats-bar" id="inv-stats-bar">
+    <div class="ist-card ist-total">
+      <div class="ist-card-inner">
+        <div class="ist-icon"><i class="bi bi-receipt-cutoff"></i></div>
+        <div>
+          <div class="ist-lbl">Total Invoices</div>
+          <div class="ist-val" id="ist-total-count">—</div>
+          <div class="ist-sub" id="ist-total-amt">—</div>
+        </div>
+      </div>
+      <div class="ist-accent"></div>
+    </div>
+    <div class="ist-card ist-due">
+      <div class="ist-card-inner">
+        <div class="ist-icon"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="ist-lbl">Due</div>
+          <div class="ist-val" id="ist-due-count">—</div>
+          <div class="ist-sub" id="ist-due-amt">—</div>
+        </div>
+      </div>
+      <div class="ist-accent"></div>
+    </div>
+    <div class="ist-card ist-paid">
+      <div class="ist-card-inner">
+        <div class="ist-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <div>
+          <div class="ist-lbl">Paid</div>
+          <div class="ist-val" id="ist-paid-count">—</div>
+          <div class="ist-sub" id="ist-paid-amt">—</div>
+        </div>
+      </div>
+      <div class="ist-accent"></div>
+    </div>
+    <div class="ist-card ist-cancel">
+      <div class="ist-card-inner">
+        <div class="ist-icon"><i class="bi bi-x-circle"></i></div>
+        <div>
+          <div class="ist-lbl">Cancelled</div>
+          <div class="ist-val" id="ist-cancel-count">—</div>
+          <div class="ist-sub" style="color:#94A3B8">invoices</div>
+        </div>
+      </div>
+      <div class="ist-accent"></div>
+    </div>
+  </div>
+
+  <div class="ins-row">
+    <div class="ins-card ins-chart">
+      <div class="ins-head">
+        <div class="ins-title">Billing — last 6 months</div>
+        <div class="ins-legend"><span><i style="background:var(--ember)"></i>Billed</span><span><i style="background:#16A34A"></i>Collected</span></div>
+      </div>
+      <div class="bar-chart" id="ins-bars"></div>
+      <div class="bar-lbls" id="ins-bar-lbls"></div>
+    </div>
+    <div class="ins-card">
+      <div class="ins-head"><div class="ins-title">Collection rate</div></div>
+      <div class="ring-wrap">
+        <div class="ring" id="ins-ring"><div class="ring-val"><b id="ins-rate">0%</b><span>collected</span></div></div>
+        <div class="ring-stats">
+          <div><span>Collected</span><b id="ins-col">—</b></div>
+          <div><span>Outstanding</span><b id="ins-out" style="color:#D97706">—</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="ins-card">
+      <div class="ins-head"><div class="ins-title">Top customers</div></div>
+      <div class="top-list" id="ins-top"><div class="ins-empty">Loading…</div></div>
+    </div>
+  </div>
 
   <div class="section-header mb-4">
 
@@ -340,6 +523,23 @@
         <option>In Process</option><option>Approved</option><option>Disapproved</option>
       </select>
 
+    </div>
+
+    <div class="exp-wrap">
+      <button type="button" class="exp-btn" id="exp-btn" onclick="toggleExport(event)" aria-haspopup="true" aria-expanded="false">
+        <i class="bi bi-download"></i> Export <i class="bi bi-chevron-down" style="font-size:.7rem"></i>
+      </button>
+      <div class="exp-menu" id="exp-menu" role="menu">
+        <button type="button" role="menuitem" onclick="exportInvoices('pdf')">
+          <span class="exp-ic" style="background:var(--ember-light);color:var(--ember)"><i class="bi bi-file-earmark-pdf"></i></span>
+          <span><b>PDF report</b><small>Summary + full history</small></span>
+        </button>
+        <button type="button" role="menuitem" onclick="exportInvoices('csv')">
+          <span class="exp-ic" style="background:#DCFCE7;color:#15803D"><i class="bi bi-filetype-csv"></i></span>
+          <span><b>Excel / CSV</b><small>Raw data for spreadsheets</small></span>
+        </button>
+        <div class="exp-note">Uses your current search &amp; filters</div>
+      </div>
     </div>
 
     <a href="/invoices/create/" class="btn btn-primary">
@@ -494,7 +694,7 @@
 
           <div class="fi-readonly-row" id="fi-from-gst" style="color:var(--text-muted);font-size:.78rem"></div>
 
-          <a href="/auth/profile/" style="font-size:.72rem;color:var(--primary);text-decoration:none;margin-top:8px;display:inline-block">
+          <a href="/auth/profile/" style="font-size:.78rem;color:var(--primary);text-decoration:none;margin-top:8px;display:inline-block">
 
             <i class="bi bi-pencil-square me-1"></i>Edit in Profile
 
@@ -1741,6 +1941,95 @@ async function _doDownload(id, num) {
 
 
 
+/* ── Invoice summary stats ── */
+const fmtRs = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+
+async function loadInvoiceSummary() {
+  const res = await API.get('/api/invoices/summary/');
+  if (!res.success) return;
+  const d = res.data;
+  document.getElementById('ist-total-count').textContent = d.total_count ?? 0;
+  document.getElementById('ist-total-amt').textContent   = fmtRs(d.total_amount ?? 0);
+  document.getElementById('ist-due-count').textContent   = d.due_count ?? 0;
+  document.getElementById('ist-due-amt').textContent     = fmtRs(d.due_amount ?? 0);
+  document.getElementById('ist-paid-count').textContent  = d.paid_count ?? 0;
+  document.getElementById('ist-paid-amt').textContent    = fmtRs(d.paid_amount ?? 0);
+  document.getElementById('ist-cancel-count').textContent = d.cancelled_count ?? 0;
+  renderInsights(d);
+}
+
+function toggleExport(e) {
+  e.stopPropagation();
+  const m = document.getElementById('exp-menu');
+  const open = m.classList.toggle('open');
+  document.getElementById('exp-btn').setAttribute('aria-expanded', open);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.exp-wrap')) document.getElementById('exp-menu')?.classList.remove('open');
+});
+
+async function exportInvoices(fmt) {
+  document.getElementById('exp-menu').classList.remove('open');
+  const btn = document.getElementById('exp-btn');
+  const label = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Preparing…';
+  try {
+    const qs = new URLSearchParams({ format: fmt, search, payment: statusFilter, approval: approvalFilter });
+    const res = await fetch(`/api/invoices/export/?${qs}`, { headers: { 'Authorization': 'Bearer ' + API.token() } });
+    if (!res.ok) { toast('Export failed.', 'error'); return; }
+    const blob = await res.blob();
+    const name = (res.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/)?.[1] || `invoices.${fmt}`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    toast(fmt === 'pdf' ? 'PDF report downloaded.' : 'CSV downloaded.');
+  } catch { toast('Export failed.', 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = label; }
+}
+
+function renderInsights(d) {
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const short = n => n >= 1e7 ? '₹' + (n/1e7).toFixed(1) + 'Cr' : n >= 1e5 ? '₹' + (n/1e5).toFixed(1) + 'L' : n >= 1e3 ? '₹' + (n/1e3).toFixed(1) + 'K' : '₹' + Math.round(n);
+
+  const months = d.monthly || [];
+  const max = Math.max(1, ...months.map(m => m.billed));
+  document.getElementById('ins-bars').innerHTML = months.map(m => `
+    <div class="bar-col">
+      <div class="bar-tip">${esc(m.label)}: ${fmtRs(m.billed)} billed · ${fmtRs(m.paid)} collected</div>
+      <div class="bar-pair">
+        <div class="bar b-billed" data-h="${m.billed / max * 100}"></div>
+        <div class="bar b-paid" data-h="${m.paid / max * 100}"></div>
+      </div>
+    </div>`).join('');
+  document.getElementById('ins-bar-lbls').innerHTML = months.map(m => `<span>${esc(m.label)}</span>`).join('');
+
+  const billed = (d.paid_amount || 0) + (d.due_amount || 0);
+  const rate = billed ? Math.round((d.paid_amount || 0) / billed * 100) : 0;
+  document.getElementById('ins-rate').textContent = rate + '%';
+  document.getElementById('ins-col').textContent = fmtRs(d.paid_amount || 0);
+  document.getElementById('ins-out').textContent = fmtRs(d.due_amount || 0);
+
+  const top = d.top_customers || [];
+  const tmax = Math.max(1, ...top.map(c => c.amount));
+  document.getElementById('ins-top').innerHTML = top.length ? top.map(c => `
+    <div class="top-item">
+      <div class="top-av">${esc((c.name[0] || '?').toUpperCase())}</div>
+      <div class="top-info">
+        <div class="top-name" title="${esc(c.name)}">${esc(c.name)}</div>
+        <div class="top-bar"><i data-w="${c.amount / tmax * 100}"></i></div>
+      </div>
+      <div class="top-amt">${short(c.amount)}</div>
+    </div>`).join('') : '<div class="ins-empty">No invoices yet</div>';
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('#ins-bars .bar').forEach(b => b.style.height = Math.max(b.dataset.h > 0 ? 2 : 0, b.dataset.h) + '%');
+    document.querySelectorAll('#ins-top .top-bar i').forEach(b => b.style.width = b.dataset.w + '%');
+    document.getElementById('ins-ring').style.background =
+      `conic-gradient(#16A34A ${rate * 3.6}deg, var(--surface-subtle) 0deg)`;
+  }));
+}
+
 /* ── Init ── */
 
 (async () => {
@@ -1749,9 +2038,14 @@ async function _doDownload(id, num) {
 
   await loadFormData();
 
-  loadInvoices();
-
   const p = new URLSearchParams(location.search);
+  if (['Due', 'Paid', 'Cancelled'].includes(p.get('payment'))) {
+    statusFilter = p.get('payment');
+    document.getElementById('status-filter').value = statusFilter;
+  }
+
+  loadInvoices();
+  loadInvoiceSummary();
 
   if (p.get('new') === '1') window.location.replace('/invoices/create/');
 
