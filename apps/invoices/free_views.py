@@ -110,13 +110,8 @@ class FreeInvoiceView(APIView):
         # ── GST rates ────────────────────────────────────────────────────────
         cgst_rate = float(data.get('cgst_rate', 9) or 0)
         sgst_rate = float(data.get('sgst_rate', 9) or 0)
-        igst_rate = float(data.get('igst_rate', 0) or 0)
-        # CGST+SGST (intra-state) and IGST (inter-state) are mutually
-        # exclusive: a positive IGST cancels the split, and vice versa.
-        if igst_rate > 0:
-            cgst_rate = sgst_rate = 0.0
-        elif cgst_rate > 0 or sgst_rate > 0:
-            igst_rate = 0.0
+        igst_rate = float(data.get('igst_rate', 9) or 0)
+        # Rates apply exactly as entered: each rate above 0 prints as its own row; 0 drops it.
 
         # ── Invoice footer / signatory ────────────────────────────────────────
         thankyou_msg = str(data.get('thankyou_msg', '')).strip()

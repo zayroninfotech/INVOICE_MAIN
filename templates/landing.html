@@ -1324,7 +1324,7 @@
                   <div class="tot-row"><span>Subtotal</span><span id="fi-subtotal">&#8377;0.00</span></div>
                   <div class="tot-row gst-row" id="fi-row-cgst"><span style="display:flex;align-items:center;gap:6px">CGST @ <input class="gst-rate-input" type="number" id="fi-cgst-rate" value="9" min="0" max="28" step="0.5" oninput="gstInput(this)">%</span><span id="fi-cgst-amt">&#8377;0.00</span></div>
                   <div class="tot-row gst-row" id="fi-row-sgst"><span style="display:flex;align-items:center;gap:6px">SGST @ <input class="gst-rate-input" type="number" id="fi-sgst-rate" value="9" min="0" max="28" step="0.5" oninput="gstInput(this)">%</span><span id="fi-sgst-amt">&#8377;0.00</span></div>
-                  <div class="tot-row gst-row" id="fi-row-igst"><span style="display:flex;align-items:center;gap:6px">IGST @ <input class="gst-rate-input" type="number" id="fi-igst-rate" value="0" min="0" max="28" step="0.5" oninput="gstInput(this)">%</span><span id="fi-igst-amt">&#8377;0.00</span></div>
+                  <div class="tot-row gst-row" id="fi-row-igst"><span style="display:flex;align-items:center;gap:6px">IGST @ <input class="gst-rate-input" type="number" id="fi-igst-rate" value="9" min="0" max="28" step="0.5" oninput="gstInput(this)">%</span><span id="fi-igst-amt">&#8377;0.00</span></div>
                   <div class="tot-row total-gst-row"><span>Total GST (@ <span id="fi-gst-pct">27</span>%)</span><span id="fi-gst-total">&#8377;0.00</span></div>
                   <div class="tot-row bal"><span>Grand Total (incl. GST)</span><span id="fi-total">&#8377;0.00</span></div>
                 </div>
@@ -2417,9 +2417,9 @@ function renderFreeItems(){
   recalcFreeTotal();
 }
 function amountToWords(n){const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];function tw(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');}function convert(n){if(n===0)return'';if(n<100)return tw(n);if(n<1000)return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+tw(n%100):'');if(n<100000)return convert(Math.floor(n/1000))+' Thousand'+(n%1000?' '+convert(n%1000):'');if(n<10000000)return convert(Math.floor(n/100000))+' Lakh'+(n%100000?' '+convert(n%100000):'');return convert(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+convert(n%10000000):'');}const rupees=Math.floor(n);const paise=Math.round((n-rupees)*100);let words=convert(rupees)||'Zero';words+=' Rupee'+(rupees!==1?'s':'');if(paise>0)words+=' and '+tw(paise)+' Paise';return words+' Only.';}
-// CGST+SGST (same state) and IGST (other state) never apply together — same rule as the server.
-function _gstRates(){let c=parseFloat(_v('fi-cgst-rate'))||0,s=parseFloat(_v('fi-sgst-rate'))||0,i=parseFloat(_v('fi-igst-rate'))||0;if(i>0){c=0;s=0;}return {c,s,i};}
-function gstInput(el){const v=parseFloat(el.value)||0;if(v>0){if(el.id==='fi-igst-rate'){document.getElementById('fi-cgst-rate').value='0';document.getElementById('fi-sgst-rate').value='0';}else{document.getElementById('fi-igst-rate').value='0';}}recalcFreeTotal();}
+// Each GST rate is independent: a rate of 0 drops that row; the total is the sum of the rest.
+function _gstRates(){return {c:parseFloat(_v('fi-cgst-rate'))||0,s:parseFloat(_v('fi-sgst-rate'))||0,i:parseFloat(_v('fi-igst-rate'))||0};}
+function gstInput(el){recalcFreeTotal();}
 function recalcFreeTotal(){
   let sub=0;freeItems.forEach((it,i)=>{const amt=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);sub+=amt;const el=document.getElementById('item-amt-'+i);if(el)el.textContent='₹'+amt.toFixed(2);});
   const {c:cgstRate,s:sgstRate,i:igstRate}=_gstRates();
