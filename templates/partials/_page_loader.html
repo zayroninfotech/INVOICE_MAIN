@@ -67,5 +67,15 @@
     window.addEventListener('beforeunload', function(){ ZLoader.show('Loading…'); });
     // Coming back via the Back button restores the page from cache — don't leave the overlay up.
     window.addEventListener('pageshow', function(e){ if (e.persisted) ZLoader.hide(); });
+
+    // Block the browser Back/Forward buttons: keep a duplicate entry on top of history and
+    // re-add it whenever Back is pressed. Chrome ignores entries added before the user has
+    // interacted with the page, so the guard is (re)armed on the first click/tap/key as well.
+    function armHistoryGuard(){ history.pushState(history.state, '', location.href); }
+    armHistoryGuard();
+    ['pointerdown', 'keydown'].forEach(function(ev){
+      window.addEventListener(ev, function once(){ armHistoryGuard(); window.removeEventListener(ev, once, true); }, true);
+    });
+    window.addEventListener('popstate', function(){ ZLoader.hide(); armHistoryGuard(); });
   })();
 </script>

@@ -2626,8 +2626,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
 function pageBack(e) {
   if (!document.getElementById('gen-layout').classList.contains('stage-2')) return true;
   e.preventDefault();
-  if (history.state && history.state.stage === 2) history.back();
-  else goToStage(1);
+  goToStage(1);
   return false;
 }
 
