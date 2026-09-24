@@ -848,6 +848,35 @@
     .pvw-sig-line{border-top:1px solid #0F172A;width:80px;margin:0 auto 2px;}
     .pvw-sig-img{max-width:80px;max-height:32px;object-fit:contain;display:block;margin:0 auto 3px;}
     .pvw-bar{background:#1A3A2A;color:#fff;font-size:7px;font-weight:700;text-align:center;padding:5px 8px;letter-spacing:.04em;}
+    /* ── Clean professional preview — mirrors the PDF layout (pdf_generator._sec_clean) ── */
+    #inv-preview .pvw-hdr{align-items:flex-end;padding:18px 18px 12px;}
+    #inv-preview .pvw-co-name{font-size:12.5px;}
+    #inv-preview .pvw-divider{height:1px !important;background:#E5E7EB !important;margin:0 18px !important;}
+    #inv-preview .pvw-meta{padding:12px 18px 10px;}
+    #inv-preview .pvw-meta-lbl{color:#64748B;font-size:7px;}
+    #inv-preview .pvw-addr{margin:4px 18px 14px;border:none;border-radius:0;gap:14px;}
+    #inv-preview .pvw-addr-col{border:none !important;}
+    #inv-preview .pvw-addr-hdr{background:transparent !important;color:var(--pvw-accent,#1A3A2A) !important;padding:0 0 4px;font-size:7px;}
+    #inv-preview .pvw-addr-body{padding:0;min-height:0;}
+    #inv-preview .pvw-addr-name{font-size:10px;}
+    #inv-preview .pvw-items{margin:0 18px 8px;border:none;border-radius:0;}
+    #inv-preview .pvw-items-hdr{background:transparent !important;color:#64748B !important;border-top:1px solid #0F172A;border-bottom:1px solid #0F172A;}
+    #inv-preview .pvw-items-hdr span{padding:6px 2px;}
+    #inv-preview .pvw-item-row{border-top:none;border-bottom:1px solid #E5E7EB;}
+    #inv-preview .pvw-item-row:nth-child(even){background:transparent;}
+    #inv-preview .pvw-item-row span{padding:6px 2px;}
+    #inv-preview .pvw-item-row span:nth-child(1){font-weight:400;}
+    #inv-preview .pvw-words{margin:0 18px 10px;}
+    #inv-preview .pvw-totals{padding:0 18px 10px;}
+    #inv-preview .pvw-totals-box{width:44%;}
+    #inv-preview .pvw-tot-row{border-bottom:none;color:#64748B;padding:3px 0;}
+    #inv-preview .pvw-tot-row span:last-child{color:#0F172A;}
+    #inv-preview .pvw-tot-row.grand{background:transparent !important;color:#0F172A !important;border-top:1px solid #0F172A;border-radius:0;padding:7px 0 0;margin-top:4px;font-size:10px;}
+    #inv-preview .pvw-tot-row.grand #pvw-grand{color:var(--pvw-accent,#1A3A2A);font-size:11px;}
+    #inv-preview .pvw-notes,#inv-preview .pvw-terms{padding:8px 18px;border-top:1px solid #E5E7EB;}
+    #inv-preview .pvw-sig-lbl{color:#64748B !important;font-weight:400;text-transform:none;letter-spacing:0;}
+    #inv-preview .pvw-sig-line{border-top-color:#E5E7EB;width:130px;}
+    #inv-preview .pvw-bar,#inv-preview [data-sec="footer"]{display:none !important;}
     @media(max-width:960px){
       .gen-layout{grid-template-columns:1fr;}
       .gen-preview{display:none;}
@@ -1426,7 +1455,7 @@
                 <div class="pvw-items" id="pvw-items-wrap"><div class="pvw-items-hdr"><span>DESCRIPTION</span><span>HSN/SAC</span><span>RATE</span><span>QTY</span><span>DISC%</span><span>AMOUNT</span></div><div id="pvw-items-body"></div></div>
                 <div class="pvw-words" id="pvw-words-wrap"><div class="pvw-words-lbl" data-label="words" contenteditable="true" spellcheck="false">Amount in Words</div><div id="pvw-words-text">&#8212;</div></div>
               </div>
-              <div class="pvw-sec" data-sec="totals"><div class="pvw-totals"><div class="pvw-totals-box"><div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST @ 18%</span><span id="pvw-igst">&#8377;0.00</span></div><div class="pvw-tot-row grand"><span data-label="grand_total" contenteditable="true" spellcheck="false">GRAND TOTAL</span><span id="pvw-grand">&#8377;0.00</span></div></div></div></div>
+              <div class="pvw-sec" data-sec="totals"><div class="pvw-totals"><div class="pvw-totals-box"><div class="pvw-tot-row"><span>Subtotal</span><span id="pvw-sub">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST @ 9%</span><span id="pvw-cgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST @ 9%</span><span id="pvw-sgst">&#8377;0.00</span></div><div class="pvw-tot-row" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST @ 18%</span><span id="pvw-igst">&#8377;0.00</span></div><div class="pvw-tot-row grand"><span data-label="grand_total" contenteditable="true" spellcheck="false">Total</span><span id="pvw-grand">&#8377;0.00</span></div></div></div></div>
               <div class="pvw-sec" data-sec="notes"><div class="pvw-notes"><div class="pvw-notes-lbl" data-label="notes" contenteditable="true" spellcheck="false">Notes</div><div id="pvw-note-1">&#8226; Thank you for your business.</div><div id="pvw-note-2">&#8226; Please make payment on or before the due date.</div></div></div>
               <div class="pvw-sec" data-sec="terms"><div class="pvw-terms"><div class="pvw-notes-lbl" data-label="terms" contenteditable="true" spellcheck="false">Terms &amp; Conditions</div><div id="pvw-terms-text"></div></div></div>
               <div class="pvw-sec" data-sec="signature"><div class="pvw-sig-row"><div class="pvw-thanks">Thank you for your business!</div><div class="pvw-sig"><div class="pvw-sig-lbl" data-label="signature" contenteditable="true" spellcheck="false">Authorized Signatory</div><img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none"><div style="height:24px;" id="pvw-sig-spacer"></div><div class="pvw-sig-line"></div><div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div><div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div><div id="pvw-sig-dt" style="font-size:6.5px;color:#64748B;margin-top:1px;"></div></div></div></div>
@@ -2406,7 +2435,7 @@ function addFreeItem(){freeItems.push({desc:'',hsn:'',qty:1,rate:0});renderFreeI
 function syncShipping(){const chk=document.getElementById('fi-same-address');if(chk&&chk.checked){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill)ship.value=bill.value;}}
 function toggleSameAddress(chk){const ship=document.getElementById('fi-ship-address');const bill=document.getElementById('fi-cust-address');if(ship&&bill){if(chk.checked){ship.value=bill.value;ship.disabled=true;}else{ship.disabled=false;}updatePreview();}}
 var _freeColor='#1A3A2A';
-function applyFreeTemplate(tpl){const colors={orange:'#C1121F',blue:'#2563EB',clean:'#64748B',green:'#1A3A2A',purple:'#7C3AED'};_freeColor=colors[tpl]||'#1A3A2A';const pvw=document.getElementById('inv-preview');if(!pvw)return;pvw.querySelectorAll('.pvw-inv-title,.pvw-bar,.pvw-sig-lbl,.pvw-divider,.pvw-addr-hdr,.pvw-items-hdr,.pvw-tot-row.grand').forEach(el=>{if(el.classList.contains('pvw-divider')||el.classList.contains('pvw-addr-hdr')||el.classList.contains('pvw-items-hdr')||el.classList.contains('pvw-bar')||el.classList.contains('grand'))el.style.background=_freeColor;if(el.classList.contains('pvw-inv-title')||el.classList.contains('pvw-sig-lbl'))el.style.color=_freeColor;});}
+function applyFreeTemplate(tpl){const colors={orange:'#C1121F',blue:'#2563EB',clean:'#64748B',green:'#1A3A2A',purple:'#7C3AED'};_freeColor=colors[tpl]||'#1A3A2A';const pvw=document.getElementById('inv-preview');if(!pvw)return;pvw.style.setProperty('--pvw-accent',_freeColor);pvw.querySelectorAll('.pvw-inv-title,.pvw-bar,.pvw-sig-lbl,.pvw-divider,.pvw-addr-hdr,.pvw-items-hdr,.pvw-tot-row.grand').forEach(el=>{if(el.classList.contains('pvw-divider')||el.classList.contains('pvw-addr-hdr')||el.classList.contains('pvw-items-hdr')||el.classList.contains('pvw-bar')||el.classList.contains('grand'))el.style.background=_freeColor;if(el.classList.contains('pvw-inv-title')||el.classList.contains('pvw-sig-lbl'))el.style.color=_freeColor;});}
 function removeFreeItem(i){if(freeItems.length===1)return;freeItems.splice(i,1);renderFreeItems();}
 function updateFreeItem(i,field,val){freeItems[i][field]=val;recalcFreeTotal();}
 function renderFreeItems(){
