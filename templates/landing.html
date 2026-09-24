@@ -2266,6 +2266,11 @@ if (localStorage.getItem('access_token')) window.location = '/dashboard/';
 const _p = new URLSearchParams(location.search);
 if (_p.get('login') !== null)    { setTimeout(() => openModal('login-modal'), 100); }
 if (_p.get('register') !== null) { setTimeout(() => openModal('reg-modal'), 100); }
+// Open the popup once, then drop ?login / ?register from the address so a refresh doesn't reopen it.
+if (_p.has('login') || _p.has('register')) {
+  _p.delete('login'); _p.delete('register');
+  history.replaceState(history.state, '', location.pathname + (_p.toString() ? '?' + _p : '') + location.hash);
+}
 function openModal(id, hint) {
   document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden';
   if (id === 'reg-modal') { const hintEl = document.querySelector('#reg-modal .modal-hint'); if (hintEl) { const msg = hint || (sessionStorage.getItem('zi_free_used') ? 'Sign up free to create up to 5 invoices/day.' : ''); hintEl.textContent = msg; hintEl.style.display = msg ? '' : 'none'; } }
