@@ -1251,7 +1251,6 @@
                       <div class="fi-field" style="margin-bottom:0"><label>Email</label><input id="fi-from-email" type="email" placeholder="email@company.com" oninput="updatePreview()"></div>
                     </div>
                     <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Address</label><input id="fi-from-address" placeholder="Address, City, State - Pincode" oninput="updatePreview()"></div>
-                    <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Website</label><input id="fi-from-website" placeholder="www.company.com" oninput="updatePreview()"></div>
                   </div>
                 </div>
                 <div class="fi-field" style="margin-bottom:12px">
@@ -1431,7 +1430,7 @@
               <div class="pvw-sec" data-sec="notes"><div class="pvw-notes"><div class="pvw-notes-lbl" data-label="notes" contenteditable="true" spellcheck="false">Notes</div><div id="pvw-note-1">&#8226; Thank you for your business.</div><div id="pvw-note-2">&#8226; Please make payment on or before the due date.</div></div></div>
               <div class="pvw-sec" data-sec="terms"><div class="pvw-terms"><div class="pvw-notes-lbl" data-label="terms" contenteditable="true" spellcheck="false">Terms &amp; Conditions</div><div id="pvw-terms-text"></div></div></div>
               <div class="pvw-sec" data-sec="signature"><div class="pvw-sig-row"><div class="pvw-thanks">Thank you for your business!</div><div class="pvw-sig"><div class="pvw-sig-lbl" data-label="signature" contenteditable="true" spellcheck="false">Authorized Signatory</div><img id="pvw-sig-img" class="pvw-sig-img" src="" alt="" style="display:none"><div style="height:24px;" id="pvw-sig-spacer"></div><div class="pvw-sig-line"></div><div id="pvw-sig-name" style="font-size:7.5px;font-weight:700;margin-top:2px;"></div><div id="pvw-sig-co" style="font-size:7px;color:#64748B;"></div><div id="pvw-sig-dt" style="font-size:6.5px;color:#64748B;margin-top:1px;"></div></div></div></div>
-              <div class="pvw-sec" data-sec="footer"><div class="pvw-bar" id="pvw-bar"></div></div>
+              <div class="pvw-sec" data-sec="footer" style="display:none !important"><div class="pvw-bar" id="pvw-bar"></div></div>
             </div>
           </div>
         </div>
@@ -1513,35 +1512,35 @@
         <div class="tg-mi-label">Minimal</div>
       </div>
       <div class="tg-card tg-restaurant">
-        <img src="{% static 'img/restaurant-invoice.png' %}" alt="Restaurant Tax Invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/restaurant-invoice.webp' %}" alt="Restaurant Tax Invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Restaurant</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-tech-blue.png' %}" alt="Tech Blue invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-tech-blue.webp' %}" alt="Tech Blue invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Tech Blue</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-bold-navy.png' %}" alt="Bold Navy invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-bold-navy.webp' %}" alt="Bold Navy invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Bold Navy</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-wave-blue.png' %}" alt="Wave Blue invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-wave-blue.webp' %}" alt="Wave Blue invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Wave Blue</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-gst-pro.png' %}" alt="GST Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-gst-pro.webp' %}" alt="GST Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">GST Pro</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-teal-pro.png' %}" alt="Teal Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-teal-pro.webp' %}" alt="Teal Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Teal Pro</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-green-pro.png' %}" alt="Green Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-green-pro.webp' %}" alt="Green Pro invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Green Pro</div>
       </div>
       <div class="tg-card">
-        <img src="{% static 'img/invoice-clean-center.png' %}" alt="Clean Center invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-clean-center.webp' %}" alt="Clean Center invoice template" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Clean Center</div>
       </div>
 
@@ -1565,35 +1564,35 @@
         <div class="tg-mi-label">Minimal</div>
       </div>
       <div class="tg-card tg-restaurant" aria-hidden="true">
-        <img src="{% static 'img/restaurant-invoice.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/restaurant-invoice.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Restaurant</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-tech-blue.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-tech-blue.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Tech Blue</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-bold-navy.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-bold-navy.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Bold Navy</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-wave-blue.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-wave-blue.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Wave Blue</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-gst-pro.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-gst-pro.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">GST Pro</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-teal-pro.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-teal-pro.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Teal Pro</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-green-pro.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-green-pro.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Green Pro</div>
       </div>
       <div class="tg-card" aria-hidden="true">
-        <img src="{% static 'img/invoice-clean-center.png' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
+        <img loading="lazy" decoding="async" src="{% static 'img/invoice-clean-center.webp' %}" alt="" style="width:100%;height:auto;display:block;border-radius:5px 5px 0 0;">
         <div class="tg-mi-label">Clean Center</div>
       </div>
     </div>
@@ -2113,7 +2112,7 @@
   <div class="footer-inner">
     <div class="footer-brand-col">
       <a class="footer-logo" href="/" aria-label="Zayro Invoice home">
-        <div class="nav-logo-box" style="width:24px;height:24px;border-radius:5px;"><img src="/static/img/logo.png" alt="" style="width:24px;height:24px;object-fit:contain;"></div>
+        <div class="nav-logo-box" style="width:24px;height:24px;border-radius:5px;"><img src="/static/img/logo.webp" alt="" style="width:24px;height:24px;object-fit:contain;"></div>
         <span>Zayro Invoice</span>
       </a>
       <p class="footer-desc">Professional invoicing for modern Indian businesses. GST-ready, PDF-first, built to save you time.</p>
@@ -2204,7 +2203,7 @@
 <div class="overlay" id="login-modal" onclick="overlayClick(event,'login-modal')">
   <div class="auth-modal">
     <button class="modal-close" onclick="closeModal('login-modal')"><i class="bi bi-x-lg"></i></button>
-    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
+    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.webp" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
     <p class="modal-sub">Login to your account</p>
     <div id="login-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
     <form id="login-form" onsubmit="doLogin(event)">
@@ -2247,7 +2246,7 @@
 <div class="overlay" id="reg-modal" onclick="overlayClick(event,'reg-modal')">
   <div class="auth-modal">
     <button class="modal-close" onclick="closeModal('reg-modal')"><i class="bi bi-x-lg"></i></button>
-    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.png" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
+    <div class="modal-logo"><div class="modal-logo-icon"><img src="/static/img/logo.webp" alt="logo" style="width:36px;height:36px;object-fit:contain"></div><div class="modal-logo-name">Zayro Invoice</div></div>
     <p class="modal-sub">Create your free account</p>
     <div class="modal-hint" style="background:#FDF0F1;border:1px solid #F0C4C8;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#92400E;margin-bottom:12px;display:none"></div>
     <div id="reg-err" class="alert alert-danger d-none py-2" style="font-size:.82rem;border-radius:8px"></div>
@@ -2608,7 +2607,6 @@ function updatePreview(){
   // Website only — email/phone already appear in the FROM block above.
   // Drop each part when empty instead of falling back to Zayron's own site —
   // this is Zayron's product, but the invoice belongs to whoever filled in the form.
-  _t('pvw-bar',[_v('fi-from-website'),_v('fi-from-email'),_v('fi-from-phone')].filter(Boolean).join('   |   '));
   // No default terms — the block only shows when the user has written some.
   _t('pvw-terms-text',_v('fi-terms'));
   {const tb=document.querySelector('#inv-preview .pvw-terms');if(tb)tb.style.display=_v('fi-terms')?'':'none';}
@@ -2645,7 +2643,7 @@ async function createFreeInvoice(){
   effSectionSettings.items_table=effSectionSettings.items_table||{};
   effSectionSettings.items_table.show_hsn=_on('items_table','show_hsn')&&validItems.some(it=>(it.hsn||'').trim());
   effSectionSettings.items_table.show_discount=_on('items_table','show_discount')&&validItems.some(it=>(parseFloat(it.discount)||0)>0);
-  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:document.getElementById('fi-from-website').value.trim(),customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim(),notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:effSectionSettings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels,field_labels:customFieldLabels,logo_width:layoutState.logo_width}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),note_2:document.getElementById('fi-note-2').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),sig_datetime:window._sigAt?fmtSigAt(window._sigAt):'',bank_details:document.getElementById('fi-bank-details').value.trim(),ship_address:document.getElementById('fi-ship-address').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
+  const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:'',customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim(),notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:effSectionSettings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels,field_labels:customFieldLabels,logo_width:layoutState.logo_width}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),note_2:document.getElementById('fi-note-2').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),sig_datetime:window._sigAt?fmtSigAt(window._sigAt):'',bank_details:document.getElementById('fi-bank-details').value.trim(),ship_address:document.getElementById('fi-ship-address').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
   const fd=new FormData();Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
   const logoFile=document.getElementById('fi-logo-file').files[0];if(logoFile)fd.append('logo',logoFile);
   const sigFile=document.getElementById('fi-sig-file').files[0];if(sigFile){fd.append('signature',sigFile);}else{const sigDataUrl=getSignatureDataURL();if(sigDataUrl)fd.append('signature_data',sigDataUrl);}

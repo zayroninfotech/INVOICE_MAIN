@@ -2261,6 +2261,7 @@ _BAR_SUPPRESSED = {'staffing', 'payroll', 'receipt'}
 
 
 def _bottom_bar(style_id, spec, ACCENT, s_name, CW, seller=None):
+    return []  # footer contact strip removed from all PDFs
     """Solid-color strip at the very bottom of the document, matching the
     web preview's `.pvw-bar`. The logged-in preview centres the company name;
     the no-login preview joins website | email | phone, so mirror whichever
@@ -2341,6 +2342,123 @@ def _staffing_page_footer(seller, page_w):
     return draw
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Clean professional layout — used for every template except staffing/payroll.
+# White space, hairline rules, one accent colour (the template's / user's pick).
+# ══════════════════════════════════════════════════════════════════════════════
+
+_CLEAN_EXEMPT = {'staffing', 'payroll'}   # column layouts of their own
+
+
+def _sec_clean(ctx):
+    from xml.sax.saxutils import escape
+    inv, CW, ACCENT, cur = ctx['inv'], ctx['CW'], ctx['ACCENT'], ctx['cur']
+    RULE = colors.HexColor('#E5E7EB')
+    lbl_st = _style('CLbl', fontSize=7, fontName=FONT_B, textColor=MUTED, leading=9)
+    pad0 = [('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0)]
+
+    def header():
+        ss = ctx['cfg'].get('section_settings', {}).get('header', {})
+        gst_lbl = ctx['cfg'].get('field_labels', {}).get('fi-from-gst', 'GSTIN')
+        left = []
+        if ctx['logo_img']:
+            left.append(ctx['logo_img'])
+            left.append(Spacer(1, 6))
+        left.append(Paragraph(escape(ctx['s_name'] or ''), _style('CCo', fontSize=13, fontName=FONT_B,
+                                                                   textColor=DARK, leading=16)))
+        if ctx['s_gst'] and ss.get('show_gstin', True):
+            left.append(Paragraph(f"{gst_lbl}: {escape(ctx['s_gst'])}",
+                                  _style('CGs', fontSize=8, textColor=MUTED, leading=11)))
+        right = [Paragraph(_title(ctx), _style('CTi', fontSize=22, fontName=FONT_B, textColor=ACCENT,
+                                               alignment=TA_RIGHT, leading=26))]
+        hdr = Table([[left, right]], colWidths=[CW*0.58, CW*0.42])
+        hdr.setStyle(TableStyle(pad0 + [('VALIGN', (0, 0), (-1, -1), 'BOTTOM')]))
+        return [hdr, Spacer(1, 14), HRFlowable(width=CW, thickness=0.6, color=RULE, spaceAfter=14)]
+
+    def meta():
+        fl = ctx['cfg'].get('field_labels', {})
+        val = _style('CMv', fontSize=9.5, fontName=FONT_B, textColor=DARK, leading=13)
+        cols = [(fl.get('fi-inv-number', 'Invoice No.'), inv.invoice_number),
+                (fl.get('fi-inv-date', 'Invoice Date'), _fmt_date(inv.invoice_date))]
+        if getattr(inv, 'due_date', None):
+            cols.append(('Due Date', _fmt_date(inv.due_date)))
+        t = Table([[Paragraph(escape(str(a)).upper(), lbl_st) for a, _ in cols],
+                   [Paragraph(escape(str(b)), val) for _, b in cols]],
+                  colWidths=[CW/len(cols)]*len(cols))
+        t.setStyle(TableStyle(pad0 + [('BOTTOMPADDING', (0, 0), (-1, 0), 3)]))
+        return [t, Spacer(1, 18)]
+
+    def bill_to():
+        from_lines, to_lines = _party_blocks(ctx)
+        def block(title, lines):
+            lines = [l for l in lines if l and str(l).strip()]
+            out = [Paragraph(title, _style('CPh', fontSize=7, fontName=FONT_B, textColor=ACCENT,
+                                           leading=9, spaceAfter=4))]
+            if lines:
+                out.append(Paragraph(escape(str(lines[0])), _style('CPn', fontSize=10, fontName=FONT_B,
+                                                                    textColor=DARK, leading=13)))
+                for l in lines[1:]:
+                    out.append(Paragraph(escape(str(l)), _style('CPl', fontSize=8.5, textColor=MUTED,
+                                                                 leading=12)))
+            return out
+        t = Table([[block('FROM', from_lines), block('BILL TO', to_lines)]],
+                  colWidths=[CW*0.5, CW*0.5])
+        t.setStyle(TableStyle(pad0 + [('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                                      ('RIGHTPADDING', (0, 0), (0, 0), 14)]))
+        return [t, Spacer(1, 20)]
+
+    def items():
+        rows, col_w = _items_rows(inv, cur, ctx['cfg'], CW, fs=9)
+        tbl = Table(rows, colWidths=col_w, repeatRows=1)
+        tbl.setStyle(TableStyle([
+            ('LINEABOVE', (0, 0), (-1, 0), 0.8, DARK),
+            ('LINEBELOW', (0, 0), (-1, 0), 0.8, DARK),
+            ('LINEBELOW', (0, 1), (-1, -1), 0.4, RULE),
+            ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+            ('LEFTPADDING', (0, 0), (-1, -1), 2), ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        return [tbl, Spacer(1, 12)] + _amount_words_block(ctx)
+
+    def totals():
+        tw = CW * 0.42
+        lbl = _style('CTl', fontSize=9, textColor=MUTED, alignment=TA_LEFT)
+        val = _style('CTv', fontSize=9, textColor=DARK, alignment=TA_RIGHT, splitLongWords=0)
+        data = [[Paragraph('Subtotal', lbl), Paragraph(_fmt(inv.subtotal, cur), val)]]
+        for name, amt in _active_gst_rows(ctx):
+            data.append([Paragraph(name, lbl), Paragraph(_fmt(amt, cur), val)])
+        data.append([Paragraph('Total', _style('CGl', fontSize=11, fontName=FONT_B, textColor=DARK)),
+                     Paragraph(_fmt(inv.grand_total, cur),
+                               _style('CGv', fontSize=12, fontName=FONT_B, textColor=ACCENT,
+                                      alignment=TA_RIGHT, splitLongWords=0))])
+        last = len(data) - 1
+        t = Table(data, colWidths=[tw*0.5, tw*0.5], hAlign='RIGHT')
+        t.setStyle(TableStyle([
+            ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+            ('TOPPADDING', (0, 0), (-1, -1), 4), ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('LINEABOVE', (0, last), (-1, last), 0.8, DARK),
+            ('TOPPADDING', (0, last), (-1, last), 8),
+        ]))
+        return [t, Spacer(1, 6)]
+
+    def notes():
+        return _notes_sec(ctx, label_color=DARK, rule=True)
+
+    def terms():
+        return _terms_sec(ctx, label_color=DARK)
+
+    def signature():
+        return _signature_sec(ctx, label_color=MUTED, line_color=RULE)
+
+    def footer():
+        return _footer_center(f"Computer-generated invoice · {inv.invoice_number}", rule=True, CW=CW,
+                              rule_color=RULE)
+
+    return dict(header=header, invoice_meta=meta, bill_to=bill_to, items_table=items,
+                totals=totals, notes=notes, terms=terms, signature=signature, footer=footer)
+
+
 def build_elements(style_id, invoice, s_info, logo_img, ACCENT, cur, cfg, CW, spec=None,
                    seller=None):
     s_name, s_email, s_phone, s_gst, s_addr = s_info
@@ -2351,7 +2469,8 @@ def build_elements(style_id, invoice, s_info, logo_img, ACCENT, cur, cfg, CW, sp
         's_gst': s_gst, 's_addr': s_addr, 'logo_img': logo_img,
         'spec': spec, 'style_id': style_id, 'seller': seller,
     }
-    builders = SECTION_BUILDERS.get(style_id, _sec_classic)
+    builders = (SECTION_BUILDERS.get(style_id, _sec_classic) if style_id in _CLEAN_EXEMPT
+                else _sec_clean)
     sections = builders(ctx)
     hidden = _effective_hidden(cfg)
     elems = []
