@@ -38,11 +38,11 @@ Context supplied by the view (MVT): nav_links = [{label, href, active}].
     {% endfor %}
   </div>
   <div class="sn-right">
-    <a href="/?login" class="sn-btn-ghost">Login</a>
+    <a href="/?login" onclick="return snOpenAuth(event,'login-modal')" class="sn-btn-ghost">Login</a>
     {% if nav_cta %}
     <a href="{{ nav_cta.href }}" class="sn-btn-cta">{{ nav_cta.label }}</a>
     {% else %}
-    <a href="/?register" class="sn-btn-cta">Start for free <i class="bi bi-arrow-right" style="font-size:.75rem"></i></a>
+    <a href="/?register" onclick="return snOpenAuth(event,'reg-modal')" class="sn-btn-cta">Start for free <i class="bi bi-arrow-right" style="font-size:.75rem"></i></a>
     {% endif %}
     <button class="sn-hamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sn-menu" onclick="snToggleMenu(this)">
       <i class="bi bi-list" aria-hidden="true"></i>
@@ -55,11 +55,11 @@ Context supplied by the view (MVT): nav_links = [{label, href, active}].
   {% endfor %}
   <div class="sn-menu-divider"></div>
   <div class="sn-menu-btns">
-    <a href="/?login" class="sn-btn-ghost" style="text-align:center">Login</a>
+    <a href="/?login" onclick="return snOpenAuth(event,'login-modal')" class="sn-btn-ghost" style="text-align:center">Login</a>
     {% if nav_cta %}
     <a href="{{ nav_cta.href }}" class="sn-btn-cta" style="justify-content:center">{{ nav_cta.label }}</a>
     {% else %}
-    <a href="/?register" class="sn-btn-cta" style="justify-content:center">Start for free &rarr;</a>
+    <a href="/?register" onclick="return snOpenAuth(event,'reg-modal')" class="sn-btn-cta" style="justify-content:center">Start for free &rarr;</a>
     {% endif %}
   </div>
 </div>
@@ -70,4 +70,16 @@ Context supplied by the view (MVT): nav_links = [{label, href, active}].
     btn.setAttribute('aria-expanded',open?'true':'false');
   }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var m=document.getElementById('sn-menu'); if(m) m.classList.remove('open'); }});
+</script>
+<script>
+  // On pages that already contain the auth modals (the landing page), open them in place
+  // instead of reloading the page via /?login or /?register.
+  function snOpenAuth(e, id) {
+    if (typeof window.openModal !== 'function' || !document.getElementById(id)) return true;
+    e.preventDefault();
+    var menu = document.getElementById('sn-menu');
+    if (menu && menu.classList.contains('open')) { var b = document.querySelector('.sn-hamburger'); if (b) snToggleMenu(b); }
+    openModal(id);
+    return false;
+  }
 </script>
