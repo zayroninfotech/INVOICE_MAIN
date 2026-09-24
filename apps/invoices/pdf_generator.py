@@ -703,6 +703,11 @@ def _signature_sec(ctx, label='Authorised Signatory', label_color=MUTED, line_co
     if sig_co:
         rows.append([Paragraph(sig_co, _style('SIGC', fontSize=7.5, textColor=MUTED,
                                               alignment=TA_CENTER))])
+    sig_dt = (s.get('sig_datetime', '') or '').strip()
+    if sig_dt and (img is not None or sig_name):
+        from xml.sax.saxutils import escape
+        rows.append([Paragraph(f"Signed on {escape(sig_dt[:40])}", _style('SIGDT', fontSize=6.5,
+                                              textColor=MUTED, alignment=TA_CENTER))])
     if dept and show_dept:
         rows.append([Paragraph(dept, _style('SIGD', fontSize=7, textColor=MUTED,
                                             alignment=TA_CENTER))])

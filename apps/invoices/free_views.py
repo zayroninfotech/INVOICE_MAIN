@@ -124,6 +124,7 @@ class FreeInvoiceView(APIView):
         department   = str(data.get('department',   '')).strip()
         sig_name     = str(data.get('sig_name',     '')).strip()
         sig_company  = str(data.get('sig_company',  '')).strip()
+        sig_datetime = str(data.get('sig_datetime', '')).strip()[:40]
 
         # ── Items ─────────────────────────────────────────────────────────────
         raw_items = data.get('items', [])
@@ -248,6 +249,7 @@ class FreeInvoiceView(APIView):
             'sig_name': sig_name,
             'sig_company': sig_company,
             'sig_path': sig_path,
+            'sig_datetime': sig_datetime,
         }
         _save_seller(str(invoice.pk), seller_data)
 
