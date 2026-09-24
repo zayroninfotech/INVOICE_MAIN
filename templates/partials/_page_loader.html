@@ -52,7 +52,7 @@
         el.classList.add('show'); el.setAttribute('aria-hidden', 'false');
         clearInterval(loopId); runInkFill(); loopId = setInterval(runInkFill, 2200);
         // Never strand the user behind the overlay (e.g. mailto:/download links that don't navigate).
-        clearTimeout(safetyId); safetyId = setTimeout(window.ZLoader.hide, 8000);
+        clearTimeout(safetyId); safetyId = setTimeout(window.ZLoader.hide, 2000);
       },
       hide: function(){
         el.classList.remove('show'); el.setAttribute('aria-hidden', 'true');
@@ -79,7 +79,10 @@
     var shownAt = Date.now();
     ZLoader.show('Loading…');
     function finish(){ setTimeout(ZLoader.hide, Math.max(0, 450 - (Date.now() - shownAt))); }
-    if (document.readyState === 'complete') finish(); else window.addEventListener('load', finish);
+    // Hide when the page is ready (DOM parsed), and never keep it up longer than 2 s —
+    // big images/fonts keep loading behind it without blocking the user.
+    if (document.readyState !== 'loading') finish(); else document.addEventListener('DOMContentLoaded', finish);
+    setTimeout(ZLoader.hide, 2000);
     // Refresh (F5 / Ctrl+R / Ctrl+Shift+R / reload button) and any other page leave.
     window.addEventListener('beforeunload', function(){ ZLoader.show('Loading…'); });
     // Coming back via the Back button restores the page from cache — don't leave the overlay up.
