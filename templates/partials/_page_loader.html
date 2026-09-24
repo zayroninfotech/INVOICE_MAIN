@@ -1,0 +1,63 @@
+<!-- Global page loader — ink-fill wordmark (ported from ZayroDocX) -->
+<div id="globalLoader" class="zl-page" role="status" aria-live="polite" aria-hidden="true">
+  <div class="zl-if-wrap" id="zlIfWrap">
+    <span class="zl-if-base">ZayroInvoice</span>
+    <span class="zl-if-fill" aria-hidden="true"><span class="zl-zayro">Zayro</span><span class="zl-inv">Invoice</span></span>
+  </div>
+  <div class="zl-if-label" id="globalLoaderMsg">Loading&hellip;</div>
+</div>
+<style>
+  .zl-page{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:#F9F8F7;}
+  .zl-page.show{display:flex;}
+  [data-theme="dark"] .zl-page{background:#0F0F10;}
+  .zl-if-wrap{position:relative;font-family:'Geist',system-ui,sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;letter-spacing:-.03em;white-space:nowrap;line-height:1.1;}
+  .zl-if-base{color:#D3D2CE;}
+  [data-theme="dark"] .zl-if-base{color:#2A2A2C;}
+  .zl-if-fill{position:absolute;inset:0;overflow:hidden;width:0%;white-space:nowrap;}
+  .zl-zayro{color:#131416;}
+  [data-theme="dark"] .zl-zayro{color:#EDEDED;}
+  .zl-inv{color:#C1121F;}
+  .zl-if-wrap.run .zl-if-fill{animation:zlIfWipe 1.4s cubic-bezier(.65,0,.35,1) forwards;}
+  @keyframes zlIfWipe{to{width:100%;}}
+  .zl-if-label{font-family:'Geist',system-ui,sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#6B6B6B;}
+  [data-theme="dark"] .zl-if-label{color:#8A8A8A;}
+  @media (prefers-reduced-motion:reduce){.zl-if-wrap.run .zl-if-fill{animation:none;width:100%;}}
+</style>
+<script>
+  (function(){
+    var el = document.getElementById('globalLoader');
+    var wrap = document.getElementById('zlIfWrap');
+    var loopId = null, safetyId = null;
+    function runInkFill(){ wrap.classList.remove('run'); void wrap.offsetWidth; wrap.classList.add('run'); }
+    window.ZLoader = {
+      show: function(msg){
+        document.getElementById('globalLoaderMsg').textContent = msg || 'Loading…';
+        el.classList.add('show'); el.setAttribute('aria-hidden', 'false');
+        clearInterval(loopId); runInkFill(); loopId = setInterval(runInkFill, 2200);
+        // Never strand the user behind the overlay (e.g. mailto:/download links that don't navigate).
+        clearTimeout(safetyId); safetyId = setTimeout(window.ZLoader.hide, 8000);
+      },
+      hide: function(){
+        el.classList.remove('show'); el.setAttribute('aria-hidden', 'true');
+        clearInterval(loopId); clearTimeout(safetyId);
+      }
+    };
+    // Opt-in for long actions: <button data-loader data-loader-msg="Generating PDF…">
+    document.addEventListener('click', function(e){
+      var b = e.target.closest && e.target.closest('[data-loader]');
+      if (b) ZLoader.show(b.dataset.loaderMsg || 'Processing…');
+    });
+    // Page-to-page navigation via normal links (same tab, same site, not downloads/new tabs).
+    document.addEventListener('click', function(e){
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+      var href = a.getAttribute('href');
+      if (!href || href.charAt(0) === '#' || /^(javascript|mailto|tel):/i.test(href)) return;
+      if (a.origin !== location.origin) return;
+      if (a.pathname === location.pathname && a.search === location.search) return;
+      setTimeout(function(){ if (!e.defaultPrevented) ZLoader.show('Loading…'); }, 0);
+    });
+    window.addEventListener('pageshow', function(){ ZLoader.hide(); });
+  })();
+</script>
