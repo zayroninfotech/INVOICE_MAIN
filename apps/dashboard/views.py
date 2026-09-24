@@ -132,13 +132,21 @@ class DashboardStatsView(APIView):
         }
 
         if is_super:
-            active = User.objects(is_active=True)
+            # One round trip instead of five separate count() queries.
+            by_role, new_month = {}, 0
+            for row in User._get_collection().aggregate([
+                {'$match': {'is_active': True}},
+                {'$group': {'_id': '$role', 'n': {'$sum': 1},
+                            'new': {'$sum': {'$cond': [{'$gte': ['$created_at', month_start]}, 1, 0]}}}},
+            ]):
+                by_role[row['_id']] = row['n']
+                new_month += row['new']
             data['users'] = {
-                'total': active.count(),
-                'superadmins': active.filter(role='superadmin').count(),
-                'admins': active.filter(role='admin').count(),
-                'users': active.filter(role='user').count(),
-                'new_this_month': active.filter(created_at__gte=month_start).count(),
+                'total': sum(by_role.values()),
+                'superadmins': by_role.get('superadmin', 0),
+                'admins': by_role.get('admin', 0),
+                'users': by_role.get('user', 0),
+                'new_this_month': new_month,
             }
         else:
             plan, sub = get_plan_for_request(request)
