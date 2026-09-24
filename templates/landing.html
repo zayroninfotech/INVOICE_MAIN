@@ -1253,6 +1253,15 @@
                     <div class="fi-field" style="margin-top:8px;margin-bottom:0"><label>Website</label><input id="fi-from-website" placeholder="www.company.com" oninput="updatePreview()"></div>
                   </div>
                 </div>
+                <div class="fi-field" style="margin-bottom:12px">
+                  <label for="fi-doc-title">Document title</label>
+                  <input id="fi-doc-title" list="doc-title-options" maxlength="40" placeholder="INVOICE" autocomplete="off" oninput="setDocTitle(this.value)">
+                  <datalist id="doc-title-options">
+                    <option value="INVOICE"></option><option value="TAX INVOICE"></option><option value="PROFORMA INVOICE"></option>
+                    <option value="BILL OF SUPPLY"></option><option value="QUOTATION"></option><option value="ESTIMATE"></option>
+                    <option value="RECEIPT"></option><option value="CREDIT NOTE"></option><option value="DEBIT NOTE"></option>
+                  </datalist>
+                </div>
                 <div class="fi-grid-2">
                   <div class="fi-field" style="margin-bottom:0">
                     <label>Invoice No. <span style="color:#EF4444">*</span></label>
@@ -2463,6 +2472,7 @@ function toggleFreeSecEditor(){const p=document.getElementById('free-sec-editor'
 function resetFreeLayout(){
   layoutState=freshLayout();
   document.querySelectorAll('#inv-preview [data-label]').forEach(el=>{el.textContent=el.dataset.default;});
+  const dt=document.getElementById('fi-doc-title');if(dt)dt.value='';
   document.getElementById('fse-swap').checked=false;
   onLogoSize(110);
   renderFreeSecEditor();updatePreview();
@@ -2475,10 +2485,17 @@ function applyLayoutToPreview(){
   document.getElementById('pvw-items-wrap').classList.toggle('no-disc',!_on('items_table','show_discount'));
   document.getElementById('pvw-addr').classList.toggle('swapped',!!layoutState.swap_parties);
 }
+// Left-side "Document title" field <-> the editable INVOICE heading in the preview.
+function setDocTitle(v){
+  const t=(v||'').trim().slice(0,40);
+  const el=document.querySelector('#inv-preview [data-label="invoice_title"]');
+  if(el)el.textContent=t||el.dataset.default||'INVOICE';
+  if(t)layoutState.custom_labels.invoice_title=t;else delete layoutState.custom_labels.invoice_title;
+}
 function wireLabelEditing(){
   const pvw=document.getElementById('inv-preview');if(!pvw)return;
   pvw.querySelectorAll('[data-label]').forEach(el=>{el.dataset.default=el.textContent;});
-  pvw.addEventListener('input',e=>{const el=e.target.closest&&e.target.closest('[data-label]');if(el)layoutState.custom_labels[el.dataset.label]=el.textContent.trim();});
+  pvw.addEventListener('input',e=>{const el=e.target.closest&&e.target.closest('[data-label]');if(!el)return;layoutState.custom_labels[el.dataset.label]=el.textContent.trim();if(el.dataset.label==='invoice_title'){const dt=document.getElementById('fi-doc-title');if(dt)dt.value=el.textContent.trim();}});
   pvw.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.closest('[data-label]');if(el&&e.key==='Enter'){e.preventDefault();el.blur();}});
   // Normalise on blur: strips pasted markup, restores the default when cleared.
   pvw.addEventListener('focusout',e=>{

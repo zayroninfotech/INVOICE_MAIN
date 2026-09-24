@@ -727,6 +727,13 @@ def _footer_center(text, color=MUTED, rule=False, CW=None, rule_color=None, rule
     return parts
 
 
+def _title(ctx):
+    """Document heading — user-renamed in the editor via custom_labels.invoice_title."""
+    from xml.sax.saxutils import escape
+    t = (ctx['cfg'].get('custom_labels', {}) or {}).get('invoice_title', '').strip()
+    return escape(t[:40]) if t else 'INVOICE'
+
+
 def _fl(ctx, key, default):
     """A user-renamed form-field label (layout_config.field_labels), else the built-in wording."""
     return ctx['cfg'].get('field_labels', {}).get(key, default)
@@ -829,7 +836,7 @@ def _sec_classic(ctx):
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (0, 0), 8),
             ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
         ]))
-        inv_label = Paragraph('INVOICE', _style('ILbl', fontSize=20, fontName=FONT_B,
+        inv_label = Paragraph(_title(ctx), _style('ILbl', fontSize=20, fontName=FONT_B,
                                                 textColor=ACCENT, alignment=TA_RIGHT))
         hdr = Table([[co_cell, inv_label]], colWidths=[CW*0.6, CW*0.4])
         hdr.setStyle(TableStyle([
@@ -897,7 +904,7 @@ def _sec_minimal(ctx):
                         leading=26, alignment=TA_RIGHT)
         num_st = _style('NU', fontSize=8.5, textColor=MUTED, alignment=TA_RIGHT)
         logo_or_name = ctx['logo_img'] if ctx['logo_img'] else Paragraph(ctx['s_name'] or '', co_st)
-        right_cell = Table([[Paragraph('INVOICE', inv_st)], [Paragraph(inv.invoice_number, num_st)]],
+        right_cell = Table([[Paragraph(_title(ctx), inv_st)], [Paragraph(inv.invoice_number, num_st)]],
                            colWidths=[CW*0.45])
         right_cell.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1017,7 +1024,7 @@ def _sec_modern(ctx):
             ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
         ]))
 
-        right_lines = [Paragraph('INVOICE', inv_w), Paragraph(inv.invoice_number, num_w)]
+        right_lines = [Paragraph(_title(ctx), inv_w), Paragraph(inv.invoice_number, num_w)]
         right_cell = Table([[p] for p in right_lines], colWidths=[inner_w*0.4])
         right_cell.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1104,7 +1111,7 @@ def _sec_professional(ctx):
         badge = ctx['logo_img'] or _CircleBadge(_initials(ctx['s_name']), ACCENT)
         co_cell = [badge, Spacer(1, 4)] + co_cell
 
-        right_cell = Table([[Paragraph('INVOICE', inv_st)], [Paragraph(inv.invoice_number, num_st)]],
+        right_cell = Table([[Paragraph(_title(ctx), inv_st)], [Paragraph(inv.invoice_number, num_st)]],
                            colWidths=[CW*0.42])
         right_cell.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1218,7 +1225,7 @@ def _sec_bold(ctx):
         if ctx['s_gst'] and ss.get('show_gstin', True):
             co_items.append(Paragraph(f"GST: {ctx['s_gst']}", sub_w))
 
-        right_items = [Paragraph('INVOICE', inv_w), Paragraph(inv.invoice_number, num_w)]
+        right_items = [Paragraph(_title(ctx), inv_w), Paragraph(inv.invoice_number, num_w)]
         right_cell = Table([[p] for p in right_items], colWidths=[CW*0.45])
         right_cell.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1303,7 +1310,7 @@ def _sec_compact(ctx):
             contact = f"GST: {ctx['s_gst']} | {contact}"
         if contact:
             left_items.append(Paragraph(contact[:180], sub_st))
-        right_cell = Table([[Paragraph('INVOICE', inv_st)],
+        right_cell = Table([[Paragraph(_title(ctx), inv_st)],
                             [Paragraph(inv.invoice_number, num_st)]], colWidths=[CW*0.32])
         right_cell.setStyle(TableStyle([
             ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -1387,7 +1394,7 @@ def _sec_sidebar(ctx):
             panel_items.append(Paragraph(f"GST: {ctx['s_gst']}", sub))
 
         right_items = [
-            Paragraph('INVOICE', _style('SI', fontSize=30, fontName=FONT_B,
+            Paragraph(_title(ctx), _style('SI', fontSize=30, fontName=FONT_B,
                                         textColor=NAVY, leading=34)),
             Spacer(1, 6),
             Paragraph(inv.invoice_number, _style('SN', fontSize=10, textColor=MUTED)),
@@ -1513,7 +1520,7 @@ def _sec_boxed(ctx):
                                    _style('BC', fontSize=8, textColor=MUTED, leading=11,
                                           alignment=TA_CENTER)))
         items.append(Spacer(1, 10))
-        items.append(Paragraph('INVOICE', _style('BI', fontSize=13, fontName=FONT_B,
+        items.append(Paragraph(_title(ctx), _style('BI', fontSize=13, fontName=FONT_B,
                                                  textColor=GREEN_DK, leading=16,
                                                  alignment=TA_CENTER)))
         return [_boxed(items, CW, bg=MINT, border=MINT_BORDER), Spacer(1, 12)]
@@ -1622,7 +1629,7 @@ def _sec_statement(ctx):
         badge = ctx['logo_img'] or _CircleBadge(_initials(ctx['s_name']), ACCENT)
         left_items.append(badge)
         left_items.append(Spacer(1, 10))
-        left_items.append(Paragraph('INVOICE', _style('GI', fontSize=42, fontName=FONT_B,
+        left_items.append(Paragraph(_title(ctx), _style('GI', fontSize=42, fontName=FONT_B,
                                                       textColor=DARK, leading=46)))
         ss = ctx['cfg'].get('section_settings', {}).get('header', {})
         sub = _style('GS', fontSize=8.5, textColor=MUTED, leading=12)
