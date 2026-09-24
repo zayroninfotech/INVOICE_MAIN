@@ -2189,7 +2189,7 @@
   /* ── Smooth anchor scroll ── */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const href = a.getAttribute('href'); if(!href||href==='#') return; const target = document.querySelector(href);
+      const href = a.getAttribute('href'); if(!href||href.charAt(0)!=='#'||href==='#') return; let target; try { target = document.querySelector(href); } catch (_) { return; }
       if (!target) return;
       e.preventDefault();
       const snMenu = document.getElementById('sn-menu');
@@ -2275,7 +2275,11 @@ function openModal(id, hint) {
   document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden';
   if (id === 'reg-modal') { const hintEl = document.querySelector('#reg-modal .modal-hint'); if (hintEl) { const msg = hint || (sessionStorage.getItem('zi_free_used') ? 'Sign up free to create up to 5 invoices/day.' : ''); hintEl.textContent = msg; hintEl.style.display = msg ? '' : 'none'; } }
 }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function closeModal(id){
+  // Whatever closed the preview popup (X, backdrop click, Esc), the live preview must go back to the form.
+  if(id==='preview-modal'){const pv=document.getElementById('inv-preview'),home=document.querySelector('#free-section .gen-preview .preview-wrap');if(pv&&home&&pv.parentElement!==home)home.appendChild(pv);}
+  document.getElementById(id).classList.remove('open'); document.body.style.overflow='';
+}
 function overlayClick(e, id){ if(e.target===e.currentTarget) closeModal(id); }
 function switchModal(from, to){ closeModal(from); openModal(to); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal('login-modal'); closeModal('reg-modal'); if(document.getElementById('preview-modal').classList.contains('open')) closePreviewModal(); }});
@@ -2663,6 +2667,7 @@ function createAnotherFree(){
   document.getElementById('fi-inv-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('fi-cgst-rate').value='9';document.getElementById('fi-sgst-rate').value='9';document.getElementById('fi-igst-rate').value='9';
   document.getElementById('fi-thankyou').value='Thank you for your business!';document.getElementById('fi-note-2').value='Please make payment on or before the due date.';document.getElementById('fi-dept').value='Sales & Procurement Department';
+  const dt=document.getElementById('fi-doc-title');if(dt){dt.value='';setDocTitle('');}
   recalcFreeTotal();
 }
 </script>
