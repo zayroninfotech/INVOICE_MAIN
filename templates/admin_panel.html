@@ -244,6 +244,7 @@
   </style>
 </head>
 <body>
+{% include "partials/_page_loader.html" %}
 
 <div class="topbar">
   <button id="admin-hamburger" onclick="toggleAdminSidebar()" aria-label="Toggle navigation" aria-expanded="false" aria-controls="admin-sidebar">
@@ -842,7 +843,6 @@ function renderPagination(id, page, pages, fn) {
 loadStats();
 loadAudit(1);
 </script>
-{% include "partials/_page_loader.html" %}
 </body>
 </html>
 

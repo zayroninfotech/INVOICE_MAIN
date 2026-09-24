@@ -1052,6 +1052,7 @@
 </style>
 </head>
 <body>
+{% include "partials/_page_loader.html" %}
 <script>
   window.ZayroLoader = (function() {
     const svg = () => `<div class="zl-spin" aria-hidden="true"></div>`;
@@ -2771,6 +2772,5 @@ function createAnotherFree(){
   cv.classList.add('ready');
 })();
 </script>
-{% include "partials/_page_loader.html" %}
 </body>
 </html>

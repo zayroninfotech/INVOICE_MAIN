@@ -940,6 +940,7 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+{% include "partials/_page_loader.html" %}
 
 <!-- Skip to main content (accessibility) -->
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -1438,6 +1439,5 @@
   #cpwd-modal { display:none; }
   #cpwd-modal.cpwd-open { display:flex; }
 </style>
-{% include "partials/_page_loader.html" %}
 </body>
 </html>

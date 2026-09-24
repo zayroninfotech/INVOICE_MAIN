@@ -1,5 +1,5 @@
 <!-- Global page loader — ink-fill wordmark (ported from ZayroDocX) -->
-<div id="globalLoader" class="zl-page" role="status" aria-live="polite" aria-hidden="true">
+<div id="globalLoader" class="zl-page show" role="status" aria-live="polite" aria-hidden="false">
   <div class="zl-if-wrap" id="zlIfWrap">
     <span class="zl-if-base">ZayroInvoice</span>
     <span class="zl-if-fill" aria-hidden="true"><span class="zl-zayro">Zayro</span><span class="zl-inv">Invoice</span></span>
@@ -58,6 +58,14 @@
       if (a.pathname === location.pathname && a.search === location.search) return;
       setTimeout(function(){ if (!e.defaultPrevented) ZLoader.show('Loading…'); }, 0);
     });
-    window.addEventListener('pageshow', function(){ ZLoader.hide(); });
+    // Visible from the first paint; runs the ink-fill until the page (images, fonts) has fully loaded.
+    var shownAt = Date.now();
+    ZLoader.show('Loading…');
+    function finish(){ setTimeout(ZLoader.hide, Math.max(0, 450 - (Date.now() - shownAt))); }
+    if (document.readyState === 'complete') finish(); else window.addEventListener('load', finish);
+    // Refresh (F5 / Ctrl+R / Ctrl+Shift+R / reload button) and any other page leave.
+    window.addEventListener('beforeunload', function(){ ZLoader.show('Loading…'); });
+    // Coming back via the Back button restores the page from cache — don't leave the overlay up.
+    window.addEventListener('pageshow', function(e){ if (e.persisted) ZLoader.hide(); });
   })();
 </script>
