@@ -22,6 +22,23 @@
   .zl-if-label{font-family:'Geist',system-ui,sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#6B6B6B;}
   [data-theme="dark"] .zl-if-label{color:#8A8A8A;}
   @media (prefers-reduced-motion:reduce){.zl-if-wrap.run .zl-if-fill{animation:none;width:100%;}}
+
+  .zl-back-warn{position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;
+    background:rgba(19,20,22,.45);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .2s;}
+  .zl-back-warn.show{opacity:1;pointer-events:auto;}
+  .zl-bw-card{width:100%;max-width:380px;background:#fff;border-radius:16px;padding:26px 24px 20px;text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);transform:translateY(8px) scale(.97);transition:transform .25s cubic-bezier(.16,1,.3,1);
+    font-family:'Geist',system-ui,sans-serif;}
+  .zl-back-warn.show .zl-bw-card{transform:none;}
+  .zl-bw-ic{width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:#FEE2E2;color:#C1121F;display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+  .zl-bw-t{font-size:1.05rem;font-weight:800;color:#131416;margin-bottom:6px;}
+  .zl-bw-s{font-size:.88rem;line-height:1.5;color:#4A4A4A;margin-bottom:18px;}
+  .zl-bw-btn{width:100%;height:42px;border:none;border-radius:10px;background:#C1121F;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit;}
+  .zl-bw-btn:hover{background:#8C0F1B;}
+  .zl-bw-btn:focus-visible{outline:2px solid #C1121F;outline-offset:2px;}
+  [data-theme="dark"] .zl-bw-card{background:#1C1D21;}
+  [data-theme="dark"] .zl-bw-t{color:#EDEDED;}
+  [data-theme="dark"] .zl-bw-s{color:#B8B8B8;}
 </style>
 <script>
   (function(){
@@ -76,6 +93,29 @@
     ['pointerdown', 'keydown'].forEach(function(ev){
       window.addEventListener(ev, function once(){ armHistoryGuard(); window.removeEventListener(ev, once, true); }, true);
     });
-    window.addEventListener('popstate', function(){ ZLoader.hide(); armHistoryGuard(); });
+    var warnEl = null, warnTimer = null;
+    function backWarning(){
+      if (!warnEl) {
+        warnEl = document.createElement('div');
+        warnEl.className = 'zl-back-warn';
+        warnEl.setAttribute('role', 'alertdialog');
+        warnEl.setAttribute('aria-live', 'assertive');
+        warnEl.innerHTML =
+          '<div class="zl-bw-card">' +
+            '<div class="zl-bw-ic"><i class="bi bi-exclamation-triangle-fill"></i></div>' +
+            '<div class="zl-bw-t">Back button is disabled</div>' +
+            '<div class="zl-bw-s">Please don’t use the browser’s back button. Use the menu or the buttons on the page to move around.</div>' +
+            '<button type="button" class="zl-bw-btn">OK, got it</button>' +
+          '</div>';
+        warnEl.addEventListener('click', function(e){
+          if (e.target === warnEl || e.target.classList.contains('zl-bw-btn')) warnEl.classList.remove('show');
+        });
+        document.body.appendChild(warnEl);
+      }
+      warnEl.classList.add('show');
+      warnEl.querySelector('.zl-bw-btn').focus();
+      clearTimeout(warnTimer); warnTimer = setTimeout(function(){ warnEl.classList.remove('show'); }, 5000);
+    }
+    window.addEventListener('popstate', function(){ ZLoader.hide(); armHistoryGuard(); backWarning(); });
   })();
 </script>
