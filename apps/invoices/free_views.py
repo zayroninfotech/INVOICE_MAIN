@@ -100,7 +100,7 @@ class FreeInvoiceView(APIView):
 
         # ── Invoice meta ──────────────────────────────────────────────────────
         inv_number_custom = str(data.get('invoice_number', '')).strip()
-        terms             = str(data.get('terms', 'Due on Receipt')).strip()
+        terms             = str(data.get('terms', '')).strip()
         # Accent colour chosen in the generator preview — must reach the PDF
         # (pdf_generator._accent reads Invoice.template_color).
         template_color = str(data.get('template_color', '') or '').strip()

@@ -206,7 +206,9 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'words': _amount_words(float(invoice.grand_total or 0)) if float(invoice.grand_total or 0) > 0 else '',
 
         'notes': getattr(invoice, 'notes', '') or 'Thank you for your business!',
-        'terms': getattr(invoice, 'terms', '') or 'Payment due within 30 days.',
+        # No invented terms: an invoice without terms prints no Terms block at all.
+        'terms': (getattr(invoice, 'terms', '') or '').strip(),
+        'hide_terms': not (getattr(invoice, 'terms', '') or '').strip(),
         'sig_name': s.get('sig_name') or '',
         'sig_url': s.get('sig_path') or '',
         'dept': '' if staffing else (s.get('department') or ''),
