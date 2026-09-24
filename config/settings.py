@@ -97,11 +97,19 @@ import mongoengine
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-MONGODB_URI_PRIMARY = env('MONGODB_URI_PRIMARY', 'mongodb://zayronadmin:Zayroninfo%402026@187.127.131.93:27018/?authSource=admin')
+# Credentials live only in .env — never hard-code them here.
+MONGODB_URI_PRIMARY = env('MONGODB_URI_PRIMARY', '')
 MONGODB_URI_FALLBACK = env('MONGODB_URI_FALLBACK', 'mongodb://localhost:27017')
 MONGODB_DB = env('MONGODB_DB', 'invoice_db')
 
+
+def _mongo_host(uri):
+    return uri.split('://', 1)[-1].rsplit('@', 1)[-1].split('/')[0] if uri else '(not set)'
+
+
 def _try_connect(uri, db):
+    if not uri:
+        return False
     try:
         client = MongoClient(uri, serverSelectionTimeoutMS=3000)
         client.admin.command('ping')
@@ -110,13 +118,14 @@ def _try_connect(uri, db):
     except Exception:
         return False
 
+
 if _try_connect(MONGODB_URI_PRIMARY, MONGODB_DB):
     MONGO_URI = MONGODB_URI_PRIMARY
-    print(f"[MongoDB] Connected to PRIMARY ({MONGODB_URI_PRIMARY[:30]}...)")
+    print(f"[MongoDB] Connected to PRIMARY {_mongo_host(MONGODB_URI_PRIMARY)} / {MONGODB_DB}")
 else:
     _try_connect(MONGODB_URI_FALLBACK, MONGODB_DB)
     MONGO_URI = MONGODB_URI_FALLBACK
-    print("[MongoDB] PRIMARY unreachable — using FALLBACK (localhost)")
+    print(f"[MongoDB] PRIMARY {_mongo_host(MONGODB_URI_PRIMARY)} unreachable — using FALLBACK {_mongo_host(MONGODB_URI_FALLBACK)}")
 
 # No relational DB — all data lives in MongoDB via MongoEngine.
 # A dummy backend satisfies Django's internal checks without connecting to anything.
