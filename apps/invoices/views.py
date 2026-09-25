@@ -39,6 +39,12 @@ def _user_plan(request):
     return plan
 
 
+def _purchased_templates(request):
+    """Template ids this user bought individually — empty for anonymous users."""
+    _, sub = get_plan_for_request(request)
+    return list(sub.purchased_templates) if sub else []
+
+
 def _check_template_allowed(request, template_id):
     """Returns None if allowed, else an error Response."""
     plan = _user_plan(request)
@@ -51,6 +57,8 @@ def _check_template_allowed(request, template_id):
             f"The '{tdef['name']}' template is currently unavailable.",
             {"upgrade_required": False, "blocked": True}, status=403)
     from .template_registry import PLAN_RANK
+    if template_id in _purchased_templates(request):
+        return None
     if PLAN_RANK.get(plan, 0) < PLAN_RANK.get(min_plan, 0):
         need_label = settings.PLAN_LIMITS.get(
             'pro' if min_plan == 'unlimited' else min_plan, {}).get('label', min_plan.capitalize())
@@ -424,10 +432,12 @@ class AvailableTemplatesView(APIView):
         plan = _user_plan(request)
         from .template_registry import PLAN_RANK, SECTION_LABELS
         user_rank = PLAN_RANK.get(plan, 0)
+        owned = _purchased_templates(request)
         templates = []
         for t in template_registry.templates_payload():
             min_plan = t['effective_min_plan']
-            unlocked = user_rank >= PLAN_RANK.get(min_plan, 0) and not t['blocked']
+            by_plan = user_rank >= PLAN_RANK.get(min_plan, 0)
+            is_owned = t['id'] in owned
             templates.append({
                 'id': t['id'],
                 'name': t['name'],
@@ -435,7 +445,8 @@ class AvailableTemplatesView(APIView):
                 'min_plan': min_plan,
                 'badge': t.get('badge', '#F8FAFC'),
                 'blocked': t['blocked'],
-                'unlocked': unlocked,
+                'owned': is_owned,
+                'unlocked': (by_plan or is_owned) and not t['blocked'],
             })
         return success({
             'plan': plan,
@@ -443,3 +454,26 @@ class AvailableTemplatesView(APIView):
             'sections': SECTION_LABELS,
             'default_section_order': template_registry.SECTIONS,
         })
+
+
+class TemplatePurchaseView(APIView):
+    """Unlock one premium template for the current subscription period."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def post(self, request, template_id):
+        tdef = template_registry.get_template_def(template_id)
+        if not tdef:
+            return error(f"Unknown template '{template_id}'.", status=400)
+        if template_registry.is_blocked(template_id):
+            return error(f"The '{tdef['name']}' template is currently unavailable.", status=403)
+
+        _, sub = get_plan_for_request(request)
+        if sub is None:
+            return error("Sign in to buy a template.", status=403)
+        if template_id not in sub.purchased_templates:
+            sub.purchased_templates.append(template_id)
+            sub.save()
+        return success(
+            {'template_id': template_id, 'name': tdef['name']},
+            f"'{tdef['name']}' is yours — it's now in your Invoice tab.")

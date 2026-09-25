@@ -213,6 +213,7 @@ class SuperadminChangePlanView(APIView):
         if plan == 'free':
             sub.end_date = None
             sub.amount_paid = 0
+            sub.purchased_templates = []
         else:
             sub.end_date = datetime.utcnow() + timedelta(days=30)
         sub.save()

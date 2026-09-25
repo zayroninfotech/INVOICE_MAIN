@@ -13,6 +13,8 @@ class Subscription(me.Document):
     invoices_used_month = me.IntField(default=0)
     last_daily_reset = me.StringField(default='')   # YYYY-MM-DD
     last_monthly_reset = me.StringField(default='') # YYYY-MM
+    # Templates bought individually — lapse with the subscription period
+    purchased_templates = me.ListField(me.StringField(), default=list)
     # Payment info
     razorpay_payment_id = me.StringField(default='')
     razorpay_order_id = me.StringField(default='')
