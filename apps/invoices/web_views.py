@@ -73,6 +73,11 @@ def invoice_approve(request, token):
     return _no_store(render(request, 'invoices/approve.html', ctx))
 
 
+def invoice_free_generator(request):
+    """Redirect to the landing page with the free invoice form auto-opened."""
+    return redirect('/?free=1')
+
+
 def invoice_print(request, pk):
     """The exact page headless Chrome prints into the PDF.
 

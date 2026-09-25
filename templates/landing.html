@@ -2847,5 +2847,14 @@ function createAnotherFree(){
   cv.classList.add('ready');
 })();
 </script>
+<script>
+if (new URLSearchParams(location.search).get('free') === '1') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', showFreeForm);
+  } else {
+    showFreeForm();
+  }
+}
+</script>
 </body>
 </html>
