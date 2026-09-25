@@ -468,11 +468,6 @@ class TemplatePurchaseView(APIView):
         if template_registry.is_blocked(template_id):
             return error(f"The '{tdef['name']}' template is currently unavailable.", status=403)
 
-        try:
-            qty = max(1, min(99, int(request.data.get('quantity', 1))))
-        except (TypeError, ValueError):
-            qty = 1
-
         _, sub = get_plan_for_request(request)
         if sub is None:
             return error("Sign in to buy a template.", status=403)
@@ -480,5 +475,5 @@ class TemplatePurchaseView(APIView):
             sub.purchased_templates.append(template_id)
             sub.save()
         return success(
-            {'template_id': template_id, 'name': tdef['name'], 'quantity': qty},
+            {'template_id': template_id, 'name': tdef['name']},
             f"'{tdef['name']}' is yours — it's now in your Invoice tab.")
