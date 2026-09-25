@@ -75,9 +75,11 @@ Include AFTER the page's main script: it wraps updatePvw()/secSettingsHtml() and
 
   // form input id -> the key the PDF generator reads (layout_config.field_labels)
   const LABEL_FIELDS = {
-    'inv-number':'fi-inv-number', 'invoice_date':'fi-inv-date', 'due_date':'fi-due-date',
+    'inv-number':'fi-inv-number', 'invoice_date':'fi-inv-date',
     'cust-gst':'fi-cust-gst', 'cust-pan':'fi-cust-pan', 'cust-cin':'fi-cust-cin',
   };
+  // Field ids whose label must not get a rename pencil.
+  const NO_LABEL_EDIT = new Set(['due_date']);
   // preview element that carries "<label>: value" for a renamed field
   const PREFIXED = { 'pvw-to-gst':'fi-cust-gst', 'pvw-to-pan':'fi-cust-pan', 'pvw-to-cin':'fi-cust-cin' };
 
@@ -89,6 +91,7 @@ Include AFTER the page's main script: it wraps updatePvw()/secSettingsHtml() and
       if (!textNode) return;
       const host = lbl.parentElement;
       const fieldId = host.querySelector('input,select,textarea')?.id || '';
+      if (NO_LABEL_EDIT.has(fieldId)) return;
       const span = document.createElement('span');
       span.className = 'fi-lbl-text'; span.contentEditable = 'true'; span.spellcheck = false;
       span.dataset.fieldId = fieldId;
