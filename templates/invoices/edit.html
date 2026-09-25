@@ -1195,6 +1195,7 @@ function updatePvw() {
   _t('pvw-dept',  document.getElementById('department')?.value || '');
 
   _t('pvw-sig-name', document.getElementById('sig-name')?.value || '');
+  _t('pvw-sig-dt', window._sigAtStr ? 'Signed on ' + window._sigAtStr : '');
 
   _t('pvw-bar', document.getElementById('sig-company')?.value || document.getElementById('from-name')?.value || 'Your Company Name');
 
@@ -1289,7 +1290,7 @@ function onLogo(inp) {
 
     const img = document.getElementById('logo-preview');
 
-    img.src = e.target.result; img.style.display = 'block';
+    img.src = e.target.result; img.style.display = 'block'; stampSigNow();
 
     document.getElementById('logo-ph').style.display = 'none';
 
@@ -1330,7 +1331,7 @@ if (canvas) {
 
   canvas.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
 
-  canvas.addEventListener('mouseup',    () => { drawing=false; updatePvw(); });
+  canvas.addEventListener('mouseup',    () => { drawing=false; stampSigNow(); updatePvw(); });
 
   canvas.addEventListener('mouseleave', () => { drawing=false; });
 
@@ -1338,13 +1339,22 @@ if (canvas) {
 
   canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
 
-  canvas.addEventListener('touchend',   () => { drawing=false; updatePvw(); });
+  canvas.addEventListener('touchend',   () => { drawing=false; stampSigNow(); updatePvw(); });
 
 }
 
+// DD-MM-YYYY to match fmtDate, plus the time — stored verbatim on the invoice.
+function fmtSigAt(d) {
+  const p = n => String(n).padStart(2, '0');
+  const time = d.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit', hour12: true});
+  return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}, ` +
+         time.replace(/(am|pm)/i, m => m.toUpperCase());
+}
+function stampSigNow() { window._sigAtStr = fmtSigAt(new Date()); }
+
 function clearCanvas() {
 
-  if (ctx) { ctx.clearRect(0,0,canvas.width,canvas.height); updatePvw(); }
+  if (ctx) { ctx.clearRect(0,0,canvas.width,canvas.height); window._sigAtStr = ''; updatePvw(); }
 
 }
 
@@ -1539,6 +1549,8 @@ async function loadInvoice() {
   // as strokes — user can redraw if they want to change it).
   document.getElementById('sig-name').value = inv.signatory_name || document.getElementById('sig-name').value;
   document.getElementById('sig-company').value = inv.signature_company || '';
+  // Keep the original signing stamp across an edit; re-signing overwrites it.
+  window._sigAtStr = inv.signature_datetime || '';
   if (inv.signature_image) {
     const upImg = document.getElementById('sig-preview-img');
     if (upImg) { upImg.src = inv.signature_image; upImg.style.display = 'block'; }
@@ -2014,7 +2026,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
 
     notes:            document.getElementById('thankyou-msg').value,
 
-    terms:            document.getElementById('invoice-terms').value || 'Payment due within 30 days.',
+    terms:            document.getElementById('invoice-terms').value,
 
     template_color:   window._selectedColor || '#C1121F',
 
@@ -2039,6 +2051,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     signature_image:   getSignatureImageForPayload(),
     signatory_name:    document.getElementById('sig-name')?.value || '',
     signature_company: document.getElementById('sig-company')?.value || '',
+    signature_datetime: window._sigAtStr || '',
 
     items,
 

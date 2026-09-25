@@ -333,6 +333,20 @@ async function renderPreview(inv) {
 
   _t('pvw-co-name', companyName.toUpperCase());
   _t('pvw-co-gst',  profile.gst ? 'GSTIN: ' + profile.gst : '');
+
+  // Logo — the partial ships the circle hidden and empty; fill it the same way
+  // form.html's setPreviewLogo() does, and leave it hidden when there's none.
+  const logoCircle = document.getElementById('pvw-logo-circle');
+  if (logoCircle) {
+    if (profile.logo_url) {
+      logoCircle.innerHTML = '<img src="' + profile.logo_url + '" alt="" ' +
+        'style="width:100%;height:100%;object-fit:contain;border-radius:50%">';
+      logoCircle.style.display = '';
+    } else {
+      logoCircle.innerHTML = '';
+      logoCircle.style.display = 'none';
+    }
+  }
   _t('pvw-from-name', companyName);
   _t('pvw-from-addr', fromAddress);
   _t('pvw-from-gst',  profile.gst ? 'GSTIN: ' + profile.gst : '');
@@ -342,9 +356,13 @@ async function renderPreview(inv) {
   _t('pvw-date',   fmtDate(inv.invoice_date));
 
   _t('pvw-to-name',  inv.customer_name || '—');
+  _t('pvw-to-recipient', inv.customer_recipient ? 'Attn: ' + inv.customer_recipient : '');
   _t('pvw-to-addr',  inv.customer_address || '');
   _t('pvw-to-email', inv.customer_email || '');
+  _t('pvw-to-phone', inv.customer_phone || '');
+  _t('pvw-to-cin',   inv.customer_cin ? 'CIN: ' + inv.customer_cin : '');
   _t('pvw-to-gst',   inv.customer_gst ? 'GSTIN: ' + inv.customer_gst : '');
+  _t('pvw-to-pan',   inv.customer_pan ? 'PAN: ' + inv.customer_pan : '');
 
   // Items. Same column rules as the editor preview and the PDF: a column
   // nobody filled in is dropped, and AMOUNT is the pre-tax line value so the
@@ -406,12 +424,22 @@ async function renderPreview(inv) {
   _t('pvw-gsttot', fmtRs(tax));
   _t('pvw-grand',     fmtRs(inv.grand_total));
 
-  _t('pvw-notes', inv.notes || 'Thank you for your business!');
-  _t('pvw-terms', inv.terms || 'Payment due within 30 days.');
+  // Empty notes/terms hide their whole section — heading included — rather than
+  // falling back to placeholder prose the user never wrote. Mirrors updatePvw().
+  const notesVal = inv.notes || '';
+  _t('pvw-notes', notesVal);
+  const notesSec = document.querySelector('.pvw-sec[data-sec="notes"]');
+  if (notesSec) notesSec.style.display = notesVal ? '' : 'none';
+
+  const termsVal = inv.terms || '';
+  _t('pvw-terms', termsVal);
+  const termsSec = document.querySelector('.pvw-sec[data-sec="terms"]');
+  if (termsSec) termsSec.style.display = termsVal ? '' : 'none';
 
   // Signature — mirrors edit.html's loadInvoice() restore of inv.signature_image/
   // signatory_name/signature_company into the same #pvw-sig-img/#pvw-sig-name/#pvw-bar targets.
   _t('pvw-sig-name', inv.signatory_name || '');
+  _t('pvw-sig-dt', inv.signature_datetime ? 'Signed on ' + inv.signature_datetime : '');
   _t('pvw-bar', inv.signature_company || companyName);
   const sigImg = document.getElementById('pvw-sig-img');
   if (sigImg) {
