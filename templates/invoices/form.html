@@ -117,6 +117,8 @@
 .tpl-buy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border:0;border-radius:999px;background:var(--ember);color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;transition:filter .15s ease,transform .15s ease;}
 .tpl-buy:hover{filter:brightness(1.08);transform:translateY(-1px);}
 .tpl-buy:disabled{opacity:.6;cursor:progress;transform:none;}
+.pvw-tpl-switch{margin-left:auto;max-width:200px;padding:5px 28px 5px 10px;border:1px solid rgba(255,255,255,.28);border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:13px;}
+.pvw-tpl-switch option{color:var(--text);background:var(--surface);}
 .tpl-empty{grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-size:.9rem;}
 @keyframes tplIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .tpl-card{animation:tplIn .45s cubic-bezier(.16,1,.3,1) both;}
@@ -926,7 +928,7 @@ canvas#sig-canvas{touch-action:none;}
 
     <span style="font-size:.72rem;font-weight:700;color:var(--on-dark-dim);text-transform:uppercase;letter-spacing:.08em"><i class="bi bi-eye-fill me-1" style="color:var(--color-success)"></i>Live Preview</span>
 
-    <span style="font-size:.75rem;color:var(--on-dark-dim)">Updates as you type</span>
+    <select id="pvw-tpl-switch" class="pvw-tpl-switch" aria-label="Invoice template" onchange="selectTemplate(this.value)"></select>
 
   </div>
 
@@ -2043,6 +2045,17 @@ async function loadTemplates() {
   } catch(_) {}
   finally { ZayroLoader.hide('#tpl-grid'); }
   buildTplGrid();
+  buildTplSwitch();
+}
+
+/* Template dropdown in the preview header — the free generator's inline switcher,
+   so the editor never has to bounce back to the picker. */
+function buildTplSwitch() {
+  const sw = document.getElementById('pvw-tpl-switch');
+  if (!sw) return;
+  const usable = window._tplList.filter(t => t.unlocked);
+  sw.innerHTML = usable.map(t => `<option value="${tplEsc(t.id)}">${tplEsc(t.name)}</option>`).join('');
+  sw.value = window._selectedTemplate;
 }
 
 function tplBadgeClass(plan) {
@@ -2258,6 +2271,8 @@ function selectTemplate(id) {
     return;
   }
   window._selectedTemplate = id;
+  const sw = document.getElementById('pvw-tpl-switch');
+  if (sw) sw.value = id;
   document.querySelectorAll('.tpl-card').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
   const picked = document.getElementById('tpl-' + id);
   if (picked) { picked.classList.add('active'); picked.setAttribute('aria-pressed', 'true'); }
@@ -2753,7 +2768,9 @@ function toggleMobilePreview() {
 
 /* ── Init ── */
 
-const _resumeTpl = new URLSearchParams(location.search).get('template');
+// Outside the Buy tab the picker is skipped entirely: the editor opens on Default
+// and templates are switched from the preview header, matching the free generator.
+const _resumeTpl = new URLSearchParams(location.search).get('template') || (_BUY_MODE ? null : 'classic');
 if (_resumeTpl) {
   // Refresh inside the editor: reopen it immediately instead of flashing the picker.
   window._selectedTemplate = _resumeTpl;
