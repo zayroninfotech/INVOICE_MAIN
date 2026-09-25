@@ -532,8 +532,8 @@ canvas#sig-canvas{touch-action:none;}
 
         <div class="tpl-intro">
           <div>
-            <h2 class="tpl-h">Choose how your invoice looks</h2>
-            <p class="tpl-lede">Every template prints your business profile, GST details and line items. You can change it later without losing anything.</p>
+            <h2 class="tpl-h" id="tpl-h">Choose how your invoice looks</h2>
+            <p class="tpl-lede" id="tpl-lede">Every template prints your business profile, GST details and line items. You can change it later without losing anything.</p>
           </div>
           <div class="tpl-filters" id="tpl-filters" role="tablist" aria-label="Filter templates"></div>
         </div>
@@ -1998,14 +1998,21 @@ let layoutState = {
   logo_width: 110,
 };
 
+const _BUY_MODE = new URLSearchParams(location.search).get('buy') === '1';
+if (_BUY_MODE) {
+  document.getElementById('tpl-h').textContent = 'Premium invoice templates';
+  document.getElementById('tpl-lede').textContent = 'Designed layouts included with Plus and Pro. Pick one to start an invoice, or upgrade to unlock it.';
+}
+
 async function loadTemplates() {
   ZayroLoader.show('#tpl-grid', 'Loading templates…');
   try {
     const r = await API.get('/api/invoices/templates/');
     if (!r.success) return;
-    window._tplList = r.data.templates || [];
+    const all = r.data.templates || [];
     if (r.data.sections) Object.assign(SECTION_LABELS_FALLBACK, r.data.sections);
-    window._tplList.forEach(t => window._planUnlocked[t.id] = !!t.unlocked);
+    all.forEach(t => window._planUnlocked[t.id] = !!t.unlocked);
+    window._tplList = all.filter(t => _BUY_MODE ? t.min_plan !== 'free' : t.min_plan === 'free');
   } catch(_) {}
   finally { ZayroLoader.hide('#tpl-grid'); }
   buildTplGrid();
@@ -2022,12 +2029,13 @@ function tplBadgeLabel(plan) {
 
 const tplEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 window._tplFilter = 'all';
-const TPL_FILTERS = [
+const TPL_FILTERS = _BUY_MODE ? [
   ['all', 'All', () => true],
   ['mine', 'Available to you', t => t.unlocked],
-  ['free', 'Free', t => t.min_plan === 'free'],
   ['plus', 'Plus', t => t.min_plan === 'plus'],
   ['pro', 'Pro', t => t.min_plan !== 'free' && t.min_plan !== 'plus'],
+] : [
+  ['all', 'All', () => true],
 ];
 
 function buildTplFilters() {

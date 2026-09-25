@@ -968,9 +968,9 @@
     <div class="sidebar-section-label" style="margin-top:4px">Invoices</div>
 
     <div class="nav-item-wrap">
-      <a href="/" class="nav-link-main {% block nav_free_invoice %}{% endblock %}">
-        <span class="nav-icon-box"><i class="bi bi-file-earmark-plus"></i></span>
-        Free Invoice
+      <a href="/invoices/create/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
+        <span class="nav-icon-box"><i class="bi bi-plus-circle"></i></span>
+        New Invoice
       </a>
     </div>
 
@@ -986,8 +986,8 @@
       </button>
     </div>
     <div id="buy-sub" class="nav-sub {% block nav_buy_sub_visible %}d-none{% endblock %}">
-      <a href="/invoices/create/" class="nav-sub-link {% block nav_invoices %}{% endblock %}">
-        <span></span>New Invoice
+      <a href="/invoices/create/?buy=1" class="nav-sub-link" id="nav-buy-invoice">
+        <span></span>Buy Invoice
       </a>
       <a href="/invoices/" class="nav-sub-link {% block nav_list %}{% endblock %}">
         <span></span>All Invoices
@@ -1163,6 +1163,14 @@
       overlay.classList.remove('visible');
       document.body.style.overflow = '';
     }
+  }
+  if (new URLSearchParams(location.search).get('buy') === '1') {
+    document.querySelectorAll('.nav-link-main.active').forEach(el => el.classList.remove('active'));
+    document.getElementById('nav-buy-invoice').classList.add('active');
+    document.getElementById('buy-sub').classList.remove('d-none');
+    const bt = document.getElementById('buy-toggle');
+    bt.setAttribute('aria-expanded', 'true');
+    bt.classList.add('active');
   }
   function toggleBuyNav(btn) {
     const sub  = document.getElementById('buy-sub');
