@@ -108,8 +108,13 @@
 .tpl-lockbar a:hover{text-decoration:underline;}
 .tpl-badge.owned{background:var(--color-success-bg);color:var(--color-success);}
 .tpl-ownedbar{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--color-success);margin-top:auto;padding-top:4px;}
-.tpl-buybar{margin-top:auto;padding-top:10px;}
-.tpl-buy{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:0;border-radius:10px;background:var(--ember);color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;transition:filter .15s ease,transform .15s ease;}
+.tpl-buybar{margin-top:auto;padding-top:10px;display:flex;align-items:center;gap:8px;}
+.tpl-qty{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1.5px solid var(--border);border-radius:999px;background:var(--surface);}
+.tpl-qty button{width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--text);font-size:1rem;line-height:1;cursor:pointer;transition:background .15s ease;}
+.tpl-qty button:hover{background:var(--color-bg-subtle,#F1F5F9);}
+.tpl-qty button:disabled{opacity:.35;cursor:not-allowed;background:transparent;}
+.tpl-qty output{min-width:26px;text-align:center;font-size:.9rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.tpl-buy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border:0;border-radius:999px;background:var(--ember);color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;transition:filter .15s ease,transform .15s ease;}
 .tpl-buy:hover{filter:brightness(1.08);transform:translateY(-1px);}
 .tpl-buy:disabled{opacity:.6;cursor:progress;transform:none;}
 .tpl-empty{grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-size:.9rem;}
@@ -2072,17 +2077,28 @@ function buildTplFilters() {
 }
 function setTplFilter(key) { window._tplFilter = key; buildTplGrid(); }
 
+window._tplQty = {};
+function tplQty(id) { return window._tplQty[id] || 1; }
+function stepTplQty(id, delta) {
+  const next = Math.min(99, Math.max(1, tplQty(id) + delta));
+  window._tplQty[id] = next;
+  const out = document.getElementById('qty-' + id);
+  if (out) out.textContent = next;
+  const minus = out?.previousElementSibling;
+  if (minus) minus.disabled = next <= 1;
+}
+
 async function buyTemplate(id) {
   const btn = document.querySelector(`#tpl-${CSS.escape(id)} .tpl-buy`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Buying…'; }
   let r;
   try {
-    r = await API.post(`/api/invoices/templates/${encodeURIComponent(id)}/purchase/`, {});
+    r = await API.post(`/api/invoices/templates/${encodeURIComponent(id)}/purchase/`, { quantity: tplQty(id) });
   } catch (_) {
     r = { success: false, message: 'Could not reach the server. Try again.' };
   }
   if (!r.success) {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-bag-plus"></i> Buy template'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-bag-plus"></i> Buy'; }
     toast(r.message || 'Purchase failed.', 'error');
     return;
   }
@@ -2120,7 +2136,15 @@ function buildTplGrid() {
     } else if (t.owned) {
       footer = '<div class="tpl-ownedbar"><i class="bi bi-bag-check-fill"></i> Yours — ready in the Invoice tab</div>';
     } else if (_BUY_MODE && !t.unlocked) {
-      footer = `<div class="tpl-buybar"><button type="button" class="tpl-buy" onclick="event.stopPropagation();buyTemplate('${id}')"><i class="bi bi-bag-plus"></i> Buy template</button></div>`;
+      footer = `
+        <div class="tpl-buybar" onclick="event.stopPropagation()">
+          <div class="tpl-qty">
+            <button type="button" aria-label="Decrease quantity" onclick="stepTplQty('${id}',-1)">&minus;</button>
+            <output id="qty-${id}" aria-live="polite">1</output>
+            <button type="button" aria-label="Increase quantity" onclick="stepTplQty('${id}',1)">+</button>
+          </div>
+          <button type="button" class="tpl-buy" onclick="buyTemplate('${id}')"><i class="bi bi-bag-plus"></i> Buy</button>
+        </div>`;
     } else if (t.unlocked) {
       footer = '';
     } else {
@@ -2145,6 +2169,7 @@ function buildTplGrid() {
     card.onclick = activate;
     card.onkeydown = e => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); activate(); } };
     grid.appendChild(card);
+    if (card.querySelector('.tpl-qty')) stepTplQty(t.id, 0);
   });
 }
 
