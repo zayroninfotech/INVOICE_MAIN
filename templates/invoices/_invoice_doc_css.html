@@ -51,6 +51,15 @@ live in _invoice_doc_print.html.
 .pvw-addr-attn{color:#334155;font-weight:600;}
 .pvw-addr-attn:empty{display:none;}
 
+/* Address, email and phone read as one wrapped comma-separated run — the way
+   the FROM address already does — rather than a rigid line per field. */
+.pvw-addr-flow{display:inline;}
+.pvw-addr-flow:not(:empty):not(.pvw-required-empty)
+  ~ .pvw-addr-flow:not(:empty):not(.pvw-required-empty)::before{content:", ";}
+/* An unfilled required field carries a warning, not a value, so it drops back
+   onto its own line instead of being comma-joined into the address. */
+.pvw-addr-flow.pvw-required-empty{display:block;}
+
 /* Statutory identifiers (CIN / GSTIN / PAN) are reference data, not contact
    detail, so they get their own tier: hairline rule, tighter leading, dimmer.
    :has() keeps the rule off entirely when the party supplied none. */

@@ -228,19 +228,25 @@ def _addr_bar_block(ctx, bar_bg, bar_text=None, name_color=DARK, body_color=MUTE
     `.pvw-addr-body`. Used by templates whose header_style calls for a solid
     accent bar rather than a plain label + rule line."""
     bar_text = bar_text or WHITE
-    (from_main, from_ids), (to_main, to_ids) = _party_tiers(ctx)
+    (from_head, from_contact, from_ids), (to_head, to_contact, to_ids) = _party_tiers(ctx)
     lbl_st = _style('ABL', fontSize=7.5, fontName=FONT_B, textColor=bar_text,
                     leading=10, alignment=TA_LEFT)
     nm_st  = _style('ABN', fontSize=9.5, fontName=FONT_B, textColor=name_color, leading=13)
     bd_st  = _style('ABB', fontSize=8.5, textColor=body_color, leading=12)
     id_st  = _style('ABI', fontSize=7.5, textColor=body_color, leading=10)
 
-    def body(main, ids):
+    def body(head, contact, ids):
         out, first = [], True
-        for ln in main:
+        for ln in head:
             if not ln:
                 continue
             out.append(Paragraph(ln, nm_st if first else bd_st))
+            first = False
+        # The contact run wraps as one comma-separated line, matching the
+        # preview's .pvw-addr-flow.
+        run = ', '.join(ln for ln in contact if ln)
+        if run:
+            out.append(Paragraph(run, nm_st if first else bd_st))
             first = False
         if first:
             out.append(Paragraph('—', bd_st))
@@ -254,7 +260,8 @@ def _addr_bar_block(ctx, bar_bg, bar_text=None, name_color=DARK, body_color=MUTE
 
     rows = [
         [Paragraph('FROM', lbl_st), Paragraph('BILL TO', lbl_st)],
-        [body(from_main, from_ids), body(to_main, to_ids)],
+        [body(from_head, from_contact, from_ids),
+         body(to_head, to_contact, to_ids)],
     ]
     tbl = Table(rows, colWidths=[ctx['CW'] * 0.5, ctx['CW'] * 0.5])
     tbl.setStyle(TableStyle([
@@ -763,12 +770,13 @@ def _fl(ctx, key, default):
 
 
 def _party_tiers(ctx):
-    """Return ((from_main, from_ids), (to_main, to_ids)).
+    """Return ((from_head, from_contact, from_ids), (to_head, to_contact, to_ids)).
 
-    Identity and contact lines are kept apart from statutory identifiers
-    (GSTIN / PAN / CIN) so a layout can render them as two visual tiers — the
-    IDs are reference data, not contact detail, and stacking them unlabelled
-    with the address makes both unreadable.
+    Three tiers per party: the head (party name, plus the addressee for the
+    customer), the contact run (address, email, phone), and the statutory
+    identifiers (GSTIN / PAN / CIN). Keeping them apart lets a layout render
+    the contact run as one wrapped comma-separated line and hold the IDs back
+    behind a rule — stacking all of it unlabelled makes none of it scannable.
     """
     invoice = ctx['inv']
     ss = ctx['cfg'].get('section_settings', {})
@@ -781,7 +789,8 @@ def _party_tiers(ctx):
 
     s = ctx.get('seller') or {}
 
-    from_main = [ctx['s_name'], ctx['s_addr'], ctx['s_email'], ctx['s_phone']]
+    from_head = [ctx['s_name']]
+    from_contact = [ctx['s_addr'], ctx['s_email'], ctx['s_phone']]
     from_ids = []
     # GST prints once: the header renders it when show_gstin is on, so the
     # FROM block only carries it as the fallback when that toggle is off.
@@ -793,16 +802,16 @@ def _party_tiers(ctx):
     if s.get('pan'):
         from_ids.append(f"{fl.get('fi-from-pan', 'PAN')}: {s['pan']}")
 
-    to_main = [invoice.customer_name]
+    to_head = [invoice.customer_name]
     if s.get('customer_recipient'):
-        to_main.append(f"Attn: {s['customer_recipient']}")
-    to_main += [getattr(invoice, 'customer_address', '') or '',
-                invoice.customer_email]
+        to_head.append(f"Attn: {s['customer_recipient']}")
+    to_contact = [getattr(invoice, 'customer_address', '') or '',
+                  invoice.customer_email]
     if s.get('customer_phone'):
-        to_main.append(s['customer_phone'])
+        to_contact.append(s['customer_phone'])
     ship = (s.get('ship_address') or '').strip()
     if ship and ship != (getattr(invoice, 'customer_address', '') or '').strip():
-        to_main.append(f"Ship to: {ship}")
+        to_contact.append(f"Ship to: {ship}")
 
     to_ids = []
     if invoice.customer_gst and show_bill_gst:
@@ -811,14 +820,15 @@ def _party_tiers(ctx):
         to_ids.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
     if s.get('customer_cin'):
         to_ids.append(f"{fl.get('fi-cust-cin', 'CIN')}: {s['customer_cin']}")
-    return (from_main, from_ids), (to_main, to_ids)
+    return ((from_head, from_contact, from_ids),
+            (to_head, to_contact, to_ids))
 
 
 def _party_blocks(ctx, from_first=True):
     """Return (from_lines, to_lines) as flat lists, for layouts that render the
     party block as a single undifferentiated stack."""
-    (from_main, from_ids), (to_main, to_ids) = _party_tiers(ctx)
-    return from_main + from_ids, to_main + to_ids
+    (fh, fc, fi), (th, tc, ti) = _party_tiers(ctx)
+    return fh + fc + fi, th + tc + ti
 
 
 def _two_col_parties(ctx, lbl_color=MUTED, head_color=DARK, body_color=MUTED,
