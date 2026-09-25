@@ -2000,19 +2000,48 @@ const SECTION_LABELS_FALLBACK = {
 const DEFAULT_SECTIONS = ['header','invoice_meta','bill_to','items_table','totals','notes','terms','signature','footer'];
 const SECTIONS_WITH_SETTINGS = { items_table:true, header:true, bill_to:true };
 
-const TPL_THUMBS = {
-  classic:      '<div style="height:8px;background:#C1121F;border-radius:2px;width:60%"></div><div style="height:2px;background:#E2E8F0;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#FDF0F1;border-radius:2px"></div><div style="flex:1;background:#FDF0F1;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
-  minimal:      '<div style="height:8px;background:#1E293B;border-radius:2px;width:55%"></div><div style="height:1px;background:#1E293B;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#F1F5F9;border-radius:2px"></div><div style="flex:1;background:#F1F5F9;border-radius:2px"></div></div><div style="height:5px;background:#1E293B;border-radius:2px;width:38%;align-self:flex-end"></div>',
-  modern:       '<div style="height:10px;background:#C1121F;border-radius:2px;width:100%"></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#1E293B;border-radius:2px"></div><div style="flex:1;background:#1E293B;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
-  professional: '<div style="display:flex;gap:3px"><div style="width:4px;background:#C1121F;border-radius:1px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:7px;background:#C1121F;border-radius:2px;width:70%"></div><div style="height:3px;background:#FED7AA;width:100%"></div></div></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:#FDF0F1;border-radius:2px"></div><div style="flex:1;background:#FDF0F1;border-radius:2px"></div></div><div style="height:5px;background:#C1121F;border-radius:2px;width:38%;align-self:flex-end"></div>',
-  bold:         '<div style="height:14px;background:rgba(255,255,255,.25);border-radius:2px;width:100%;display:flex;align-items:center;padding:0 4px"><div style="height:6px;background:#fff;border-radius:1px;width:40%"></div></div><div style="flex:1;display:flex;gap:3px"><div style="flex:1;background:rgba(255,255,255,.15);border-radius:2px"></div><div style="flex:1;background:rgba(255,255,255,.15);border-radius:2px"></div></div><div style="height:6px;background:#fff;border-radius:2px;width:100%"></div>',
-  compact:      '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:6px;background:#0F172A;border-radius:1px;width:45%"></div><div style="height:6px;background:#C1121F;border-radius:1px;width:22%"></div></div><div style="height:4px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:1px;margin-top:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:3px;background:#0F172A"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div><div style="height:2px;background:#E2E8F0"></div></div><div style="height:5px;display:flex;gap:2px"><div style="flex:1;background:#F1F5F9;border-radius:1px"></div><div style="width:34%;background:#C1121F;border-radius:1px"></div></div>',
-  sidebar:      '<div style="display:flex;gap:3px;height:100%"><div style="width:30%;background:#16243D;border-radius:2px;display:flex;flex-direction:column;gap:2px;padding:3px"><div style="height:4px;background:#C1121F;border-radius:1px;width:80%"></div><div style="height:2px;background:rgba(255,255,255,.35)"></div><div style="height:2px;background:rgba(255,255,255,.35);width:70%"></div></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="height:8px;background:#16243D;border-radius:1px;width:50%"></div><div style="flex:1;background:#F4F7FB;border-radius:2px"></div><div style="height:5px;background:#16243D;border-radius:1px;width:40%;align-self:flex-end"></div></div></div>',
-  boxed:        '<div style="height:12px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:2px;display:flex;align-items:center;justify-content:center"><div style="height:4px;background:#065F46;border-radius:1px;width:45%"></div></div><div style="flex:1;display:flex;gap:3px;margin-top:2px"><div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:3px"></div><div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:3px"></div></div><div style="height:6px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:2px;width:44%;margin-left:auto;margin-top:2px"></div>',
-  statement:    '<div style="font-size:17px;font-weight:900;color:#0F172A;line-height:1;letter-spacing:-.5px">INV</div><div style="display:flex;justify-content:flex-end"><div style="width:46%;background:#C1121F;border-radius:2px;padding:2px 3px"><div style="height:3px;background:rgba(255,255,255,.7);border-radius:1px;width:60%"></div></div></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:3px;background:#0F172A"></div><div style="height:2px;background:#0F172A"></div><div style="height:2px;background:#E2E8F0"></div></div>',
-  staffing:     '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:7px;background:#901709;border-radius:1px;width:52%"></div><div style="height:7px;background:#F97316;border-radius:1px;width:18%"></div></div><div style="height:2.5px;background:#F97316;margin-top:2px"></div><div style="height:4px;background:#9CC2E4;border-radius:1px;margin-top:3px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:2.5px;background:#515151"></div><div style="height:2.5px;background:#E5E7EB"></div><div style="height:2.5px;background:#515151"></div></div><div style="height:5px;background:#0F172A;border-radius:1px;width:40%;margin-top:2px"></div>',
-  payroll:      '<div style="display:flex;justify-content:space-between;align-items:center"><div style="height:7px;background:#0F766E;border-radius:1px;width:52%"></div><div style="height:7px;background:#0F766E;border-radius:1px;width:18%"></div></div><div style="height:2.5px;background:#0F766E;margin-top:2px"></div><div style="height:4px;background:#99F6E4;border-radius:1px;margin-top:3px"></div><div style="flex:1;display:flex;flex-direction:column;gap:2px;margin-top:2px"><div style="height:2.5px;background:#515151"></div><div style="height:2.5px;background:#E5E7EB"></div><div style="height:2.5px;background:#515151"></div></div><div style="height:5px;background:#0F766E;border-radius:1px;width:34%;margin-top:2px"></div>',
-};
+function tplThumb(id) {
+  const spec   = (typeof TEMPLATE_SPECS === 'object' ? TEMPLATE_SPECS[id] : null) || {};
+  const accent = spec.accent || '#C1121F';
+  const tint   = spec.tint   || '#F8FAFC';
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div style="font-size:4.5px;font-weight:700;color:#0F172A;line-height:1.35">YOUR<br>COMPANY<br>NAME</div>
+    <div style="font-size:8px;font-weight:900;color:${accent};letter-spacing:.3px">INVOICE</div>
+  </div>
+  <div style="height:1.5px;background:${accent};width:100%"></div>
+  <div style="display:flex;gap:5px">
+    <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+    <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+  </div>
+  <div style="display:flex;gap:5px">
+    <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+    <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+  </div>
+  <div style="height:1px;background:#E2E8F0;width:100%"></div>
+  <div style="background:${tint};padding:2px 3px;display:flex;justify-content:space-between;border-radius:1px">
+    <span style="font-size:3.5px;color:#94A3B8;font-weight:600">DESCRIPTION</span>
+    <span style="font-size:3.5px;color:#94A3B8;font-weight:600">AMOUNT</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;justify-content:space-between">
+      <div style="height:2px;background:#E2E8F0;border-radius:1px;width:55%"></div>
+      <div style="height:2px;background:#E2E8F0;border-radius:1px;width:18%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between">
+      <div style="height:2px;background:#E2E8F0;border-radius:1px;width:45%"></div>
+      <div style="height:2px;background:#E2E8F0;border-radius:1px;width:18%"></div>
+    </div>
+    <div style="background:${tint};padding:2px 3px;border-radius:1px">
+      <div style="height:2px;background:#CBD5E1;border-radius:1px;width:70%"></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1.5px;align-items:flex-end">
+    <div style="display:flex;gap:5px;font-size:3.5px;color:#94A3B8"><span>Subtotal</span><span>&#x20B9;0.00</span></div>
+    <div style="display:flex;gap:5px;font-size:3.5px;color:#94A3B8"><span>CGST&nbsp;9%</span><span>&#x20B9;0.00</span></div>
+    <div style="height:1px;background:#CBD5E1;width:65%"></div>
+    <div style="display:flex;gap:5px;font-size:4.5px;font-weight:700;color:${accent}"><span>Total</span><span>&#x20B9;0.00</span></div>
+  </div>`;
+}
 
 window._selectedTemplate = 'classic';
 // Same default the colour picker shows and the save falls back to, so the preview matches the PDF.
@@ -2164,6 +2193,69 @@ function buildTplGrid() {
   const fn = (TPL_FILTERS.find(f => f[0] === window._tplFilter) || TPL_FILTERS[0])[2];
   const list = window._tplList.filter(fn);
   grid.innerHTML = list.length ? '' : '<div class="tpl-empty">No templates in this group.</div>';
+
+  if (!_BUY_MODE && (TPL_FILTERS.find(f => f[0] === window._tplFilter) || TPL_FILTERS[0])[0] === 'all') {
+    const tryCard = document.createElement('div');
+    tryCard.className = 'tpl-card tpl-card-try';
+    tryCard.id = 'tpl-try-free';
+    tryCard.setAttribute('role', 'button');
+    tryCard.setAttribute('tabIndex', '0');
+    tryCard.setAttribute('aria-label', 'Try free invoice — no account needed');
+    tryCard.innerHTML = `
+      <div class="tpl-stage" style="background:#F0FDF4">
+        <div class="tpl-thumb" style="background:#FFFFFF">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-size:4.5px;font-weight:700;color:#0F172A;line-height:1.35">YOUR<br>COMPANY<br>NAME</div>
+            <div style="font-size:8px;font-weight:900;color:#16A34A;letter-spacing:.3px">INVOICE</div>
+          </div>
+          <div style="height:1.5px;background:#16A34A;width:100%"></div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+            <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+            <div style="flex:1"><div style="height:2px;background:#E2E8F0;border-radius:1px"></div></div>
+          </div>
+          <div style="height:1px;background:#E2E8F0;width:100%"></div>
+          <div style="background:#F0FDF4;padding:2px 3px;display:flex;justify-content:space-between;border-radius:1px">
+            <span style="font-size:3.5px;color:#94A3B8;font-weight:600">DESCRIPTION</span>
+            <span style="font-size:3.5px;color:#94A3B8;font-weight:600">AMOUNT</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;justify-content:space-between">
+              <div style="height:2px;background:#E2E8F0;border-radius:1px;width:55%"></div>
+              <div style="height:2px;background:#E2E8F0;border-radius:1px;width:18%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <div style="height:2px;background:#E2E8F0;border-radius:1px;width:45%"></div>
+              <div style="height:2px;background:#E2E8F0;border-radius:1px;width:18%"></div>
+            </div>
+            <div style="background:#F0FDF4;padding:2px 3px;border-radius:1px">
+              <div style="height:2px;background:#BBF7D0;border-radius:1px;width:70%"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1.5px;align-items:flex-end">
+            <div style="display:flex;gap:5px;font-size:3.5px;color:#94A3B8"><span>Subtotal</span><span>&#x20B9;0.00</span></div>
+            <div style="height:1px;background:#CBD5E1;width:65%"></div>
+            <div style="display:flex;gap:5px;font-size:4.5px;font-weight:700;color:#16A34A"><span>Total</span><span>&#x20B9;0.00</span></div>
+          </div>
+        </div>
+        <div class="tpl-actions">
+          <button type="button" class="tpl-act go" onclick="event.stopPropagation();window.location.href='/invoices/free/'">Try it free <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+      <div class="tpl-body">
+        <div class="tpl-row"><span class="tpl-name">Try Free Invoice</span><span class="tpl-badge free">Free</span></div>
+        <p class="tpl-desc">Quick invoice with no account needed — fill, download &amp; send instantly</p>
+        <div class="tpl-ownedbar" style="background:#F0FDF4;color:#16A34A;border-color:#BBF7D0">
+          <i class="bi bi-lightning-charge-fill"></i> No login required — try it now
+        </div>
+      </div>`;
+    tryCard.onclick = () => window.location.href = '/invoices/free/';
+    tryCard.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.href = '/invoices/free/'; } };
+    grid.appendChild(tryCard);
+  }
   list.forEach((t, i) => {
     const id = tplEsc(t.id), name = tplEsc(t.name);
     const active = t.id === window._selectedTemplate;
@@ -2200,7 +2292,7 @@ function buildTplGrid() {
     }
     card.innerHTML = `
       <div class="tpl-stage">
-        <div class="tpl-thumb" style="background:${t.id === 'bold' ? '#C1121F' : tplEsc(t.badge || '#FFFFFF')}">${TPL_THUMBS[t.id] || TPL_THUMBS.classic}</div>
+        <div class="tpl-thumb" style="background:#FFFFFF">${tplThumb(t.id)}</div>
         <span class="tpl-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
         <div class="tpl-actions">
           <button type="button" class="tpl-act ghost" onclick="event.stopPropagation();openTemplatePreview('${id}')"><i class="bi bi-eye"></i> Preview</button>
