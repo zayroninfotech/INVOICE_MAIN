@@ -1018,7 +1018,8 @@ const fmtRs  = n => '₹' + Number(n||0).toLocaleString('en-IN',{minimumFraction
 
 const fmtRup = n => '₹' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-const fmtDate = s => { if(!s) return '—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); };
+const fmtDate = s => { if(!s) return '—'; const d=new Date(s+'T00:00:00');
+  return String(d.getDate()).padStart(2,'0') + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear(); };
 
 const _t = (id,v) => { const el=document.getElementById(id); if(el) el.textContent = v||''; };
 
@@ -1324,12 +1325,10 @@ function updatePvw() {
   // Task-template meta block — mirrors _sec_staffing's meta(): the invoice
   // number is relabelled per task and the two dates render as a period.
   if (staffing) {
-    // %d-%b-%y to match the PDF exactly — en-GB renders September as "Sept",
-    // so build it from a fixed 3-letter month table instead of toLocaleDateString.
-    const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    // %d-%m-%Y to match print_context._dshort exactly.
     const dshort = v => { if (!v) return '—'; const d = new Date(v + 'T00:00:00');
-      return String(d.getDate()).padStart(2,'0') + '-' + MON[d.getMonth()] +
-             '-' + String(d.getFullYear()).slice(-2); };
+      return String(d.getDate()).padStart(2,'0') + '-' +
+             String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear(); };
     _t('pvw-cust-id-lbl', payroll ? 'Payroll ID' : 'Number / Customer ID');
     _t('pvw-period-lbl',  payroll ? 'Pay Period'   : 'Billing Period');
     _t('pvw-cust-id', invNo || '—');

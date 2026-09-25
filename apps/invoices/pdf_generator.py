@@ -825,7 +825,7 @@ def _two_col_parties(ctx, lbl_color=MUTED, head_color=DARK, body_color=MUTED,
 
 
 def _fmt_date(dt):
-    return dt.strftime('%d %b %Y') if dt else '—'
+    return dt.strftime('%d-%m-%Y') if dt else '—'
 
 
 # ══════════════════════════════════════════════════════════════════════════════

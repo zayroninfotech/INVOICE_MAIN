@@ -5,7 +5,7 @@ therefore the Chrome-generated PDF) shows exactly what the live preview shows.
 Formatting here mirrors the preview's JS helpers deliberately:
 
     fmtRs   -> _rs()      '₹' + toLocaleString('en-IN', 2dp)
-    dshort  -> _dshort()  %d-%b-%y from a fixed month table
+    dshort  -> _dshort()  %d-%m-%Y
 
 Keep the two in step: a change to one without the other reintroduces exactly the
 preview/PDF drift this module exists to remove.
@@ -14,9 +14,6 @@ import re as _re
 
 from .pdf_generator import _gst_split, _amount_words, _merge_seller
 from .template_registry import get_template_spec
-
-_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 # Reference items grid, same fractions _sec_staffing and the preview use.
 _STAFFING_GRID = '7.48% 15.61% 26.88% 24.10% 11.55% 14.39%'
@@ -52,7 +49,7 @@ def _dshort(dt):
     if not dt:
         return '—'
     try:
-        return f"{dt.day:02d}-{_MON[dt.month - 1]}-{str(dt.year)[-2:]}"
+        return f"{dt.day:02d}-{dt.month:02d}-{dt.year}"
     except Exception:
         return str(dt)[:10]
 
