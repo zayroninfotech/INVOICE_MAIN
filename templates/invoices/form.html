@@ -2817,7 +2817,8 @@ function goToStage(n, opts = {}) {
   const gl = document.getElementById('gen-layout');
   gl.classList.toggle('stage-1', n === 1);
   gl.classList.toggle('stage-2', n === 2);
-  if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+  if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); try { sessionStorage.removeItem('inv_stage'); } catch(e){} }
+  if (n === 2) { try { sessionStorage.setItem('inv_stage', window._selectedTemplate || 'classic'); } catch(e){} }
 }
 
 function toggleMobilePreview() {
@@ -2831,7 +2832,12 @@ function toggleMobilePreview() {
 /* ── Init ── */
 
 goToStage(1);
-loadTemplates();
+loadTemplates().then(() => {
+  try {
+    const saved = sessionStorage.getItem('inv_stage');
+    if (saved) { selectTemplate(saved); }
+  } catch(e) {}
+});
 renderSectionEditor();
 applyPreviewSkin(window._selectedTemplate);
 applyLayoutToPreview();
