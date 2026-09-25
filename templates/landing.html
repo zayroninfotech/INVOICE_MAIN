@@ -2177,8 +2177,8 @@
 </footer>
 
 <script>
-  /* ── Auth redirect ── */
-  if (localStorage.getItem('access_token')) window.location.href = '/dashboard/';
+  /* ── Auth redirect — skip when ?free=1 so logged-in users reach the free generator ── */
+  if (localStorage.getItem('access_token') && new URLSearchParams(location.search).get('free') !== '1') window.location.href = '/dashboard/';
 
   /* ── Mobile menu (handled by _site_nav.html partial) ── */
 
@@ -2290,7 +2290,7 @@
   </div>
 </div>
 <script>
-if (localStorage.getItem('access_token')) window.location = '/dashboard/';
+if (localStorage.getItem('access_token') && new URLSearchParams(location.search).get('free') !== '1') window.location = '/dashboard/';
 const _p = new URLSearchParams(location.search);
 if (_p.get('login') !== null)    { setTimeout(() => openModal('login-modal'), 100); }
 if (_p.get('register') !== null) { setTimeout(() => openModal('reg-modal'), 100); }
