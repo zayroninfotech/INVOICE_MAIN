@@ -836,7 +836,7 @@ def _sec_classic(ctx):
     inv, CW, ACCENT = ctx['inv'], ctx['CW'], ctx['ACCENT']
 
     def header():
-        badge = ctx['logo_img'] or _CircleBadge(_initials(ctx['s_name']), ACCENT)
+        logo_img = ctx['logo_img']
         co_st = _style('CoN', fontSize=10, fontName=FONT_B, textColor=DARK, leading=13)
         gst_st = _style('CoG', fontSize=8, textColor=MUTED, leading=11)
         ss = ctx['cfg'].get('section_settings', {}).get('header', {})
@@ -844,19 +844,24 @@ def _sec_classic(ctx):
         co_right = [Paragraph(ctx['s_name'] or 'Your Company', co_st)]
         if ctx['s_gst'] and ss.get('show_gstin', True):
             co_right.append(Paragraph(f"{gstin_label}: {ctx['s_gst']}", gst_st))
-        # A resized logo (via logo_width) needs a wider slot than the fixed
-        # 1.3cm the small initials badge fits in, or it collides with the
-        # company name/GSTIN text next to it.
-        badge_col = max(1.3*cm, getattr(badge, 'width', 1.3*cm) + 0.4*cm)
-        co_cell = Table([[badge, co_right]],
-                        colWidths=[badge_col, CW*0.6 - badge_col])
-        co_cell.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (0, 0), 8),
-            ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-        ]))
         inv_label = Paragraph(_title(ctx), _style('ILbl', fontSize=20, fontName=FONT_B,
                                                 textColor=ACCENT, alignment=TA_RIGHT))
+        if logo_img:
+            logo_col = getattr(logo_img, 'width', 1.3*cm) + 0.4*cm
+            co_cell = Table([[logo_img, co_right]],
+                            colWidths=[logo_col, CW*0.6 - logo_col])
+            co_cell.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (0, 0), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ]))
+        else:
+            co_cell = Table([[co_right]], colWidths=[CW*0.6])
+            co_cell.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('TOPPADDING', (0, 0), (-1, -1), 0), ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ]))
         hdr = Table([[co_cell, inv_label]], colWidths=[CW*0.6, CW*0.4])
         hdr.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('ALIGN', (1, 0), (1, 0), 'RIGHT'),

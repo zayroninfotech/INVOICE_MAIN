@@ -1611,8 +1611,10 @@ function setPreviewLogo(src) {
   if (src) {
     circle.innerHTML = '<img src="' + src + '" alt="" ' +
       'style="width:100%;height:100%;object-fit:contain;border-radius:50%">';
+    circle.style.display = '';
   } else {
-    circle.textContent = 'Rs';
+    circle.innerHTML = '';
+    circle.style.display = 'none';
   }
 }
 
