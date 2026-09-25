@@ -64,11 +64,48 @@ def _save_base64_image(data_url, subdir):
         return ''
 
 
+
+# ── Per-device free limit ─────────────────────────────────────────────────────
+# A device is identified by a random id kept in BOTH a long-lived cookie and the
+# browser's localStorage (sent as `device_id`), so clearing one doesn't reset it.
+FREE_DEVICE_LIMIT = 5
+_DEV_RE = re.compile(r'^[a-f0-9]{32}$')
+
+
+def _device_ids(request):
+    ids = []
+    for v in (request.COOKIES.get('zi_dev'), request.data.get('device_id') if hasattr(request, 'data') else None):
+        v = (v or '').strip().lower()
+        if _DEV_RE.match(v) and v not in ids:
+            ids.append(v)
+    return ids
+
+
+def _device_usage_coll():
+    return Invoice._get_collection().database['free_device_usage']
+
+
+def _device_used(ids):
+    if not ids:
+        return 0
+    docs = _device_usage_coll().find({'_id': {'$in': ids}}, {'count': 1})
+    return max([d.get('count', 0) for d in docs] or [0])
+
+
 class FreeInvoiceView(APIView):
     permission_classes = [AllowAny]
     parser_classes     = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
+        dev_ids = _device_ids(request) or [uuid.uuid4().hex]
+        used = _device_used(dev_ids)
+        if used >= FREE_DEVICE_LIMIT:
+            return error(
+                f"You've used all {FREE_DEVICE_LIMIT} free invoices on this device. "
+                "Please sign up or log in to keep creating invoices.",
+                {"reason": "device_limit", "signup_required": True, "limit": FREE_DEVICE_LIMIT},
+                status=403,
+            )
         ok, reason, plan, _ = can_create_invoice(request)
         if not ok:
             return error(
@@ -253,8 +290,17 @@ class FreeInvoiceView(APIView):
         _save_seller(str(invoice.pk), seller_data)
 
         increment_usage(request, 'anonymous', None)
+        now_used = used + 1
+        for d in dev_ids:   # keep every id this device is known by in step
+            _device_usage_coll().update_one(
+                {'_id': d},
+                {'$set': {'count': now_used, 'last_used': datetime.utcnow(),
+                          'ip': (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or '').split(',')[0].strip()},
+                 '$setOnInsert': {'created': datetime.utcnow()}},
+                upsert=True)
 
-        return success({
+        resp = success({
+            'free_used': now_used, 'free_limit': FREE_DEVICE_LIMIT,
             'id': str(invoice.pk),
             'invoice_number': invoice.invoice_number,
             'customer_name': invoice.customer_name,
@@ -270,6 +316,9 @@ class FreeInvoiceView(APIView):
                 for i in invoice.items
             ],
         }, "Free invoice created.", 201)
+        resp.set_cookie('zi_dev', dev_ids[0], max_age=5*365*24*3600, httponly=True,
+                        samesite='Lax', secure=request.is_secure())
+        return resp
 
 
 class FreeInvoicePDFView(APIView):

@@ -2657,6 +2657,10 @@ function validateFreeForm(){
   if(!freeItems.filter(it=>it.desc&&(parseFloat(it.rate)||0)>0).length){errEl.textContent='Add at least one item with a description and rate.';errEl.style.display='block';return false;}
   return true;
 }
+// Stable per-browser id for the 5-free-invoices-per-device limit (the server also keeps it in a cookie).
+function freeDeviceId(){let id='';try{id=localStorage.getItem('zi_dev')||'';}catch(e){}
+  if(!/^[a-f0-9]{32}$/.test(id)){const a=new Uint8Array(16);crypto.getRandomValues(a);id=[...a].map(b=>b.toString(16).padStart(2,'0')).join('');try{localStorage.setItem('zi_dev',id);}catch(e){}}
+  return id;}
 async function createFreeInvoice(){
   if(!validateFreeForm())return;
   _freeInvoiceCount = parseInt(sessionStorage.getItem('zi_free_count')||'0');
@@ -2673,13 +2677,13 @@ async function createFreeInvoice(){
   effSectionSettings.items_table.show_hsn=_on('items_table','show_hsn')&&validItems.some(it=>(it.hsn||'').trim());
   effSectionSettings.items_table.show_discount=_on('items_table','show_discount')&&validItems.some(it=>(parseFloat(it.discount)||0)>0);
   const payload={from_name:document.getElementById('fi-from-name').value.trim(),from_email:document.getElementById('fi-from-email').value.trim(),from_address:document.getElementById('fi-from-address').value.trim(),from_phone:document.getElementById('fi-from-phone').value.trim(),from_gst:document.getElementById('fi-from-gst').value.trim(),from_cin:document.getElementById('fi-from-cin').value.trim(),from_pan:document.getElementById('fi-from-pan').value.trim(),from_website:'',customer_name:document.getElementById('fi-name').value.trim(),customer_email:document.getElementById('fi-email').value.trim(),customer_address:document.getElementById('fi-cust-address').value.trim(),customer_phone:document.getElementById('fi-cust-phone').value.trim(),customer_gst:document.getElementById('fi-cust-gst').value.trim(),customer_pan:document.getElementById('fi-cust-pan').value.trim(),recipient:document.getElementById('fi-recipient').value.trim(),invoice_number:document.getElementById('fi-inv-number').value.trim(),terms:document.getElementById('fi-terms').value.trim(),notes:'',layout_config:JSON.stringify({section_order:['header',...layoutState.section_order],hidden_sections:layoutState.hidden_sections,section_settings:effSectionSettings,swap_parties:layoutState.swap_parties,custom_labels:layoutState.custom_labels,field_labels:customFieldLabels,logo_width:layoutState.logo_width}),cgst_rate:cgstRate,sgst_rate:sgstRate,igst_rate:igstRate,thankyou_msg:document.getElementById('fi-thankyou').value.trim(),note_2:document.getElementById('fi-note-2').value.trim(),department:document.getElementById('fi-dept').value.trim(),sig_name:document.getElementById('fi-sig-name').value.trim(),sig_company:document.getElementById('fi-sig-company').value.trim(),sig_datetime:window._sigAt?fmtSigAt(window._sigAt):'',bank_details:document.getElementById('fi-bank-details').value.trim(),ship_address:document.getElementById('fi-ship-address').value.trim(),template_color:_freeColor,items:validItems.map(it=>({name:it.desc,hsn:it.hsn||'',qty:parseFloat(it.qty)||1,price:parseFloat(it.rate)||0,tax:parseFloat(it.gst_pct)||0}))};
-  const fd=new FormData();Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
+  const fd=new FormData();fd.append('device_id',freeDeviceId());Object.entries(payload).forEach(([k,v])=>{if(k==='items')fd.append(k,JSON.stringify(v));else fd.append(k,v??'');});
   const logoFile=document.getElementById('fi-logo-file').files[0];if(logoFile)fd.append('logo',logoFile);
   const sigFile=document.getElementById('fi-sig-file').files[0];if(sigFile){fd.append('signature',sigFile);}else{const sigDataUrl=getSignatureDataURL();if(sigDataUrl)fd.append('signature_data',sigDataUrl);}
   try{
     const r=await fetch('/api/invoices/free/',{method:'POST',body:fd});const d=await r.json();
     if(d.success){showFreeResult(d.data);}else{
-      if(r.status===403&&d.data&&d.data.signup_required){sessionStorage.setItem('zi_free_used','1');openModal('reg-modal');return;}
+      if(r.status===403&&((d.errors&&d.errors.signup_required)||(d.data&&d.data.signup_required))){sessionStorage.setItem('zi_free_used','1');errEl.textContent=d.message||'Free limit reached. Please sign up or log in to continue.';errEl.style.display='block';if(window.toast)window.toast(d.message,'error');openModal('reg-modal');btn.disabled=false;btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';return;}
       else if(r.status===409){errEl.textContent=d.message||'Duplicate invoice number.';const el=document.getElementById('fi-inv-number');if(el){el.style.borderColor='#EF4444';el.focus();el.addEventListener('input',()=>{el.style.borderColor='';},{once:true});}}
       else{errEl.textContent=d.message||'Failed to create invoice.';}
       errEl.style.display='block';
@@ -2698,6 +2702,7 @@ function showFreeResult(data){
   document.getElementById('res-customer').textContent=data.customer_name+' · '+data.customer_email;
   document.getElementById('res-total').textContent=fmt(data.grand_total);
   document.getElementById('res-total2').textContent=fmt(data.grand_total);
+  if(data.free_limit){const left=Math.max(0,data.free_limit-data.free_used);let u=document.getElementById('res-free-left');if(!u){u=document.createElement('div');u.id='res-free-left';u.style.cssText='margin-top:6px;font-size:.8rem;font-weight:600;color:#B45309';document.getElementById('res-customer').after(u);}u.textContent=left>0?(data.free_used+' of '+data.free_limit+' free invoices used on this device · '+left+' left'):('All '+data.free_limit+' free invoices used on this device — sign up to keep creating invoices.');}
   const dlBtn=document.getElementById('res-pdf-btn');
   dlBtn.href=pdfUrl;
   document.getElementById('res-items').innerHTML=data.items.map(it=>'<tr><td style="font-weight:600">'+it.name+(it.hsn?' <span style="color:#94A3B8;font-weight:400">('+it.hsn+')</span>':'')+'</td><td style="text-align:right">'+(it.qty||1)+'</td><td style="text-align:right">'+fmt(it.price)+'</td><td style="text-align:right;font-weight:700;color:#131416">'+fmt(it.total||(it.price*(it.qty||1)))+'</td></tr>').join('');
