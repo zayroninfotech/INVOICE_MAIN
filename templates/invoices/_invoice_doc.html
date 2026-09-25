@@ -120,7 +120,7 @@ context both collapse to nothing and the preview behaves exactly as before.
   <div class="pvw-sec" data-sec="notes"{% if hide_notes %} style="display:none !important"{% endif %}>
     <div style="padding:6px 10px 2px;font-size:7px;color:#64748B;line-height:1.5">
       <div style="font-weight:700;color:#0F172A;font-size:7.5px;margin-bottom:1px">Notes</div>
-      <div id="pvw-notes">{{ notes|default:"Thank you for your business!" }}</div>
+      <div id="pvw-notes">{{ notes|default:"" }}</div>
     </div>
   </div>
 
@@ -128,7 +128,7 @@ context both collapse to nothing and the preview behaves exactly as before.
   <div class="pvw-sec" data-sec="terms"{% if hide_terms %} style="display:none !important"{% endif %}>
     <div style="padding:4px 10px 4px;font-size:7px;color:#94A3B8;line-height:1.5">
       <div style="font-weight:700;color:#334155;font-size:7px;margin-bottom:1px;text-transform:uppercase;letter-spacing:.05em">Terms</div>
-      <div id="pvw-terms">{{ terms|default:"Payment due within 30 days." }}</div>
+      <div id="pvw-terms">{{ terms|default:"" }}</div>
     </div>
   </div>
 
