@@ -2805,6 +2805,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
 function pageBack(e) {
   if (!document.getElementById('gen-layout').classList.contains('stage-2')) return true;
   e.preventDefault();
+  try { sessionStorage.removeItem('inv_stage'); } catch(_) {}
   goToStage(1);
   return false;
 }
@@ -2817,7 +2818,7 @@ function goToStage(n, opts = {}) {
   const gl = document.getElementById('gen-layout');
   gl.classList.toggle('stage-1', n === 1);
   gl.classList.toggle('stage-2', n === 2);
-  if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); try { sessionStorage.removeItem('inv_stage'); } catch(e){} }
+  if (n === 1) { gl.classList.remove('show-preview'); window.scrollTo({top: 0, behavior: 'smooth'}); }
   if (n === 2) { try { sessionStorage.setItem('inv_stage', window._selectedTemplate || 'classic'); } catch(e){} }
 }
 
