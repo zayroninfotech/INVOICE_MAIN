@@ -42,9 +42,20 @@
 
 .from-logo-wrap .logo-ph{font-size:.65rem;color:var(--text-muted);text-align:center;line-height:1.3;}
 
-.from-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 12px;flex:1;min-width:0;}
+.from-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 12px;flex:1;min-width:0;}
+
+/* Each company field carries a standing label: these inputs stay populated, and
+   a placeholder disappears the moment one is filled, leaving a row of numbers
+   with no way to tell GSTIN from PAN from CIN. */
+.from-row{display:flex;flex-direction:column;gap:4px;min-width:0;}
+
+.from-row-full{grid-column:1/-1;}
+
+.from-lbl{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);}
 
 .from-inp{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.78rem;color:var(--text-primary);outline:none;width:100%;}
+
+.from-inp-name{font-size:.95rem;font-weight:700;padding:8px 11px;}
 
 .from-inp::placeholder{color:var(--placeholder);}
 
@@ -352,8 +363,11 @@ canvas#sig-canvas{touch-action:none;}
 .from-logo-wrap{width:76px;height:76px;border-radius:12px;transition:border-color .15s,background .15s;}
 .from-logo-wrap:hover{border-color:var(--ember);background:var(--ember-light);}
 .from-logo-wrap .logo-ph{font-size:.75rem;}
-.from-fields{gap:8px 10px;}
+/* Row gap stays well clear of the 4px label-to-input gap, so each label reads
+   as belonging to the field under it rather than the one above. */
+.from-fields{gap:14px 14px;}
 .from-inp{font-size:.85rem;padding:9px 11px;border-radius:8px;border-width:1.5px;transition:border-color .15s,box-shadow .15s;}
+.from-inp-name{font-size:1.05rem;font-weight:700;padding:10px 12px;}
 .from-inp:hover{border-color:var(--border-strong);}
 .from-inp:focus{background:var(--surface);}
 
@@ -442,8 +456,8 @@ canvas#sig-canvas{touch-action:none;}
   .sec-pair{grid-template-columns:1fr;}
   .fi-sum{order:0;}
   .from-fields{grid-template-columns:repeat(2,minmax(0,1fr));}
-  .from-fields > *{grid-column:auto !important;}
-  .from-fields > :first-child{grid-column:1 / -1 !important;}
+  .from-fields > *{grid-column:auto;}
+  .from-fields > .from-row-full{grid-column:1 / -1;}
   .fi-sum .tots-box{max-width:420px;margin-left:auto;}
 }
 @media (max-width:1100px){ .sec-pair{grid-template-columns:1fr;} .fi-sum{order:0;} }
@@ -511,21 +525,45 @@ canvas#sig-canvas{touch-action:none;}
 
       <div class="from-fields">
 
-        <input class="from-inp" id="from-name"    placeholder="Business / Sender Name" style="grid-column:span 3" oninput="updatePvw()">
+        <div class="from-row from-row-full">
+          <label class="from-lbl" for="from-name">Business / Sender Name</label>
+          <input class="from-inp from-inp-name" id="from-name" placeholder="Your Company Name" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-gst"     placeholder="GSTIN Number"  oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-gst">GSTIN</label>
+          <input class="from-inp" id="from-gst" placeholder="29AABCP1234D1Z5" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-cin"     placeholder="CIN Number"    oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-pan">PAN</label>
+          <input class="from-inp" id="from-pan" placeholder="AABCP1234D" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-pan"     placeholder="PAN Number"    oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-cin">CIN</label>
+          <input class="from-inp" id="from-cin" placeholder="CIN Number" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-address" placeholder="Address, City, State, Pincode" style="grid-column:span 2" oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-phone">Phone</label>
+          <input class="from-inp" id="from-phone" placeholder="+91 XXXXX XXXXX" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-email"   placeholder="email@company.com" oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-email">Email</label>
+          <input class="from-inp" id="from-email" placeholder="email@company.com" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-website" placeholder="www.company.com"   oninput="updatePvw()">
+        <div class="from-row">
+          <label class="from-lbl" for="from-website">Website</label>
+          <input class="from-inp" id="from-website" placeholder="www.company.com" oninput="updatePvw()">
+        </div>
 
-        <input class="from-inp" id="from-phone"   placeholder="+91 00000 00000"   oninput="updatePvw()">
+        <div class="from-row from-row-full">
+          <label class="from-lbl" for="from-address">Address</label>
+          <input class="from-inp" id="from-address" placeholder="Address, City, State - Pincode" oninput="updatePvw()">
+        </div>
 
       </div>
 
