@@ -279,7 +279,6 @@
             <div>
               <div style="font-size:13px;font-weight:800" id="pvw-co-name">YOUR COMPANY</div>
               <div style="font-size:9.5px;color:#64748B" id="pvw-co-gst"></div>
-              <div style="font-size:9px;color:#94A3B8;line-height:1.5" id="pvw-co-addr"></div>
             </div>
           </div>
           <div id="pvw-invoice-lbl" style="font-size:24px;font-weight:900;color:#C1121F">INVOICE</div>
@@ -564,7 +563,6 @@ async function renderPreview(inv) {
 
   _t('pvw-co-name', companyName.toUpperCase());
   _t('pvw-co-gst',  profile.gst ? 'GSTIN: ' + profile.gst : '');
-  _t('pvw-co-addr', fromAddress);
   _t('pvw-from-name', companyName);
   _t('pvw-from-addr', fromAddress);
   _t('pvw-from-gst',  profile.gst ? 'GSTIN: ' + profile.gst : '');

@@ -151,7 +151,6 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'co_name': co_name.upper(),
         # Staffing's masthead carries CIN; every other template shows GSTIN.
         'co_gst': (f"CIN: {cin}" if cin else '') if staffing else (f"GSTIN: {gst}" if gst else ''),
-        'co_addr': '' if staffing else (s.get('address') or ''),
 
         'inv_no': invoice.invoice_number or '—',
         'inv_date': _dshort(getattr(invoice, 'invoice_date', None)),

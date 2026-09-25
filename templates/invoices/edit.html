@@ -985,7 +985,6 @@ canvas#sig-canvas{touch-action:none;}
             <div>
               <div style="font-size:10px;font-weight:800" id="pvw-co-name">YOUR COMPANY</div>
               <div style="font-size:7.5px;color:#64748B" id="pvw-co-gst"></div>
-              <div style="font-size:7px;color:#94A3B8;line-height:1.5" id="pvw-co-addr"></div>
             </div>
           </div>
           <div id="pvw-invoice-lbl" style="font-size:20px;font-weight:900;color:#C1121F">INVOICE</div>
@@ -1377,7 +1376,6 @@ function updatePvw() {
 
   _t('pvw-co-gst',  document.getElementById('from-gst')?.value ? 'GSTIN: ' + document.getElementById('from-gst').value : '');
 
-  _t('pvw-co-addr', document.getElementById('from-address')?.value || '');
 
   // meta — required fields
   const missingFields = [];
