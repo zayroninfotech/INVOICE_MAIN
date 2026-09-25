@@ -263,43 +263,6 @@ def _addr_bar_block(ctx, bar_bg, bar_text=None, name_color=DARK, body_color=MUTE
     return tbl
 
 
-def _addr_label_block(ctx, label_color, name_color=DARK, body_color=MUTED, border=BORDER):
-    """Two-column FROM | BILL TO block with plain text labels (no filled bar).
-    Matches the default/classic template's preview style where FROM and BILL TO
-    appear as small colored labels above the address content."""
-    from_lines, to_lines = _party_blocks(ctx)
-    lbl_st = _style('ALB', fontSize=7, fontName=FONT_B, textColor=label_color,
-                    leading=9, spaceAfter=3)
-    nm_st  = _style('ALN', fontSize=9.5, fontName=FONT_B, textColor=name_color, leading=13)
-    bd_st  = _style('ALD', fontSize=8.5, textColor=body_color, leading=12)
-
-    def body(lines):
-        out, first = [], True
-        for ln in lines:
-            if not ln:
-                continue
-            out.append(Paragraph(ln, nm_st if first else bd_st))
-            first = False
-        if first:
-            out.append(Paragraph('—', bd_st))
-        return out
-
-    rows = [
-        [Paragraph('FROM', lbl_st), Paragraph('BILL TO', lbl_st)],
-        [body(from_lines), body(to_lines)],
-    ]
-    tbl = Table(rows, colWidths=[ctx['CW'] * 0.5, ctx['CW'] * 0.5])
-    tbl.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10), ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 0.5, border),
-        ('LINEAFTER', (0, 0), (0, -1), 0.5, border),
-        ('LINEBELOW', (0, 0), (-1, 0), 0.5, border),
-    ]))
-    return tbl
-
-
 def _seller_name_fallback(invoice):
     """Username of the invoice's owner — mirrors the web preview's
     `company_name || username || 'Your Company'` chain (form.html/detail.html)."""
@@ -925,7 +888,7 @@ def _sec_classic(ctx):
         return [meta_t, Spacer(1, 14)]
 
     def bill_to():
-        ft = _addr_label_block(ctx, label_color=ACCENT)
+        ft = _addr_bar_block(ctx, ACCENT)
         return [ft, Spacer(1, 14)]
 
     def items():

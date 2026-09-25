@@ -87,9 +87,6 @@ live in _invoice_doc_print.html.
    (applyPreviewSkin) from TEMPLATE_SPECS — apps/invoices/template_registry.py
    is the single source of truth for those values. ── */
 
-/* ── DEFAULT (classic): label-style FROM/BILL TO — no filled bar ── */
-.inv-preview:not([class*="tpl-"]) .pvw-addr-hdr{background:transparent;color:var(--tpl-accent,#C1121F);font-size:6.5px;letter-spacing:.08em;border-bottom:1px solid var(--tpl-border);padding:3px 8px 2px;}
-
 /* ── MINIMAL: typography-first, no color blocks ── */
 .inv-preview.tpl-minimal .pvw-top{background:var(--tpl-tint);padding:10px 14px 6px;border-bottom:none;}
 .inv-preview.tpl-minimal .pvw-circle{display:none;}
