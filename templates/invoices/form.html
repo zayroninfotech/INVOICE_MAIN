@@ -117,6 +117,11 @@
 .tpl-buy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border:0;border-radius:999px;background:var(--ember);color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;transition:filter .15s ease,transform .15s ease;}
 .tpl-buy:hover{filter:brightness(1.08);transform:translateY(-1px);}
 .tpl-buy:disabled{opacity:.6;cursor:progress;transform:none;}
+.tpl-buy.added{background:var(--color-success);}
+.tpl-continue{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:0;border-radius:999px;background:var(--ember);color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.14);transition:filter .15s ease,transform .15s ease;}
+.tpl-continue:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.tpl-continue:disabled{opacity:.6;cursor:progress;transform:none;}
+.tpl-filters{margin-bottom:18px;}
 .pvw-tpl-switch{margin-left:auto;max-width:200px;padding:5px 28px 5px 10px;border:1px solid rgba(255,255,255,.28);border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:13px;}
 .pvw-tpl-switch option{color:var(--text);background:var(--surface);}
 .tpl-empty{grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-size:.9rem;}
@@ -545,8 +550,12 @@ canvas#sig-canvas{touch-action:none;}
             <h2 class="tpl-h" id="tpl-h">Choose how your invoice looks</h2>
             <p class="tpl-lede" id="tpl-lede">Every template prints your business profile, GST details and line items. You can change it later without losing anything.</p>
           </div>
-          <div class="tpl-filters" id="tpl-filters" role="tablist" aria-label="Filter templates"></div>
+          <button type="button" class="tpl-continue" id="tpl-continue" hidden onclick="checkoutTplCart()">
+            <span id="tpl-continue-label">Continue</span> <i class="bi bi-arrow-right"></i>
+          </button>
         </div>
+
+        <div class="tpl-filters" id="tpl-filters" role="tablist" aria-label="Filter templates"></div>
 
         <div id="tpl-grid"></div>
 
@@ -2101,23 +2110,67 @@ function stepTplQty(id, delta) {
   if (minus) minus.disabled = next <= 1;
 }
 
-async function buyTemplate(id) {
+/* Cart: cards add to a selection, the Continue button buys the lot in one go. */
+window._tplCart = new Set();
+function tplInCart(id) { return window._tplCart.has(id); }
+
+function toggleTplCart(id) {
+  const t = window._tplList.find(x => x.id === id);
+  if (!t || t.blocked || t.owned) return;
+  window._tplCart.has(id) ? window._tplCart.delete(id) : window._tplCart.add(id);
   const btn = document.querySelector(`#tpl-${CSS.escape(id)} .tpl-buy`);
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Buying…'; }
-  let r;
-  try {
-    r = await API.post(`/api/invoices/templates/${encodeURIComponent(id)}/purchase/`, { quantity: tplQty(id) });
-  } catch (_) {
-    r = { success: false, message: 'Could not reach the server. Try again.' };
+  if (btn) {
+    const on = tplInCart(id);
+    btn.classList.toggle('added', on);
+    btn.innerHTML = on ? '<i class="bi bi-check2"></i> Added' : '<i class="bi bi-cart-plus"></i> Add to cart';
   }
-  if (!r.success) {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-bag-plus"></i> Buy'; }
-    toast(r.message || 'Purchase failed.', 'error');
+  renderTplContinue();
+}
+
+function renderTplContinue() {
+  const btn = document.getElementById('tpl-continue');
+  if (!btn) return;
+  const n = window._tplCart.size;
+  btn.hidden = !_BUY_MODE || n === 0;
+  document.getElementById('tpl-continue-label').textContent =
+    n > 1 ? `Continue with ${n} templates` : 'Continue';
+}
+
+async function checkoutTplCart() {
+  const ids = [...window._tplCart];
+  if (!ids.length) return;
+  const btn = document.getElementById('tpl-continue');
+  const label = document.getElementById('tpl-continue-label');
+  btn.disabled = true;
+  label.textContent = 'Buying…';
+
+  const bought = [], failed = [];
+  for (const id of ids) {
+    let r;
+    try {
+      r = await API.post(`/api/invoices/templates/${encodeURIComponent(id)}/purchase/`, { quantity: tplQty(id) });
+    } catch (_) {
+      r = { success: false };
+    }
+    (r.success ? bought : failed).push(window._tplList.find(x => x.id === id)?.name || id);
+  }
+
+  btn.disabled = false;
+  if (!bought.length) {
+    renderTplContinue();
+    toast('Purchase failed. Please try again.', 'error');
     return;
   }
-  document.getElementById('tpl-bought-msg').textContent = r.message;
+  if (failed.length) toast(`Could not buy: ${failed.join(', ')}`, 'error');
+
+  window._tplCart.clear();
+  document.getElementById('tpl-bought-msg').textContent =
+    bought.length === 1
+      ? `'${bought[0]}' is yours — it's now in your Invoice tab.`
+      : `${bought.length} templates are yours — they're now in your Invoice tab.`;
   bootstrap.Modal.getOrCreateInstance(document.getElementById('tplBoughtModal')).show();
   await loadTemplates();
+  renderTplContinue();
 }
 
 function buildTplGrid() {
@@ -2148,7 +2201,8 @@ function buildTplGrid() {
       footer = '<div class="tpl-lockbar"><i class="bi bi-slash-circle"></i> Disabled by your admin</div>';
     } else if (t.owned) {
       footer = '<div class="tpl-ownedbar"><i class="bi bi-bag-check-fill"></i> Yours — ready in the Invoice tab</div>';
-    } else if (_BUY_MODE && !t.unlocked) {
+    } else if (_BUY_MODE) {
+      const inCart = tplInCart(t.id);
       footer = `
         <div class="tpl-buybar" onclick="event.stopPropagation()">
           <div class="tpl-qty">
@@ -2156,7 +2210,9 @@ function buildTplGrid() {
             <output id="qty-${id}" aria-live="polite">1</output>
             <button type="button" aria-label="Increase quantity" onclick="stepTplQty('${id}',1)">+</button>
           </div>
-          <button type="button" class="tpl-buy" onclick="buyTemplate('${id}')"><i class="bi bi-bag-plus"></i> Buy</button>
+          <button type="button" class="tpl-buy${inCart ? ' added' : ''}" onclick="toggleTplCart('${id}')">
+            <i class="bi ${inCart ? 'bi-check2' : 'bi-cart-plus'}"></i> ${inCart ? 'Added' : 'Add to cart'}
+          </button>
         </div>`;
     } else if (t.unlocked) {
       footer = '';
@@ -2178,12 +2234,13 @@ function buildTplGrid() {
         <p class="tpl-desc">${tplEsc(t.desc)}</p>
         ${footer}
       </div>`;
-    const activate = () => (_BUY_MODE && !t.unlocked && !t.blocked) ? buyTemplate(t.id) : selectTemplate(t.id);
+    const activate = () => (_BUY_MODE && !t.blocked) ? toggleTplCart(t.id) : selectTemplate(t.id);
     card.onclick = activate;
     card.onkeydown = e => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); activate(); } };
     grid.appendChild(card);
     if (card.querySelector('.tpl-qty')) stepTplQty(t.id, 0);
   });
+  renderTplContinue();
 }
 
 /* ── Per-template item-field schema ───────────────────────────────────────────
