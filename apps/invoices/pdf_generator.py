@@ -394,17 +394,17 @@ def _items_rows(invoice, cur, cfg, CW, fs=9):
     # ("1,06,200.00") plus the wider DejaVu metrics used to wrap mid-number.
     headers, col_w = [], []
     if show_hsn and show_disc:
-        col_w  = [CW*0.28, CW*0.11, CW*0.17, CW*0.08, CW*0.09, CW*0.27]
-        headers = ['DESCRIPTION', 'HSN/SAC', 'RATE', 'QTY', 'DISC%', 'AMOUNT']
+        col_w  = [CW*0.28, CW*0.11, CW*0.08, CW*0.17, CW*0.09, CW*0.27]
+        headers = ['DESCRIPTION', 'HSN/SAC', 'QTY', 'RATE', 'DISC%', 'AMOUNT']
     elif show_hsn:
-        col_w  = [CW*0.32, CW*0.12, CW*0.19, CW*0.09, CW*0.28]
-        headers = ['DESCRIPTION', 'HSN/SAC', 'RATE', 'QTY', 'AMOUNT']
+        col_w  = [CW*0.32, CW*0.12, CW*0.09, CW*0.19, CW*0.28]
+        headers = ['DESCRIPTION', 'HSN/SAC', 'QTY', 'RATE', 'AMOUNT']
     elif show_disc:
-        col_w  = [CW*0.34, CW*0.19, CW*0.09, CW*0.10, CW*0.28]
-        headers = ['DESCRIPTION', 'RATE', 'QTY', 'DISC%', 'AMOUNT']
+        col_w  = [CW*0.34, CW*0.09, CW*0.19, CW*0.10, CW*0.28]
+        headers = ['DESCRIPTION', 'QTY', 'RATE', 'DISC%', 'AMOUNT']
     else:
-        col_w  = [CW*0.40, CW*0.21, CW*0.10, CW*0.29]
-        headers = ['DESCRIPTION', 'RATE', 'QTY', 'AMOUNT']
+        col_w  = [CW*0.40, CW*0.10, CW*0.21, CW*0.29]
+        headers = ['DESCRIPTION', 'QTY', 'RATE', 'AMOUNT']
 
     th  = _style('TH',  fontSize=fs-1, fontName=FONT_B, textColor=MUTED, alignment=TA_LEFT)
     thr = _style('THR', fontSize=fs-1, fontName=FONT_B, textColor=MUTED, alignment=TA_RIGHT)
@@ -419,11 +419,11 @@ def _items_rows(invoice, cur, cfg, CW, fs=9):
         if show_hsn:
             row.append(Paragraph(getattr(item, 'hsn_code', '') or '',
                                  _style('H', fontSize=fs-1, textColor=MUTED, alignment=TA_RIGHT)))
+        row.append(Paragraph(f"{float(item.quantity):g}",
+                             _style('Q', fontSize=fs, textColor=DARK, alignment=TA_RIGHT)))
         row.append(Paragraph(_fmt(item.unit_price, cur),
                              _style('R', fontSize=fs-0.5, textColor=DARK, alignment=TA_RIGHT,
                                     splitLongWords=0)))
-        row.append(Paragraph(f"{float(item.quantity):g}",
-                             _style('Q', fontSize=fs, textColor=DARK, alignment=TA_RIGHT)))
         if show_disc:
             row.append(Paragraph(f"{float(item.discount):g}%",
                                  _style('Dc', fontSize=fs, textColor=MUTED, alignment=TA_RIGHT)))
@@ -689,7 +689,7 @@ def _terms_sec(ctx, label_color=DARK, body_color=MUTED, fs=8.5):
     ]
 
 
-def _signature_sec(ctx, label='Authorised Signatory', label_color=MUTED, line_color=None,
+def _signature_sec(ctx, label='Authorized Signatory', label_color=MUTED, line_color=None,
                    show_dept=True, stamp=True):
     """`show_dept`/`stamp` are opt-outs for templates whose own footer already
     prints the department and thank-you line (staffing), so they aren't
@@ -796,7 +796,7 @@ def _party_tiers(ctx):
     # GST prints once: the header renders it when show_gstin is on, so the
     # FROM block only carries it as the fallback when that toggle is off.
     if ctx['s_gst'] and not show_header_gst:
-        from_ids.append(f"{fl.get('fi-from-gst', 'GST')}: {ctx['s_gst']}")
+        from_ids.append(f"{fl.get('fi-from-gst', 'GSTIN')}: {ctx['s_gst']}")
     # Collected by the no-login generator and shown in its live preview.
     if s.get('cin'):
         from_ids.append(f"{fl.get('fi-from-cin', 'CIN')}: {s['cin']}")
@@ -816,7 +816,7 @@ def _party_tiers(ctx):
 
     to_ids = []
     if invoice.customer_gst and show_bill_gst:
-        to_ids.append(f"{fl.get('fi-cust-gst', 'GST')}: {invoice.customer_gst}")
+        to_ids.append(f"{fl.get('fi-cust-gst', 'GSTIN')}: {invoice.customer_gst}")
     if s.get('customer_pan'):
         to_ids.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
     if s.get('customer_cin'):
@@ -2390,7 +2390,11 @@ def _staffing_page_footer(seller, page_w):
 # White space, hairline rules, one accent colour (the template's / user's pick).
 # ══════════════════════════════════════════════════════════════════════════════
 
-_CLEAN_EXEMPT = {'staffing', 'payroll'}   # column layouts of their own
+# Templates that render with their own builder instead of the generic clean
+# layout. 'classic' is here because it is the default: its preview draws the
+# accent FROM/BILL TO bars and GRAND TOTAL band, and a PDF that silently came
+# out as the clean layout did not match what the editor showed.
+_CLEAN_EXEMPT = {'classic', 'staffing', 'payroll'}
 
 
 def _sec_clean(ctx):
