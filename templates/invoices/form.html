@@ -2247,9 +2247,14 @@ function buildTplGrid() {
       </div>
       <div class="tpl-body">
         <div class="tpl-row"><span class="tpl-name">Try Free Invoice</span><span class="tpl-badge free">Free</span></div>
-        <p class="tpl-desc">Quick invoice with no account needed — fill, download &amp; send instantly</p>
-        <div class="tpl-ownedbar" style="background:#F0FDF4;color:#16A34A;border-color:#BBF7D0">
-          <i class="bi bi-lightning-charge-fill"></i> No login required — try it now
+        <p class="tpl-desc">No account needed — fill, download &amp; send instantly</p>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+          <div class="tpl-ownedbar" style="background:#F0FDF4;color:#16A34A;border-color:#BBF7D0;font-size:.72rem">
+            <i class="bi bi-person-x"></i> Without login — <strong>5 invoices</strong> per device
+          </div>
+          <div class="tpl-ownedbar" style="background:#EFF6FF;color:#2563EB;border-color:#BFDBFE;font-size:.72rem">
+            <i class="bi bi-person-check-fill"></i> With login — <strong>Unlimited</strong> invoices
+          </div>
         </div>
       </div>`;
     tryCard.onclick = () => window.open('/invoices/free/', '_blank');
