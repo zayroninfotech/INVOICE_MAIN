@@ -2803,9 +2803,7 @@ function toggleMobilePreview() {
 
 /* ── Init ── */
 
-// Outside the Buy tab the picker is skipped entirely: the editor opens on Default
-// and templates are switched from the preview header, matching the free generator.
-const _resumeTpl = new URLSearchParams(location.search).get('template') || (_BUY_MODE ? null : 'classic');
+const _resumeTpl = new URLSearchParams(location.search).get('template');
 if (_resumeTpl) {
   // Refresh inside the editor: reopen it immediately instead of flashing the picker.
   window._selectedTemplate = _resumeTpl;
