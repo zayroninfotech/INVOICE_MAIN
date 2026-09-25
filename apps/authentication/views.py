@@ -5,7 +5,7 @@ from django.conf import settings
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ChangePasswordSerializer, CreateUserSerializer
 from .jwt_utils import generate_tokens, decode_token
 from .authentication import MongoJWTAuthentication
-from .permissions import IsSuperAdmin, IsReadOnlyForUser
+from .permissions import IsSuperAdmin, IsAdminOrSuperAdmin, IsReadOnlyForUser
 from .models import User, BusinessProfile, AuditLog
 
 
@@ -109,13 +109,21 @@ class ChangePasswordView(APIView):
         return success(message="Password changed successfully.")
 
 
-# ── Superadmin: User Management ──────────────────────────────────────────────
+# ── Admin / Superadmin: User Management ──────────────────────────────────────
+
+def _is_superadmin(request):
+    from .permissions import _role
+    return _role(request.user) == 'superadmin'
+
 
 class UserListView(APIView):
     authentication_classes = [MongoJWTAuthentication]
-    permission_classes = [IsSuperAdmin]
+    permission_classes = [IsAdminOrSuperAdmin]
 
     def post(self, request):
+        requested_role = request.data.get('role', 'user')
+        if requested_role == 'superadmin' and not _is_superadmin(request):
+            return error("Only a superadmin can create a superadmin account.", status=403)
         serializer = CreateUserSerializer(data=request.data)
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
@@ -148,7 +156,7 @@ class UserListView(APIView):
 
 class UserDetailView(APIView):
     authentication_classes = [MongoJWTAuthentication]
-    permission_classes = [IsSuperAdmin]
+    permission_classes = [IsAdminOrSuperAdmin]
 
     def get(self, request, pk):
         user = User.objects(pk=pk).first()
@@ -162,9 +170,16 @@ class UserDetailView(APIView):
             return error("User not found.", status=404)
         if str(user.pk) == str(request.user.pk):
             return error("Cannot modify your own account here.")
+        # Admin cannot touch superadmin accounts
+        if user.role == 'superadmin' and not _is_superadmin(request):
+            return error("Only a superadmin can modify a superadmin account.", status=403)
         role = request.data.get('role')
         is_active = request.data.get('is_active')
-        if role and role in ('superadmin', 'admin', 'user'):
+        if role:
+            if role not in ('superadmin', 'admin', 'user'):
+                return error("Invalid role.", status=400)
+            if role == 'superadmin' and not _is_superadmin(request):
+                return error("Only a superadmin can assign the superadmin role.", status=403)
             user.role = role
         if is_active is not None:
             user.is_active = bool(is_active)
@@ -177,15 +192,17 @@ class UserDetailView(APIView):
             return error("User not found.", status=404)
         if str(user.pk) == str(request.user.pk):
             return error("Cannot delete your own account.")
+        if user.role == 'superadmin' and not _is_superadmin(request):
+            return error("Only a superadmin can deactivate a superadmin account.", status=403)
         user.is_active = False
         user.save()
         return success(message="User deactivated.")
 
 
 class UserStatsView(APIView):
-    """Superadmin: per-user activity stats."""
+    """Admin/Superadmin: per-user activity stats."""
     authentication_classes = [MongoJWTAuthentication]
-    permission_classes = [IsSuperAdmin]
+    permission_classes = [IsAdminOrSuperAdmin]
 
     def get(self, request, pk):
         from apps.invoices.models import Invoice
@@ -230,9 +247,9 @@ class UserStatsView(APIView):
 
 
 class UserResetPasswordView(APIView):
-    """Superadmin: generate and set a new password for a user."""
+    """Admin/Superadmin: generate and set a new password for a user."""
     authentication_classes = [MongoJWTAuthentication]
-    permission_classes = [IsSuperAdmin]
+    permission_classes = [IsAdminOrSuperAdmin]
 
     def post(self, request, pk):
         user = User.objects(pk=pk).first()
@@ -240,6 +257,8 @@ class UserResetPasswordView(APIView):
             return error("User not found.", status=404)
         if str(user.pk) == str(request.user.pk):
             return error("Cannot reset your own password here.")
+        if user.role == 'superadmin' and not _is_superadmin(request):
+            return error("Only a superadmin can reset a superadmin's password.", status=403)
 
         new_password = request.data.get('new_password', '').strip()
         if not new_password:

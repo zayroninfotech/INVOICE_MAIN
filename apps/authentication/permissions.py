@@ -13,7 +13,7 @@ class IsSuperAdmin(BasePermission):
 
 class IsAdminOrSuperAdmin(BasePermission):
     def has_permission(self, request, view):
-        return _role(request.user) in ('user', 'admin', 'superadmin')
+        return _role(request.user) in ('admin', 'superadmin')
 
 
 class IsReadOnlyForUser(BasePermission):

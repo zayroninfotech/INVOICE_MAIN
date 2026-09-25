@@ -982,6 +982,15 @@
     </div>
 
 
+    <!-- User Management — shown only for admin / superadmin via JS -->
+    <div class="sidebar-section-label" style="margin-top:4px;display:none" id="sb-users-label">Team</div>
+    <div class="nav-item-wrap" style="display:none" id="sb-users-wrap">
+      <a href="/auth/users/" class="nav-link-main {% block nav_users %}{% endblock %}">
+        <span class="nav-icon-box"><i class="bi bi-people"></i></span>
+        User Management
+      </a>
+    </div>
+
     <div class="sidebar-section-label" style="margin-top:4px">Account</div>
 
     <div class="nav-item-wrap">
@@ -1311,6 +1320,8 @@
 
   if (role === 'admin' || role === 'superadmin') {
     document.getElementById('ud-admin').style.display = 'flex';
+    document.getElementById('sb-users-label').style.display = '';
+    document.getElementById('sb-users-wrap').style.display  = '';
   }
 
   const _limitModal = new bootstrap.Modal(document.getElementById('limitModal'));

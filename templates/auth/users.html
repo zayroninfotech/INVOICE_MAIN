@@ -18,7 +18,7 @@
 
     <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">Access Denied</div>
 
-    <div style="color:var(--text-secondary);margin-top:4px">This page is restricted to Superadmin only.</div>
+    <div style="color:var(--text-secondary);margin-top:4px">This page is restricted to Admin and Superadmin only.</div>
 
   </div>
 
@@ -630,13 +630,25 @@ const resetPwdModal = new bootstrap.Modal(document.getElementById('resetPwdModal
 
 
 
-if (window.USER_ROLE !== 'superadmin') {
+const _isSuperAdmin = window.USER_ROLE === 'superadmin';
+const _isAdminPlus  = window.USER_ROLE === 'admin' || _isSuperAdmin;
+
+if (!_isAdminPlus) {
 
   document.getElementById('access-denied').classList.remove('d-none');
 
 } else {
 
   document.getElementById('users-section').classList.remove('d-none');
+
+  // Hide superadmin option in role dropdowns for plain admins
+  if (!_isSuperAdmin) {
+    document.querySelectorAll('#f-role option[value="superadmin"], #modal-role option[value="superadmin"]')
+      .forEach(el => el.remove());
+    // Also hide superadmin from role filter
+    const saOpt = document.querySelector('#role-filter option[value="superadmin"]');
+    if (saOpt) saOpt.remove();
+  }
 
   loadStats();
 
