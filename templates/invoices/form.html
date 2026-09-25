@@ -579,8 +579,6 @@ canvas#sig-canvas{touch-action:none;}
 
           </div>
 
-          <input type="hidden" id="due_date">
-
           <div class="fi-row">
 
             <label class="fi-lbl">Invoice Title</label>
@@ -1336,7 +1334,7 @@ function updatePvw() {
     _t('pvw-period-lbl',  payroll ? 'Pay Period'   : 'Billing Period');
     _t('pvw-cust-id', invNo || '—');
     _t('pvw-bp-from', dshort(invDate));
-    _t('pvw-bp-to',   dshort(_val('due_date')));
+    _t('pvw-bp-to',   dshort(invDate ? computeDueDate(invDate) : ''));
   }
 
   // FROM
@@ -1976,9 +1974,11 @@ const today = new Date().toISOString().split('T')[0];
 
 document.getElementById('invoice_date').value = today;
 
-const dueDefault = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
-
-document.getElementById('due_date').value = dueDefault;
+// No due-date field in the form; the API still wants one, so derive it at save time.
+function computeDueDate(invDate) {
+  const base = invDate ? new Date(invDate) : new Date();
+  return new Date(base.getTime() + 30*24*60*60*1000).toISOString().split('T')[0];
+}
 
 
 
@@ -2686,7 +2686,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
 
   const invDate = document.getElementById('invoice_date').value;
 
-  const dueDate = document.getElementById('due_date').value || invDate;
+  const dueDate = computeDueDate(invDate);
 
   const payload = {
 
