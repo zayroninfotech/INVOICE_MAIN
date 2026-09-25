@@ -2242,7 +2242,7 @@ function buildTplGrid() {
           </div>
         </div>
         <div class="tpl-actions">
-          <button type="button" class="tpl-act go" onclick="event.stopPropagation();window.location.href='/invoices/free/'">Try it free <i class="bi bi-arrow-right"></i></button>
+          <button type="button" class="tpl-act go" onclick="event.stopPropagation();window.open('/invoices/free/','_blank')">Try it free <i class="bi bi-arrow-right"></i></button>
         </div>
       </div>
       <div class="tpl-body">
@@ -2252,8 +2252,8 @@ function buildTplGrid() {
           <i class="bi bi-lightning-charge-fill"></i> No login required — try it now
         </div>
       </div>`;
-    tryCard.onclick = () => window.location.href = '/invoices/free/';
-    tryCard.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.href = '/invoices/free/'; } };
+    tryCard.onclick = () => window.open('/invoices/free/', '_blank');
+    tryCard.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.open('/invoices/free/', '_blank'); } };
     grid.appendChild(tryCard);
   }
   list.forEach((t, i) => {
@@ -2305,9 +2305,17 @@ function buildTplGrid() {
         <p class="tpl-desc">${tplEsc(t.desc)}</p>
         ${footer}
       </div>`;
-    const activate = () => (_BUY_MODE && !t.blocked) ? toggleTplCart(t.id) : selectTemplate(t.id);
-    card.onclick = activate;
-    card.onkeydown = e => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); activate(); } };
+    const pickOnly = () => {
+      if (_BUY_MODE && !t.blocked) { toggleTplCart(t.id); return; }
+      if (!t.unlocked) { selectTemplate(t.id); return; } // locked templates: let selectTemplate show the upgrade prompt
+      window._selectedTemplate = t.id;
+      applyPreviewSkin(t.id);
+      document.querySelectorAll('.tpl-card').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
+      card.classList.add('active'); card.setAttribute('aria-pressed','true');
+      const sw = document.getElementById('pvw-tpl-switch'); if (sw) sw.value = t.id;
+    };
+    card.onclick = pickOnly;
+    card.onkeydown = e => { if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pickOnly(); } };
     grid.appendChild(card);
   });
   renderTplContinue();
