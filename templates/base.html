@@ -970,27 +970,21 @@
     <div class="nav-item-wrap">
       <a href="/invoices/create/" class="nav-link-main {% block nav_invoices %}{% endblock %}">
         <span class="nav-icon-box"><i class="bi bi-plus-circle"></i></span>
-        New Invoice
+        Invoice
       </a>
     </div>
 
-    <!-- Buy collapsible group -->
     <div class="nav-item-wrap">
-      <button type="button" id="buy-toggle"
-              class="nav-link-main w-100 border-0 bg-transparent text-start {% block nav_buy_group %}{% endblock %}"
-              aria-expanded="{% block nav_buy_expanded %}false{% endblock %}"
-              onclick="toggleBuyNav(this)">
+      <a href="/invoices/create/?buy=1" class="nav-link-main" id="nav-buy-invoice">
         <span class="nav-icon-box"><i class="bi bi-bag-check"></i></span>
-        Buy
-        <i class="bi bi-chevron-right nav-arrow ms-auto"></i>
-      </button>
-    </div>
-    <div id="buy-sub" class="nav-sub {% block nav_buy_sub_visible %}d-none{% endblock %}">
-      <a href="/invoices/create/?buy=1" class="nav-sub-link" id="nav-buy-invoice">
-        <span></span>Buy Invoice
+        Buy Invoice
       </a>
-      <a href="/invoices/" class="nav-sub-link {% block nav_list %}{% endblock %}">
-        <span></span>All Invoices
+    </div>
+
+    <div class="nav-item-wrap">
+      <a href="/invoices/" class="nav-link-main {% block nav_list %}{% endblock %}">
+        <span class="nav-icon-box"><i class="bi bi-clock-history"></i></span>
+        History Invoice
       </a>
     </div>
 
@@ -1167,16 +1161,6 @@
   if (new URLSearchParams(location.search).get('buy') === '1') {
     document.querySelectorAll('.nav-link-main.active').forEach(el => el.classList.remove('active'));
     document.getElementById('nav-buy-invoice').classList.add('active');
-    document.getElementById('buy-sub').classList.remove('d-none');
-    const bt = document.getElementById('buy-toggle');
-    bt.setAttribute('aria-expanded', 'true');
-    bt.classList.add('active');
-  }
-  function toggleBuyNav(btn) {
-    const sub  = document.getElementById('buy-sub');
-    const open = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', !open);
-    sub.classList.toggle('d-none', open);
   }
 
   function closeSidebar() {
