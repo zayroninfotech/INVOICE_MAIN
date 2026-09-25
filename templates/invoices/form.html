@@ -587,6 +587,14 @@ canvas#sig-canvas{touch-action:none;}
 
           </div>
 
+          <div class="fi-row">
+
+            <label class="fi-lbl">Invoice Title</label>
+
+            <input class="fi" id="invoice-title" placeholder="INVOICE" oninput="updatePvw()">
+
+          </div>
+
         </div>
 
       </div>
@@ -1316,6 +1324,8 @@ function updatePvw() {
   const invNo = _val('inv-number');
   if (_setReqField('pvw-inv-no', invNo, '⚠ Invoice No. required')) missingFields.push('Invoice No.');
 
+  _t('pvw-invoice-lbl', _val('invoice-title') || 'INVOICE');
+
   const invDate = _val('invoice_date');
   if (_setReqField('pvw-date', invDate ? fmtDate(invDate) : '', '⚠ Date required')) missingFields.push('Invoice Date');
 
@@ -1883,6 +1893,8 @@ async function loadInvoice() {
   const inv = res.data;
 
   document.getElementById('inv-number').value  = inv.invoice_number || '';
+
+  document.getElementById('invoice-title').value = (inv.layout_config?.custom_labels?.invoice_title) || '';
 
   document.getElementById('invoice_date').value = inv.invoice_date?.split('T')[0] || '';
 
@@ -2731,7 +2743,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
       section_settings:  layoutState.section_settings,
       logo_width:        layoutState.logo_width,
       swap_parties:      layoutState.swap_parties,
-      custom_labels:     layoutState.custom_labels,
+      custom_labels:     Object.assign({}, layoutState.custom_labels || {}, { invoice_title: document.getElementById('invoice-title').value || '' }),
       field_labels:      window.customFieldLabels,
       // Legacy flat keys kept for backward compatibility with older PDFs/views
       show_hsn:          layoutState.section_settings.items_table.show_hsn !== false,
