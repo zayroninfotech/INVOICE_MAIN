@@ -1493,9 +1493,15 @@ function updatePvw() {
 
   // footer
 
-  _t('pvw-notes', _val('thankyou-msg'));
+  const notesVal = _val('thankyou-msg');
+  _t('pvw-notes', notesVal);
+  const notesSec = document.querySelector('.pvw-sec[data-sec="notes"]');
+  if (notesSec) notesSec.style.display = notesVal ? '' : 'none';
 
-  _t('pvw-terms', _val('invoice-terms'));
+  const termsVal = _val('invoice-terms');
+  _t('pvw-terms', termsVal);
+  const termsSec = document.querySelector('.pvw-sec[data-sec="terms"]');
+  if (termsSec) termsSec.style.display = termsVal ? '' : 'none';
 
   _t('pvw-dept',  _val('department'));
 
