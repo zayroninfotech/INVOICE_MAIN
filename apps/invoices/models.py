@@ -71,6 +71,7 @@ class Invoice(me.Document):
     signature_image = me.StringField(default='')     # data-URL (base64 PNG) of drawn/uploaded signature
     signatory_name = me.StringField(default='')       # typed signatory name
     signature_company = me.StringField(default='')    # company name override for footer/signature area
+    signature_datetime = me.StringField(default='')   # pre-formatted "DD-MM-YYYY, HH:MM AM" stamped when signed
     department = me.StringField(default='')           # e.g. "Sales & Procurement Department"
     created_by = me.StringField(required=True)
     pdf_path = me.StringField(default='')

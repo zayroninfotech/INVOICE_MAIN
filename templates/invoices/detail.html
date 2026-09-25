@@ -64,138 +64,7 @@
 
   /* ── the real invoice preview, shared markup/CSS with form.html + edit.html ── */
   .idet-preview-wrap { display:flex; justify-content:center; padding:22px; background:var(--surface-sunken); border:1.5px solid var(--border); border-radius:14px; margin-bottom:20px; }
-  .inv-preview { --tpl-accent:#C1121F; --tpl-secondary:#0F172A; --tpl-text:#0F172A; --tpl-muted:#64748B; --tpl-border:#E2E8F0; --tpl-tint:#F8FAFC; background:#fff; border-radius:7px; overflow:hidden; box-shadow:0 4px 28px rgba(0,0,0,.14); font-family:'Times New Roman',Times,serif; font-size:13px; color:var(--tpl-text); width:100%; max-width:640px; }
-  .pvw-top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 10px;}
-  .pvw-circle{width:48px;height:48px;border-radius:50%;background:var(--tpl-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:15px;flex-shrink:0;}
-  .pvw-divider{height:3px;background:var(--tpl-accent);}
-  .pvw-meta{display:flex;justify-content:space-between;padding:9px 18px 6px;font-size:10px;}
-  .pvw-mlbl{color:#94A3B8;font-weight:600;}
-  .pvw-mval{color:var(--tpl-text);font-weight:700;}
-  .pvw-addr{display:grid;grid-template-columns:1fr 1fr;margin:0 10px 9px;border:1px solid var(--tpl-border);border-radius:4px;overflow:hidden;}
-  .pvw-addr-hdr{background:var(--tpl-accent);color:#fff;font-weight:700;font-size:9px;padding:4px 9px;text-transform:uppercase;letter-spacing:.06em;}
-  .pvw-addr-body{padding:8px 9px;font-size:10px;line-height:1.6;min-height:54px;}
-  .pvw-addr-name{font-weight:700;font-size:10.5px;margin-bottom:1px;}
-  .pvw-addr-muted{color:#64748B;}
-  .pvw-items{margin:0 10px 6px;border:1px solid var(--tpl-border);border-radius:4px;overflow:hidden;}
-  .pvw-items-hdr{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;background:var(--tpl-secondary);color:#fff;font-size:8.5px;font-weight:700;}
-  .pvw-items-hdr span,.pvw-item-row span{padding:5px 5px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .pvw-items-hdr span:first-child,.pvw-item-row span:first-child{text-align:left;}
-  .pvw-item-row{display:grid;grid-template-columns:1fr 32px 55px 32px 55px;border-top:1px solid #F1F5F9;font-size:9.5px;}
-  .pvw-item-row:nth-child(even){background:#FAFAFA;}
-  .pvw-item-row span:first-child{font-weight:600;color:var(--tpl-text);}
-  .pvw-item-row span:last-child{font-weight:700;}
-  .pvw-tots{display:flex;justify-content:flex-end;padding:0 10px 7px;}
-  .pvw-tots-box{width:200px;font-variant-numeric:tabular-nums;}
-  .pvw-tot-r{display:flex;justify-content:space-between;font-size:9.5px;padding:3px 0;color:#374151;border-bottom:1px solid #F1F5F9;}
-  .pvw-tot-r.amber{font-weight:700;color:#92400E;background:#FFFBEB;padding:3px 5px;border-radius:2px;border:none;margin-top:1px;}
-  .pvw-tot-r.grand{background:var(--tpl-accent);color:#fff;font-weight:700;font-size:10.5px;padding:5px 7px;border-radius:3px;margin-top:5px;border:none;}
-  .pvw-footer{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;padding:9px 10px;border-top:1px solid var(--tpl-border);align-items:center;}
-  .pvw-sig-lbl{font-weight:700;color:var(--tpl-accent);font-size:8px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;text-align:center;}
-  .pvw-sig-line{border-top:1px solid var(--tpl-text);width:90px;margin:16px auto 2px;}
-  .pvw-bar{background:#C1121F;color:#fff;font-size:8px;font-weight:700;text-align:center;padding:5px 6px;}
-
-  /* ── Template preview skins (copied verbatim from form.html/edit.html — do
-     not diverge; colors come from --tpl-* set in applyPreviewSkin/TEMPLATE_SPECS) ── */
-  .inv-preview.tpl-minimal .pvw-top{background:var(--tpl-tint);padding:14px 18px 8px;border-bottom:none;}
-  .inv-preview.tpl-minimal .pvw-circle{display:none;}
-  .inv-preview.tpl-minimal #pvw-co-name{font-size:16px;letter-spacing:.02em;color:var(--tpl-text);}
-  .inv-preview.tpl-minimal .pvw-top>#pvw-invoice-lbl{font-size:14px;font-weight:900;color:var(--tpl-text);letter-spacing:3px;}
-  .inv-preview.tpl-minimal .pvw-divider{height:1.5px;background:var(--tpl-secondary);margin:0;}
-  .inv-preview.tpl-minimal .pvw-addr-hdr{background:transparent;color:var(--tpl-muted);font-size:8px;letter-spacing:1px;border-bottom:1px solid var(--tpl-border);padding:4px 10px 3px;}
-  .inv-preview.tpl-minimal .pvw-addr{border:1px solid var(--tpl-border);}
-  .inv-preview.tpl-minimal .pvw-items-hdr{background:transparent;color:var(--tpl-text);border-bottom:1.5px solid var(--tpl-secondary);border-top:none;}
-  .inv-preview.tpl-minimal .pvw-tot-r.grand{background:var(--tpl-secondary);}
-  .inv-preview .pvw-addr.swapped > :first-child{order:2;border-right:none!important;}
-  .inv-preview .pvw-addr.swapped > :last-child{border-right:1px solid #fff;}
-  .pvw-thanks{font-size:9px;font-style:italic;font-weight:600;color:#64748B;}
-  .inv-preview.tpl-minimal .pvw-thanks{display:none;}
-  .inv-preview.tpl-minimal .pvw-sig-lbl{color:var(--tpl-text);}
-  .inv-preview.tpl-minimal .pvw-bar{background:var(--tpl-secondary);}
-
-  .inv-preview.tpl-modern .pvw-top{background:var(--tpl-secondary);padding:18px 18px 14px;border-bottom:3px solid var(--tpl-accent);}
-  .inv-preview.tpl-modern #pvw-co-name{color:#fff;font-size:14px;}
-  .inv-preview.tpl-modern #pvw-co-gst{color:var(--tpl-muted);}
-  .inv-preview.tpl-modern .pvw-top>#pvw-invoice-lbl{color:#fff;}
-  .inv-preview.tpl-modern .pvw-circle{background:var(--tpl-accent);}
-  .inv-preview.tpl-modern .pvw-meta{background:var(--tpl-tint);padding:5px 12px;border-bottom:1px solid var(--tpl-border);}
-  .inv-preview.tpl-modern .pvw-addr-hdr{background:var(--tpl-accent);letter-spacing:.08em;}
-  .inv-preview.tpl-modern .pvw-items-hdr{background:var(--tpl-secondary);}
-  .inv-preview.tpl-modern .pvw-tot-r.grand{background:var(--tpl-accent);}
-  .inv-preview.tpl-modern .pvw-bar{background:var(--tpl-secondary);}
-
-  .inv-preview.tpl-professional .pvw-top{border-top:4px solid var(--tpl-accent);background:#fff;padding-top:14px;}
-  .inv-preview.tpl-professional .pvw-circle{background:var(--tpl-accent);}
-  .inv-preview.tpl-professional .pvw-divider{background:var(--tpl-border);height:1px;}
-  .inv-preview.tpl-professional .pvw-addr{background:var(--tpl-tint);border:1px solid var(--tpl-border);}
-  .inv-preview.tpl-professional .pvw-addr-hdr{background:transparent;color:var(--tpl-accent);font-size:8px;letter-spacing:1px;border-bottom:1px solid var(--tpl-border);padding:4px 10px 3px;}
-  .inv-preview.tpl-professional .pvw-items-hdr{background:var(--tpl-secondary);}
-  .inv-preview.tpl-professional .pvw-tot-r.grand{background:var(--tpl-accent);}
-  .inv-preview.tpl-professional .pvw-bar{background:var(--tpl-accent);}
-
-  .inv-preview.tpl-bold .pvw-top{background:var(--tpl-accent);padding:20px 18px 18px;}
-  .inv-preview.tpl-bold #pvw-co-name{color:#fff;font-size:16px;font-weight:900;}
-  .inv-preview.tpl-bold #pvw-co-gst{color:rgba(255,255,255,.75);}
-  .inv-preview.tpl-bold .pvw-top>#pvw-invoice-lbl{color:#fff;font-size:28px;font-weight:900;}
-  .inv-preview.tpl-bold .pvw-circle{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);}
-  .inv-preview.tpl-bold .pvw-divider{background:rgba(255,255,255,.35);height:1px;}
-  .inv-preview.tpl-bold .pvw-addr-hdr{background:var(--tpl-accent);}
-  .inv-preview.tpl-bold .pvw-items-hdr{background:var(--tpl-accent);}
-  .inv-preview.tpl-bold .pvw-tot-r.grand{background:var(--tpl-secondary);}
-  .inv-preview.tpl-bold .pvw-footer{background:var(--tpl-tint);}
-  .inv-preview.tpl-bold .pvw-sig-lbl{color:var(--tpl-accent);}
-  .inv-preview.tpl-bold .pvw-bar{background:var(--tpl-accent);}
-
-  .inv-preview.tpl-compact{font-size:11px;}
-  .inv-preview.tpl-compact .pvw-top{padding:10px 14px 8px;}
-  .inv-preview.tpl-compact .pvw-circle{width:34px;height:34px;font-size:12px;}
-  .inv-preview.tpl-compact #pvw-co-name{font-size:13px;}
-  .inv-preview.tpl-compact #pvw-invoice-lbl{font-size:16px;color:var(--tpl-accent);}
-  .inv-preview.tpl-compact .pvw-divider{height:1.5px;background:var(--tpl-secondary);}
-  .inv-preview.tpl-compact .pvw-meta{background:var(--tpl-tint);padding:4px 14px;border-bottom:none;}
-  .inv-preview.tpl-compact .pvw-addr-hdr{background:var(--tpl-accent);font-size:8px;}
-  .inv-preview.tpl-compact .pvw-items-hdr{background:var(--tpl-secondary);font-size:8px;}
-  .inv-preview.tpl-compact .pvw-item-row{font-size:9px;}
-  .inv-preview.tpl-compact .pvw-tot-r.grand{background:var(--tpl-accent);}
-
-  .inv-preview.tpl-sidebar .pvw-top{background:var(--tpl-secondary);margin:0;display:flex;justify-content:space-between;align-items:flex-start;padding:18px 18px 20px;}
-  .inv-preview.tpl-sidebar .pvw-circle{background:var(--tpl-accent);border-radius:8px;width:42px;height:42px;}
-  .inv-preview.tpl-sidebar #pvw-co-name{color:#fff;font-size:14px;}
-  .inv-preview.tpl-sidebar #pvw-co-gst{color:#C7D2E5;}
-  .inv-preview.tpl-sidebar #pvw-invoice-lbl{color:#fff;font-size:26px;}
-  .inv-preview.tpl-sidebar .pvw-divider{background:var(--tpl-secondary);height:4px;}
-  .inv-preview.tpl-sidebar .pvw-meta{border-left:3px solid var(--tpl-accent);background:var(--tpl-tint);}
-  .inv-preview.tpl-sidebar .pvw-addr{border-left:3px solid var(--tpl-secondary);border-top:none;}
-  .inv-preview.tpl-sidebar .pvw-addr-hdr{background:var(--tpl-secondary);}
-  .inv-preview.tpl-sidebar .pvw-items-hdr{background:var(--tpl-secondary);}
-  .inv-preview.tpl-sidebar .pvw-tot-r.grand{background:var(--tpl-secondary);}
-  .inv-preview.tpl-sidebar .pvw-bar{background:var(--tpl-secondary);}
-
-  .inv-preview.tpl-boxed .pvw-top{background:var(--tpl-tint);border:1px solid var(--tpl-border);border-bottom:none;border-radius:7px 7px 0 0;margin:10px 10px 0;padding:16px;flex-direction:column;gap:4px;align-items:center;text-align:center;}
-  .inv-preview.tpl-boxed #pvw-co-name{font-size:16px;}
-  .inv-preview.tpl-boxed #pvw-invoice-lbl{color:var(--tpl-secondary);font-size:14px;letter-spacing:3px;}
-  .inv-preview.tpl-boxed .pvw-divider{background:var(--tpl-secondary);height:2px;margin:0 10px;}
-  .inv-preview.tpl-boxed .pvw-meta{border:1px solid var(--tpl-border);border-radius:5px;margin:10px 10px 0;}
-  .inv-preview.tpl-boxed .pvw-addr{margin:10px 10px 6px;}
-  .inv-preview.tpl-boxed .pvw-addr>div:first-child{border-right:1px solid #E2E8F0 !important;}
-  .inv-preview.tpl-boxed .pvw-addr-hdr{background:var(--tpl-secondary);}
-  .inv-preview.tpl-boxed .pvw-items{margin:0 10px 6px;}
-  .inv-preview.tpl-boxed .pvw-items-hdr{background:var(--tpl-tint);color:var(--tpl-secondary);border-bottom:2px solid var(--tpl-secondary);}
-  .inv-preview.tpl-boxed .pvw-tot-r.grand{background:var(--tpl-secondary);}
-  .inv-preview.tpl-boxed .pvw-sig-lbl{color:var(--tpl-secondary);}
-  .inv-preview.tpl-boxed .pvw-bar{background:var(--tpl-secondary);}
-
-  .inv-preview.tpl-statement .pvw-top{flex-direction:column;align-items:flex-start;gap:8px;padding:18px 18px 12px;}
-  .inv-preview.tpl-statement #pvw-invoice-lbl{font-size:44px;line-height:1;color:var(--tpl-text);letter-spacing:-1px;}
-  .inv-preview.tpl-statement .pvw-circle{display:none;}
-  .inv-preview.tpl-statement #pvw-co-name{color:var(--tpl-accent);letter-spacing:1px;}
-  .inv-preview.tpl-statement .pvw-divider{height:2.5px;background:var(--tpl-secondary);}
-  .inv-preview.tpl-statement .pvw-meta{display:flex;justify-content:space-between;align-items:center;}
-  .inv-preview.tpl-statement .pvw-addr{border:none;border-left:3px solid var(--tpl-accent);border-radius:0;}
-  .inv-preview.tpl-statement .pvw-addr-hdr{background:transparent;color:var(--tpl-accent);padding-left:0;}
-  .inv-preview.tpl-statement .pvw-addr-name{font-size:14px;}
-  .inv-preview.tpl-statement .pvw-items-hdr{background:transparent;color:var(--tpl-text);border-bottom:2.5px solid var(--tpl-secondary);}
-  .inv-preview.tpl-statement .pvw-tot-r.grand{background:var(--tpl-secondary);font-size:11px;}
-  .inv-preview.tpl-statement .pvw-bar{background:var(--tpl-secondary);}
+  /* Preview CSS lives in _invoice_doc_css.html, included after this block. */
 
   /* ── secondary chrome: status / payments — must not dominate the preview ── */
   .detail-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
@@ -225,6 +94,7 @@
     .idet-preview-wrap { padding: 10px; }
   }
 </style>
+{% include "invoices/_invoice_doc_css.html" %}
 {% endblock %}
 
 {% block content %}
@@ -270,108 +140,7 @@
        same .inv-preview/.pvw-* markup used by form.html (create) and edit.html
        (edit), populated read-only from the saved invoice via renderPreview(). -->
   <div class="idet-preview-wrap">
-    <div class="inv-preview" id="inv-preview">
-
-      <div class="pvw-sec" data-sec="header">
-        <div class="pvw-top">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="pvw-circle" id="pvw-logo-circle">Rs</div>
-            <div>
-              <div style="font-size:13px;font-weight:800" id="pvw-co-name">YOUR COMPANY</div>
-              <div style="font-size:9.5px;color:#64748B" id="pvw-co-gst"></div>
-            </div>
-          </div>
-          <div id="pvw-invoice-lbl" style="font-size:24px;font-weight:900;color:#C1121F">INVOICE</div>
-        </div>
-        <div class="pvw-divider"></div>
-      </div>
-
-      <div class="pvw-sec" data-sec="invoice_meta">
-        <div class="pvw-meta">
-          <div></div>
-          <div style="text-align:right">
-            <div style="display:flex;gap:6px;justify-content:flex-end;font-size:9.5px"><span class="pvw-mlbl">Invoice No.</span><span class="pvw-mval" id="pvw-inv-no">—</span></div>
-            <div style="display:flex;gap:6px;justify-content:flex-end;font-size:9.5px;margin-top:2px"><span class="pvw-mlbl">Invoice Date</span><span class="pvw-mval" id="pvw-date">—</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="bill_to">
-        <div class="pvw-addr">
-          <div style="border-right:1px solid #fff">
-            <div class="pvw-addr-hdr">FROM</div>
-            <div class="pvw-addr-body">
-              <div class="pvw-addr-name" id="pvw-from-name">—</div>
-              <div class="pvw-addr-muted" id="pvw-from-addr"></div>
-              <div class="pvw-addr-muted" id="pvw-from-gst"></div>
-            </div>
-          </div>
-          <div>
-            <div class="pvw-addr-hdr">BILL TO</div>
-            <div class="pvw-addr-body">
-              <div class="pvw-addr-name" id="pvw-to-name">—</div>
-              <div class="pvw-addr-muted" id="pvw-to-addr"></div>
-              <div class="pvw-addr-muted" id="pvw-to-email"></div>
-              <div class="pvw-addr-muted" id="pvw-to-gst"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="items_table">
-        <div class="pvw-items">
-          <div class="pvw-items-hdr" id="pvw-items-hdr">
-            <span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>SET%</span><span>AMOUNT</span>
-          </div>
-          <div id="pvw-items-body"></div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="totals">
-        <div class="pvw-tots">
-          <div class="pvw-tots-box">
-            <div class="pvw-tot-r"><span>Subtotal</span><span id="pvw-sub">₹0.00</span></div>
-            <div class="pvw-tot-r" id="pvw-row-cgst"><span id="pvw-cgst-lbl">CGST</span><span id="pvw-cgst">₹0.00</span></div>
-            <div class="pvw-tot-r" id="pvw-row-sgst"><span id="pvw-sgst-lbl">SGST</span><span id="pvw-sgst">₹0.00</span></div>
-            <div class="pvw-tot-r" id="pvw-row-igst" style="display:none"><span id="pvw-igst-lbl">IGST</span><span id="pvw-igst">₹0.00</span></div>
-            <div class="pvw-tot-r amber"><span>Total GST</span><span id="pvw-gst-total">₹0.00</span></div>
-            <div class="pvw-tot-r grand"><span>GRAND TOTAL</span><span id="pvw-grand">₹0.00</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="notes">
-        <div style="padding:8px 12px 2px;font-size:9px;color:#64748B;line-height:1.5">
-          <div style="font-weight:700;color:#0F172A;font-size:9.5px;margin-bottom:1px">Notes</div>
-          <div id="pvw-notes">Thank you for your business!</div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="terms">
-        <div style="padding:5px 12px 5px;font-size:9px;color:#94A3B8;line-height:1.5">
-          <div style="font-weight:700;color:#334155;font-size:9px;margin-bottom:1px;text-transform:uppercase;letter-spacing:.05em">Terms</div>
-          <div id="pvw-terms">Payment due within 30 days.</div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="signature">
-        <div style="text-align:center;padding:10px 12px 5px;font-size:9px">
-          <img id="pvw-sig-img" src="" alt="" style="max-height:40px;max-width:100px;display:none;margin-bottom:2px">
-          <div class="pvw-sig-line"></div>
-          <div class="pvw-sig-lbl" style="margin-top:2px">Authorized Signatory</div>
-          <div id="pvw-sig-name" style="font-size:9px;font-weight:700;color:#0F172A"></div>
-        </div>
-      </div>
-
-      <div class="pvw-sec" data-sec="footer">
-        <div style="display:flex;justify-content:center;padding:5px 8px">
-          <div class="pvw-thanks">Thank you for your business!</div>
-        </div>
-        <div style="padding:3px 8px 6px;font-size:8.5px;color:#94A3B8;text-align:center" id="pvw-dept"></div>
-        <div class="pvw-bar" id="pvw-bar">Your Company Name</div>
-      </div>
-
-    </div><!-- /inv-preview -->
+    {% include "invoices/_invoice_doc.html" %}<!-- /inv-preview -->
   </div><!-- /idet-preview-wrap -->
 
   <!-- SECONDARY: status + payments — functional chrome, kept small below the preview -->
@@ -476,7 +245,8 @@ const INVOICE_ID = '{{ invoice_id }}';
 let invoiceData  = null;
 let pendingStatus = null;
 const fmt     = (n) => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
-const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+const fmtDate = (d) => { const x = new Date(d), p = n => String(n).padStart(2,'0');
+  return `${p(x.getDate())}-${p(x.getMonth()+1)}-${x.getFullYear()}`; };
 const fmtRs   = (n) => '₹' + Number(n||0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
 const _t = (id,v) => { const el=document.getElementById(id); if (el) el.textContent = v||''; };
 
@@ -633,7 +403,7 @@ async function renderPreview(inv) {
     isRow('pvw-row-igst', false);
   }
   _t('pvw-sub',       fmtRs(sub));
-  _t('pvw-gst-total', fmtRs(tax));
+  _t('pvw-gsttot', fmtRs(tax));
   _t('pvw-grand',     fmtRs(inv.grand_total));
 
   _t('pvw-notes', inv.notes || 'Thank you for your business!');

@@ -51,6 +51,7 @@ class InvoiceSerializer(serializers.Serializer):
     signature_image   = serializers.CharField(default='', allow_blank=True, required=False)
     signatory_name    = serializers.CharField(default='', allow_blank=True, required=False)
     signature_company = serializers.CharField(default='', allow_blank=True, required=False)
+    signature_datetime = serializers.CharField(default='', allow_blank=True, required=False)
     department        = serializers.CharField(default='', allow_blank=True, required=False)
     status         = serializers.CharField(read_only=True)
     subtotal       = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
@@ -162,6 +163,7 @@ class InvoiceSerializer(serializers.Serializer):
             signature_image=validated_data.get('signature_image', ''),
             signatory_name=validated_data.get('signatory_name', ''),
             signature_company=validated_data.get('signature_company', ''),
+            signature_datetime=validated_data.get('signature_datetime', ''),
             department=validated_data.get('department', ''),
             created_by=user_id,
         )
@@ -184,6 +186,7 @@ class InvoiceSerializer(serializers.Serializer):
 
         for field in ['invoice_date', 'due_date', 'notes', 'terms', 'currency', 'template_color', 'template_style',
                       'layout_config', 'signature_image', 'signatory_name', 'signature_company',
+                      'signature_datetime',
                       'department',
                       'customer_phone', 'customer_pan', 'customer_cin', 'customer_recipient',
                       'cgst_rate', 'sgst_rate', 'igst_rate']:
@@ -249,6 +252,7 @@ class InvoiceDetailSerializer(serializers.Serializer):
     signature_image = serializers.CharField()
     signatory_name = serializers.CharField()
     signature_company = serializers.CharField()
+    signature_datetime = serializers.CharField()
     created_at = serializers.DateTimeField()
 
     def get_items(self, obj):

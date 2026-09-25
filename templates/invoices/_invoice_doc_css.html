@@ -103,6 +103,10 @@ live in _invoice_doc_print.html.
 
 .pvw-sig-line{border-top:1px solid var(--tpl-text);width:70px;margin:14px auto 2px;}
 
+/* "Signed on <date>, <time>" — mirrors _signature_sec's SIGDT row in the PDF. */
+.pvw-sig-dt{font-size:6.5px;color:var(--tpl-muted);margin-top:1px;text-align:center;}
+.pvw-sig-dt:empty{display:none;}
+
 /* ── Template preview skins ──
    Structural/layout rules only below (spacing, flex direction, font-size,
    display). Colors come from the --tpl-* custom properties set in JS

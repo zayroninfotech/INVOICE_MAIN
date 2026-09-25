@@ -208,6 +208,7 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'hide_terms': not (getattr(invoice, 'terms', '') or '').strip(),
         'sig_name': s.get('sig_name') or '',
         'sig_url': s.get('sig_path') or '',
+        'sig_dt': (f"Signed on {s['sig_datetime']}" if s.get('sig_datetime') else ''),
         'dept': '' if staffing else (s.get('department') or ''),
 
         'foot_thanks': (s.get('thankyou_msg') or '') if staffing else '',

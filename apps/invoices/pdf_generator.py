@@ -332,6 +332,7 @@ def _merge_seller(business_profile, seller, invoice=None):
             'sig_name':       getattr(inv, 'signatory_name', '') or '',
             'sig_company':    getattr(inv, 'signature_company', '') or '',
             'sig_path':       getattr(inv, 'signature_image', '') or '',
+            'sig_datetime':   getattr(inv, 'signature_datetime', '') or '',
         })
         # Only advertise per-component rates when the invoice actually carries
         # them. Legacy invoices store 0, and setting the keys would flip

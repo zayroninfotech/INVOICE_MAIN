@@ -910,7 +910,7 @@ canvas#sig-canvas{touch-action:none;}
 
             <label class="fi-lbl">Signatory Name</label>
 
-            <input class="fi" id="sig-name" placeholder="e.g. Authorized Signatory" oninput="updatePvw()">
+            <input class="fi" id="sig-name" placeholder="e.g. Authorized Signatory" oninput="window._sigAt = this.value.trim() ? (window._sigAt || new Date()) : null; updatePvw()">
 
           </div>
 
@@ -1545,6 +1545,12 @@ function updatePvw() {
 
   _t('pvw-sig-name', _val('sig-name'));
 
+  // Stamp the moment the invoice was signed. Only meaningful once something
+  // has actually been signed, so it clears with the signature.
+  const signed = !!(getSignatureImageForPayload() || _val('sig-name'));
+  if (!signed) window._sigAt = null;
+  _t('pvw-sig-dt', window._sigAt ? 'Signed on ' + fmtSigAt(window._sigAt) : '');
+
   _t('pvw-bar', _val('sig-company') || (sample ? PVW_SAMPLE_COMPANY : (_val('from-name') || 'Your Company Name')));
 
   // Staffing replaces the solid bottom bar with the reference document's
@@ -1573,6 +1579,16 @@ function updatePvw() {
 }
 
 
+
+// DD-MM-YYYY to match fmtDate, plus the time — the PDF prints this string verbatim.
+function fmtSigAt(d) {
+  const p = n => String(n).padStart(2, '0');
+  // en-IN yields a lowercase meridiem; uppercase it so the stamp is stable and
+  // reads as a document stamp rather than prose.
+  const time = d.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit', hour12: true});
+  return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}, ` +
+         time.replace(/\b(am|pm)\b/i, m => m.toUpperCase());
+}
 
 function getSignatureImageForPayload() {
   const tab = document.querySelector('.sig-tab.active')?.id?.replace('tab-','');
@@ -1748,7 +1764,7 @@ if (canvas) {
 
   canvas.addEventListener('mousemove',  e => { if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
 
-  canvas.addEventListener('mouseup',    () => { drawing=false; updatePvw(); });
+  canvas.addEventListener('mouseup',    () => { drawing=false; window._sigAt = new Date(); updatePvw(); });
 
   canvas.addEventListener('mouseleave', () => { drawing=false; });
 
@@ -1756,13 +1772,13 @@ if (canvas) {
 
   canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0F172A'; ctx.lineTo(p.x,p.y); ctx.stroke(); });
 
-  canvas.addEventListener('touchend',   () => { drawing=false; updatePvw(); });
+  canvas.addEventListener('touchend',   () => { drawing=false; window._sigAt = new Date(); updatePvw(); });
 
 }
 
 function clearCanvas() {
 
-  if (ctx) { ctx.clearRect(0,0,canvas.width,canvas.height); updatePvw(); }
+  if (ctx) { ctx.clearRect(0,0,canvas.width,canvas.height); window._sigAt = null; updatePvw(); }
 
 }
 
@@ -1797,6 +1813,8 @@ function onSigUpload(inp) {
     const img = document.getElementById('sig-preview-img');
 
     img.src = e.target.result; img.style.display = 'block';
+
+    window._sigAt = new Date();
 
     updatePvw();
 
@@ -2783,6 +2801,7 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     },
 
     signature_image:   getSignatureImageForPayload(),
+    signature_datetime: window._sigAt ? fmtSigAt(window._sigAt) : '',
     signatory_name:    document.getElementById('sig-name')?.value || '',
     signature_company: document.getElementById('sig-company')?.value || '',
 
