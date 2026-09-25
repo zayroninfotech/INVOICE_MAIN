@@ -80,10 +80,11 @@ context both collapse to nothing and the preview behaves exactly as before.
         <div class="pvw-addr-body">
           <div class="pvw-addr-name" id="pvw-to-name">{{ to_name|default:"—" }}</div>
           <div class="pvw-addr-attn" id="pvw-to-recipient">{{ to_recipient|default:"" }}</div>
-          {# These three are inline so they read as one comma-separated run; the
-             comment tails close the newline gaps that would otherwise render as
-             a space in front of each comma. #}
-          <div class="pvw-addr-muted pvw-addr-flow" id="pvw-to-addr">{{ to_addr|default:"" }}</div><!--
+          <!-- Address, email and phone are inline so they read as one comma-
+               separated run (.pvw-addr-flow). The comment tails are load-bearing:
+               they close the newline gaps that would otherwise render as a space
+               in front of each comma. --><div
+            class="pvw-addr-muted pvw-addr-flow" id="pvw-to-addr">{{ to_addr|default:"" }}</div><!--
        --><div class="pvw-addr-muted pvw-addr-flow" id="pvw-to-email">{{ to_email|default:"" }}</div><!--
        --><div class="pvw-addr-muted pvw-addr-flow" id="pvw-to-phone">{{ to_phone|default:"" }}</div>
           <div class="pvw-addr-ids">
