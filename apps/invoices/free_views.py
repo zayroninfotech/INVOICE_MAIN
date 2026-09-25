@@ -96,6 +96,14 @@ class FreeInvoiceView(APIView):
     permission_classes = [AllowAny]
     parser_classes     = [MultiPartParser, FormParser, JSONParser]
 
+    def get(self, request):
+        """How many of this device's free invoices are used (for the badge)."""
+        ids = _device_ids(request)
+        dv = (request.query_params.get('device_id') or '').strip().lower()
+        if _DEV_RE.match(dv) and dv not in ids:
+            ids.append(dv)
+        return success({'free_used': _device_used(ids), 'free_limit': FREE_DEVICE_LIMIT})
+
     def post(self, request):
         dev_ids = _device_ids(request) or [uuid.uuid4().hex]
         used = _device_used(dev_ids)

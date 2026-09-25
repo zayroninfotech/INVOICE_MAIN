@@ -1237,7 +1237,7 @@
         <div>
           <div style="display:inline-flex;align-items:center;gap:7px;background:#C1121F;border-radius:100px;padding:5px 14px;margin-bottom:14px;box-shadow:0 2px 12px rgba(193,18,31,.35)">
             <i class="bi bi-lightning-charge-fill" style="color:#fff;font-size:.68rem"></i>
-            <span style="color:#fff;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em">Free — No account needed</span>
+            <span id="free-badge-text" style="color:#fff;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em">Free — No account needed · 5 invoices per device</span>
           </div>
         </div>
         <button onclick="hideFreeForm()" style="flex-shrink:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#94A3B8;cursor:pointer;font-size:.78rem;padding:7px 13px;display:flex;align-items:center;gap:6px;transition:background .15s,color .15s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#ECEEF4'" onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='#94A3B8'"><i class="bi bi-x-lg"></i> Close</button>
@@ -2661,6 +2661,11 @@ function validateFreeForm(){
 function freeDeviceId(){let id='';try{id=localStorage.getItem('zi_dev')||'';}catch(e){}
   if(!/^[a-f0-9]{32}$/.test(id)){const a=new Uint8Array(16);crypto.getRandomValues(a);id=[...a].map(b=>b.toString(16).padStart(2,'0')).join('');try{localStorage.setItem('zi_dev',id);}catch(e){}}
   return id;}
+// Badge above the generator: how many of the 5 free invoices this device has left.
+function setFreeBadge(used,limit){const el=document.getElementById('free-badge-text');if(!el)return;const left=Math.max(0,limit-used);
+  el.textContent=left>0?('Free — No account needed · '+left+' of '+limit+' free invoices left'):('Free limit reached · Sign up or log in to continue');}
+async function loadFreeUsage(){try{const r=await fetch('/api/invoices/free/?device_id='+freeDeviceId(),{credentials:'same-origin'});const d=await r.json();if(d.success)setFreeBadge(d.data.free_used,d.data.free_limit);}catch(e){}}
+document.addEventListener('DOMContentLoaded',loadFreeUsage);
 async function createFreeInvoice(){
   if(!validateFreeForm())return;
   _freeInvoiceCount = parseInt(sessionStorage.getItem('zi_free_count')||'0');
@@ -2683,7 +2688,7 @@ async function createFreeInvoice(){
   try{
     const r=await fetch('/api/invoices/free/',{method:'POST',body:fd});const d=await r.json();
     if(d.success){showFreeResult(d.data);}else{
-      if(r.status===403&&((d.errors&&d.errors.signup_required)||(d.data&&d.data.signup_required))){sessionStorage.setItem('zi_free_used','1');errEl.textContent=d.message||'Free limit reached. Please sign up or log in to continue.';errEl.style.display='block';if(window.toast)window.toast(d.message,'error');openModal('reg-modal');btn.disabled=false;btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';return;}
+      if(r.status===403&&((d.errors&&d.errors.signup_required)||(d.data&&d.data.signup_required))){setFreeBadge(5,5);sessionStorage.setItem('zi_free_used','1');errEl.textContent=d.message||'Free limit reached. Please sign up or log in to continue.';errEl.style.display='block';if(window.toast)window.toast(d.message,'error');openModal('reg-modal');btn.disabled=false;btn.innerHTML='<i class="bi bi-file-earmark-pdf-fill"></i> Create &amp; Download PDF';return;}
       else if(r.status===409){errEl.textContent=d.message||'Duplicate invoice number.';const el=document.getElementById('fi-inv-number');if(el){el.style.borderColor='#EF4444';el.focus();el.addEventListener('input',()=>{el.style.borderColor='';},{once:true});}}
       else{errEl.textContent=d.message||'Failed to create invoice.';}
       errEl.style.display='block';
@@ -2702,6 +2707,7 @@ function showFreeResult(data){
   document.getElementById('res-customer').textContent=data.customer_name+' · '+data.customer_email;
   document.getElementById('res-total').textContent=fmt(data.grand_total);
   document.getElementById('res-total2').textContent=fmt(data.grand_total);
+  if(data.free_limit){setFreeBadge(data.free_used,data.free_limit);}
   if(data.free_limit){const left=Math.max(0,data.free_limit-data.free_used);let u=document.getElementById('res-free-left');if(!u){u=document.createElement('div');u.id='res-free-left';u.style.cssText='margin-top:6px;font-size:.8rem;font-weight:600;color:#B45309';document.getElementById('res-customer').after(u);}u.textContent=left>0?(data.free_used+' of '+data.free_limit+' free invoices used on this device · '+left+' left'):('All '+data.free_limit+' free invoices used on this device — sign up to keep creating invoices.');}
   const dlBtn=document.getElementById('res-pdf-btn');
   dlBtn.href=pdfUrl;
