@@ -68,22 +68,26 @@ context both collapse to nothing and the preview behaves exactly as before.
         <div class="pvw-addr-body">
           <div class="pvw-addr-name" id="pvw-from-name">{{ from_name|default:"—" }}</div>
           <div class="pvw-addr-muted" id="pvw-from-addr">{{ from_addr|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-from-cin">{{ from_cin|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-from-gst">{{ from_gst|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-from-pan">{{ from_pan|default:"" }}</div>
+          <div class="pvw-addr-ids">
+            <div class="pvw-addr-id" id="pvw-from-cin">{{ from_cin|default:"" }}</div>
+            <div class="pvw-addr-id" id="pvw-from-gst">{{ from_gst|default:"" }}</div>
+            <div class="pvw-addr-id" id="pvw-from-pan">{{ from_pan|default:"" }}</div>
+          </div>
         </div>
       </div>
       <div>
         <div class="pvw-addr-hdr">BILL TO</div>
         <div class="pvw-addr-body">
           <div class="pvw-addr-name" id="pvw-to-name">{{ to_name|default:"—" }}</div>
-          <div class="pvw-addr-muted" id="pvw-to-recipient">{{ to_recipient|default:"" }}</div>
+          <div class="pvw-addr-attn" id="pvw-to-recipient">{{ to_recipient|default:"" }}</div>
           <div class="pvw-addr-muted" id="pvw-to-addr">{{ to_addr|default:"" }}</div>
           <div class="pvw-addr-muted" id="pvw-to-email">{{ to_email|default:"" }}</div>
           <div class="pvw-addr-muted" id="pvw-to-phone">{{ to_phone|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-to-cin">{{ to_cin|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-to-gst">{{ to_gst|default:"" }}</div>
-          <div class="pvw-addr-muted" id="pvw-to-pan">{{ to_pan|default:"" }}</div>
+          <div class="pvw-addr-ids">
+            <div class="pvw-addr-id" id="pvw-to-cin">{{ to_cin|default:"" }}</div>
+            <div class="pvw-addr-id" id="pvw-to-gst">{{ to_gst|default:"" }}</div>
+            <div class="pvw-addr-id" id="pvw-to-pan">{{ to_pan|default:"" }}</div>
+          </div>
         </div>
       </div>
     </div>

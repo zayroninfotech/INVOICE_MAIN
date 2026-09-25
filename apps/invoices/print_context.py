@@ -171,7 +171,7 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'from_pan': (f"PAN: {pan}" if pan and staffing else ''),
 
         'to_name': invoice.customer_name or '—',
-        'to_recipient': s.get('recipient') or '',
+        'to_recipient': (f"Attn: {s['recipient']}" if s.get('recipient') else ''),
         'to_addr': getattr(invoice, 'customer_address', '') or '',
         'to_email': invoice.customer_email or '',
         'to_phone': s.get('customer_phone') or '',

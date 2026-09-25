@@ -40,11 +40,24 @@ live in _invoice_doc_print.html.
 
 .pvw-addr-hdr{background:var(--tpl-accent);color:#fff;font-weight:700;font-size:7.5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.06em;}
 
-.pvw-addr-body{padding:6px 7px;font-size:8px;line-height:1.6;min-height:46px;}
+.pvw-addr-body{padding:7px 9px 8px;font-size:8px;line-height:1.6;min-height:46px;}
 
-.pvw-addr-name{font-weight:700;font-size:8.5px;margin-bottom:1px;}
+.pvw-addr-name{font-weight:700;font-size:9px;letter-spacing:.01em;margin-bottom:2px;}
 
-.pvw-addr-muted{color:#64748B;}
+.pvw-addr-muted{color:#475569;}
+
+/* Contact person sits between the party name and the address; the prefix is
+   what stops it reading as another anonymous address line. */
+.pvw-addr-attn{color:#334155;font-weight:600;}
+.pvw-addr-attn:empty{display:none;}
+
+/* Statutory identifiers (CIN / GSTIN / PAN) are reference data, not contact
+   detail, so they get their own tier: hairline rule, tighter leading, dimmer.
+   :has() keeps the rule off entirely when the party supplied none. */
+.pvw-addr-ids{margin-top:4px;line-height:1.5;}
+.pvw-addr-ids:has(.pvw-addr-id:not(:empty)){padding-top:4px;border-top:1px solid var(--tpl-border);}
+.pvw-addr-id{color:#64748B;font-size:7.5px;}
+.pvw-addr-id:empty{display:none;}
 
 .pvw-items{margin:0 8px 5px;border:1px solid var(--tpl-border);border-radius:4px;overflow:hidden;}
 

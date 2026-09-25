@@ -1363,7 +1363,7 @@ function updatePvw() {
   // Recipient / phone / CIN / PAN are collected by the form and printed in the
   // PDF's Bill-to block, but had no preview rows — so four fields you can type
   // were invisible here. Blank values render as empty divs and take no space.
-  _t('pvw-to-recipient', _val('cust-contact'));
+  _t('pvw-to-recipient', _val('cust-contact') ? 'Attn: ' + _val('cust-contact') : '');
 
   _t('pvw-to-phone', _val('cust-phone'));
 

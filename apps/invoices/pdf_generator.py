@@ -228,26 +228,33 @@ def _addr_bar_block(ctx, bar_bg, bar_text=None, name_color=DARK, body_color=MUTE
     `.pvw-addr-body`. Used by templates whose header_style calls for a solid
     accent bar rather than a plain label + rule line."""
     bar_text = bar_text or WHITE
-    from_lines, to_lines = _party_blocks(ctx)
+    (from_main, from_ids), (to_main, to_ids) = _party_tiers(ctx)
     lbl_st = _style('ABL', fontSize=7.5, fontName=FONT_B, textColor=bar_text,
                     leading=10, alignment=TA_LEFT)
     nm_st  = _style('ABN', fontSize=9.5, fontName=FONT_B, textColor=name_color, leading=13)
     bd_st  = _style('ABB', fontSize=8.5, textColor=body_color, leading=12)
+    id_st  = _style('ABI', fontSize=7.5, textColor=body_color, leading=10)
 
-    def body(lines):
+    def body(main, ids):
         out, first = [], True
-        for ln in lines:
+        for ln in main:
             if not ln:
                 continue
             out.append(Paragraph(ln, nm_st if first else bd_st))
             first = False
         if first:
             out.append(Paragraph('—', bd_st))
+        ids = [ln for ln in ids if ln]
+        if ids:
+            out.append(Spacer(1, 3))
+            out.append(HRFlowable(width='100%', thickness=0.5, color=border,
+                                  spaceAfter=3))
+            out.extend(Paragraph(ln, id_st) for ln in ids)
         return out
 
     rows = [
         [Paragraph('FROM', lbl_st), Paragraph('BILL TO', lbl_st)],
-        [body(from_lines), body(to_lines)],
+        [body(from_main, from_ids), body(to_main, to_ids)],
     ]
     tbl = Table(rows, colWidths=[ctx['CW'] * 0.5, ctx['CW'] * 0.5])
     tbl.setStyle(TableStyle([
@@ -755,8 +762,14 @@ def _fl(ctx, key, default):
     return ctx['cfg'].get('field_labels', {}).get(key, default)
 
 
-def _party_blocks(ctx, from_first=True):
-    """Return (from_lines, to_lines) lists filtered by section settings."""
+def _party_tiers(ctx):
+    """Return ((from_main, from_ids), (to_main, to_ids)).
+
+    Identity and contact lines are kept apart from statutory identifiers
+    (GSTIN / PAN / CIN) so a layout can render them as two visual tiers — the
+    IDs are reference data, not contact detail, and stacking them unlabelled
+    with the address makes both unreadable.
+    """
     invoice = ctx['inv']
     ss = ctx['cfg'].get('section_settings', {})
     show_header_gst = ss.get('header', {}).get('show_gstin', True)
@@ -768,30 +781,44 @@ def _party_blocks(ctx, from_first=True):
 
     s = ctx.get('seller') or {}
 
-    from_lines = [ctx['s_name'], ctx['s_addr'], ctx['s_email'], ctx['s_phone']]
+    from_main = [ctx['s_name'], ctx['s_addr'], ctx['s_email'], ctx['s_phone']]
+    from_ids = []
     # GST prints once: the header renders it when show_gstin is on, so the
     # FROM block only carries it as the fallback when that toggle is off.
     if ctx['s_gst'] and not show_header_gst:
-        from_lines.append(f"{fl.get('fi-from-gst', 'GST')}: {ctx['s_gst']}")
+        from_ids.append(f"{fl.get('fi-from-gst', 'GST')}: {ctx['s_gst']}")
     # Collected by the no-login generator and shown in its live preview.
     if s.get('cin'):
-        from_lines.append(f"{fl.get('fi-from-cin', 'CIN')}: {s['cin']}")
+        from_ids.append(f"{fl.get('fi-from-cin', 'CIN')}: {s['cin']}")
     if s.get('pan'):
-        from_lines.append(f"{fl.get('fi-from-pan', 'PAN')}: {s['pan']}")
+        from_ids.append(f"{fl.get('fi-from-pan', 'PAN')}: {s['pan']}")
 
-    to_lines = [invoice.customer_name,
-                getattr(invoice, 'customer_address', '') or '',
+    to_main = [invoice.customer_name]
+    if s.get('customer_recipient'):
+        to_main.append(f"Attn: {s['customer_recipient']}")
+    to_main += [getattr(invoice, 'customer_address', '') or '',
                 invoice.customer_email]
     if s.get('customer_phone'):
-        to_lines.append(s['customer_phone'])
-    if invoice.customer_gst and show_bill_gst:
-        to_lines.append(f"{fl.get('fi-cust-gst', 'GST')}: {invoice.customer_gst}")
-    if s.get('customer_pan'):
-        to_lines.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
+        to_main.append(s['customer_phone'])
     ship = (s.get('ship_address') or '').strip()
     if ship and ship != (getattr(invoice, 'customer_address', '') or '').strip():
-        to_lines.append(f"Ship to: {ship}")
-    return from_lines, to_lines
+        to_main.append(f"Ship to: {ship}")
+
+    to_ids = []
+    if invoice.customer_gst and show_bill_gst:
+        to_ids.append(f"{fl.get('fi-cust-gst', 'GST')}: {invoice.customer_gst}")
+    if s.get('customer_pan'):
+        to_ids.append(f"{fl.get('fi-cust-pan', 'PAN')}: {s['customer_pan']}")
+    if s.get('customer_cin'):
+        to_ids.append(f"{fl.get('fi-cust-cin', 'CIN')}: {s['customer_cin']}")
+    return (from_main, from_ids), (to_main, to_ids)
+
+
+def _party_blocks(ctx, from_first=True):
+    """Return (from_lines, to_lines) as flat lists, for layouts that render the
+    party block as a single undifferentiated stack."""
+    (from_main, from_ids), (to_main, to_ids) = _party_tiers(ctx)
+    return from_main + from_ids, to_main + to_ids
 
 
 def _two_col_parties(ctx, lbl_color=MUTED, head_color=DARK, body_color=MUTED,
