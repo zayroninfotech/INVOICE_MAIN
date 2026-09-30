@@ -162,6 +162,11 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
 
         'from_name': co_name,
         'from_addr': '' if staffing else (s.get('address') or ''),
+        # FROM contact run — same data the left form panel collects; mirrors the
+        # BILL TO run so typed email/phone/website show in preview AND print/PDF.
+        'from_email': s.get('email') or '',
+        'from_phone': s.get('phone') or '',
+        'from_website': s.get('website') or '',
         # Identifiers print once: staffing's masthead carries CIN so its FROM
         # block keeps the GSTIN; every other template shows GSTIN in the header
         # and leaves it out of the FROM block.

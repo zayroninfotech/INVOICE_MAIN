@@ -67,6 +67,11 @@ context both collapse to nothing and the preview behaves exactly as before.
         <div class="pvw-addr-body">
           <div class="pvw-addr-name" id="pvw-from-name">{{ from_name|default:"—" }}</div>
           <div class="pvw-addr-muted" id="pvw-from-addr">{{ from_addr|default:"" }}</div>
+          <!-- FROM contact run — mirrors BILL TO: email + phone render as one
+               comma-separated line when present, blank divs take no space. -->
+          <div class="pvw-addr-muted pvw-addr-flow" id="pvw-from-email">{{ from_email|default:"" }}</div><!--
+       --><div class="pvw-addr-muted pvw-addr-flow" id="pvw-from-phone">{{ from_phone|default:"" }}</div><!--
+       --><div class="pvw-addr-muted pvw-addr-flow" id="pvw-from-website">{{ from_website|default:"" }}</div>
           <div class="pvw-addr-ids">
             <div class="pvw-addr-id" id="pvw-from-cin">{{ from_cin|default:"" }}</div>
             <div class="pvw-addr-id" id="pvw-from-gst">{{ from_gst|default:"" }}</div>

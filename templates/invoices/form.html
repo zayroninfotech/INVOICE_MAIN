@@ -1386,6 +1386,12 @@ function updatePvw() {
 
   _t('pvw-from-pan', staffing && _val('from-pan') ? 'PAN: ' + _val('from-pan') : '');
 
+  // FROM contact run (email / phone / website) — mirrors BILL TO: typed values
+  // show live in the preview; blank values render as empty divs, no space taken.
+  _t('pvw-from-email',   _val('from-email'));
+  _t('pvw-from-phone',   _val('from-phone'));
+  _t('pvw-from-website', _val('from-website'));
+
   // BILL TO — required fields
 
   const custName = _val('cust-name');
@@ -1887,6 +1893,10 @@ async function loadProfile() {
     _t('pvw-from-addr', document.getElementById('from-address').value);
 
     _t('pvw-from-gst',  u.gst ? 'GSTIN: ' + u.gst : '');
+
+    _t('pvw-from-email',   document.getElementById('from-email').value);
+    _t('pvw-from-phone',   document.getElementById('from-phone').value);
+    _t('pvw-from-website', document.getElementById('from-website').value);
 
     _t('pvw-bar',       u.company_name || uname || 'Your Company Name');
 
