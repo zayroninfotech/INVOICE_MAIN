@@ -21,11 +21,12 @@
       --ember-border:  #F0C4C8;
       --ember-subtle:  rgba(193,18,31,.08);
 
-      /* Surfaces — warm-tinted for cohesion */
-      --bg:             #F9F8F7;
+      /* Surfaces — Img1: white cards on light grey canvas */
+      --bg:             #F1F1F3;
       --surface:        #FFFFFF;
       --surface-raised: #FFFFFF;
       --surface-subtle: #F5F4F2;
+      --surface-sunken: #ECECEE;
 
       /* Dark surfaces — premium charcoal */
       --dark-surface:      #131416;
@@ -40,14 +41,17 @@
       --text-primary:   #131416;
       --text-secondary: #4A4A4A;
       --text-muted:     #717585;
+      /* Skill-badge + step-dot scale used on invoice detail / editor */
+      --skill-ico:      30px;
 
-      /* Sidebar — light white theme */
-      --sidebar-bg:         #FFFFFF;
-      --sidebar-border:     #E8E7E5;
+      /* Sidebar — Img1: soft peach tint, red active pill, thin section rules */
+      --sidebar-bg:         #FFF8F7;
+      --sidebar-border:     #EFE9E7;
       --sidebar-hover:      rgba(193,18,31,.06);
-      --sidebar-active-bg:  rgba(193,18,31,.08);
+      --sidebar-active-bg:  #FADADD;
+      --sidebar-active-text:#C1121F;
       --sidebar-text:       #3A3A3A;
-      --sidebar-text-dim:   #6B6B6B;
+      --sidebar-text-dim:   #8A8A8E;
 
       /* Shape */
       --radius-sm: 6px;
@@ -314,12 +318,12 @@
     }
     .nav-link-main:hover .nav-icon-box-box { background: rgba(193,18,31,.1); color: var(--ember); }
     .nav-link-main:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; }
-    .nav-link-main.active { background: rgba(193,18,31,.08); color: var(--ember); font-weight: 600; }
-    .nav-link-main.active .nav-icon-box-box { background: rgba(193,18,31,.12); color: var(--ember); }
+    .nav-link-main.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 700; }
+    .nav-link-main.active .nav-icon-box-box { background: var(--ember); color: #fff; }
     .nav-link-main.active::before {
       content: ''; position: absolute;
-      left: 0; top: 7px; bottom: 7px; width: 3px;
-      border-radius: 0 3px 3px 0; background: var(--ember);
+      left: -10px; top: 6px; bottom: 6px; width: 4px;
+      border-radius: 0 4px 4px 0; background: var(--ember);
     }
 
     /* ── Icon box ── */
@@ -370,10 +374,10 @@
     }
 
     .topbar {
-      height: var(--topbar-h);
+      height: 64px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 0 24px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -384,25 +388,35 @@
     .topbar-left { display: flex; align-items: center; gap: 10px; }
     .page-back-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px;
+      width: 38px; height: 38px;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 50%;
       background: var(--surface);
       color: var(--text-secondary);
-      font-size: .95rem;
+      font-size: 1rem;
       flex-shrink: 0;
       text-decoration: none;
       transition: background .15s, color .15s;
     }
     .page-back-btn:hover { background: var(--surface-subtle); color: var(--text-primary); }
     .page-heading {
-      font-size: .95rem;
-      font-weight: 600;
+      font-size: 1.05rem;
+      font-weight: 800;
       color: var(--text-primary);
       margin: 0;
       letter-spacing: -.01em;
     }
+    .page-sub {
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin: 1px 0 0;
+    }
     .topbar-right { display: flex; align-items: center; gap: 10px; }
+    #theme-toggle {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--surface);
+    }
 
     .user-pill {
       display: flex;
@@ -420,14 +434,15 @@
       background: var(--surface-raised);
     }
     .user-avatar {
-      width: 28px; height: 28px;
+      width: 32px; height: 32px;
       border-radius: 50%;
-      background: var(--orange);
+      background: var(--ember);
       display: flex; align-items: center; justify-content: center;
       color: #fff;
-      font-size: .7rem;
+      font-size: .8rem;
       font-weight: 700;
       letter-spacing: -.01em;
+      flex-shrink: 0;
     }
     .user-info .user-name {
       font-size: .78rem;
@@ -441,6 +456,15 @@
       line-height: 1.2;
     }
 
+    .notif-dot {
+      position: absolute; top: 8px; right: 9px;
+      min-width: 15px; height: 15px; border-radius: 99px;
+      background: var(--ember); color: #fff;
+      font-size: .58rem; font-weight: 800;
+      display: none; align-items: center; justify-content: center;
+      padding: 0 3px; border: 2px solid var(--surface);
+    }
+    .notif-dot.show { display: inline-flex; }
     .user-dropdown {
       position: absolute;
       top: calc(100% + 6px);
@@ -543,23 +567,25 @@
     .ms-table tbody tr:hover { background: var(--surface-subtle); }
     .ms-table tbody tr:last-child td { border-bottom: none; }
 
-    /* ─────────────────────── BADGES ──────────────────────── */
+    /* ─────────────────────── BADGES — Img1 pill chips ──────────────────────── */
     .badge-ms {
       display: inline-flex;
       align-items: center;
-      padding: 2px 9px;
+      gap: 4px;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: .7rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: .01em;
+      border: 1px solid transparent;
     }
-    .badge-Draft     { background: #F1F5F9; color: #64748B; }
+    .badge-Draft     { background: #EEF2F7; color: #64748B; border-color:#E2E8F0; }
     /* Payment (derived) and customer-approval chips; tinted from theme tokens so they read in dark mode too. */
     .pay-Paid, .apv-Approved { background: color-mix(in srgb, var(--color-success) 14%, transparent); color: var(--color-success); }
     .pay-Cancelled           { background: var(--surface-subtle); color: var(--text-muted); }
-    .pay-Due                 { background: color-mix(in srgb, #D97706 14%, transparent); color: #B45309; }
+    .pay-Due                 { background: #FFFBEB; color: #B45309; border-color:#FDE68A; }
     .apv-Disapproved         { background: color-mix(in srgb, var(--color-danger) 14%, transparent); color: var(--color-danger); }
-    .apv-InProcess           { background: var(--surface-subtle); color: var(--text-secondary); }
+    .apv-InProcess           { background: #F4F4F5; color: #52525B; border-color:#E4E4E7; }
     .badge-Sent      { background: #FFF4E6; color: #C2410C; }
     .badge-Paid      { background: #DCFCE7; color: #15803D; }
     .badge-Partial   { background: #FEF9C3; color: #854D0E; }
@@ -568,6 +594,15 @@
     .badge-superadmin { background: linear-gradient(135deg,#3A3A3A,#000000); color:#fff; }
     .badge-admin     { background: linear-gradient(135deg,#E23A4E,#8C0F1B); color:#fff; }
     .badge-user      { background: #F1F5F9; color: #64748B; }
+
+    /* ── Skill badges — Img1 preview corner: round white dot w/ red glyph ── */
+    .skill-badge {
+      width: var(--skill-ico); height: var(--skill-ico); border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ember); font-size: .8rem; flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+    }
 
     /* Bootstrap badge compatibility */
     .badge.badge-Draft     { background:#F1F5F9!important;color:#64748B!important; }
@@ -601,18 +636,19 @@
       color: var(--orange-dark);
     }
 
-    /* Icon buttons */
+    /* Icon buttons — Img1: round white dots */
     .btn-icon {
-      width: 30px; height: 30px;
+      width: 38px; height: 38px;
       display: inline-flex; align-items: center; justify-content: center;
-      border-radius: var(--radius-sm);
+      border-radius: 50%;
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text-muted);
       transition: all .12s;
       cursor: pointer;
-      font-size: .83rem;
+      font-size: .95rem;
       text-decoration: none;
+      position: relative;
     }
     .btn-icon:hover { background: var(--surface-subtle); color: var(--text-secondary); border-color: var(--border-strong); }
     .btn-icon.btn-icon-primary:hover { background: var(--orange-light); color: var(--orange); border-color: var(--orange-border); }
@@ -1035,11 +1071,18 @@
         <i class="bi bi-list"></i>
       </button>
       {% block page_back %}{% endblock %}
-      <h1 class="page-heading">{% block page_title %}Dashboard{% endblock %}</h1>
+      <div>
+        <h1 class="page-heading">{% block page_title %}Dashboard{% endblock %}</h1>
+        {% block page_sub %}{% endblock %}
+      </div>
     </div>
     <div class="topbar-right">
       <button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
         <i class="bi bi-moon-stars" id="theme-icon"></i>
+      </button>
+      <button class="btn-icon" id="notif-bell" aria-label="Notifications" type="button">
+        <i class="bi bi-bell"></i>
+        <span class="notif-dot" id="notif-dot"></span>
       </button>
       <div style="position:relative">
         <div class="user-pill" onclick="toggleUserMenu()" id="user-pill-btn">
