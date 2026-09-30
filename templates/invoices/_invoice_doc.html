@@ -162,14 +162,14 @@ context both collapse to nothing and the preview behaves exactly as before.
       <div class="pvw-thanks">Thank you for your business!</div>
     </div>
     <div style="padding:2px 8px 5px;font-size:6.5px;color:#94A3B8;text-align:center" id="pvw-dept">{{ dept|default:"" }}</div>
-    <div class="pvw-foot" id="pvw-foot">
+    <div class="pvw-foot" id="pvw-foot" style="display:none">
       <div class="pf-thanks" id="pvw-foot-thanks">{{ foot_thanks|default:"" }}</div>
       <div class="pf-dept"   id="pvw-foot-dept">{{ foot_dept|default:"" }}</div>
       <div class="pf-addr"   id="pvw-foot-addr">{{ foot_addr|default:"" }}</div>
       <div class="pf-web"    id="pvw-foot-web">{{ foot_web|default:"" }}</div>
       <div class="pf-con"    id="pvw-foot-con">{% if foot_phone %}Mobile: {{ foot_phone }} {% endif %}{% if foot_phone and foot_email %}<span class="pf-pipe">|</span>{% endif %}{% if foot_email %}<span class="pf-mail">{{ foot_email }}</span>{% endif %}</div>
     </div>
-    <div class="pvw-bar" id="pvw-bar">{{ bar|default:"Your Company Name" }}</div>
+    <div class="pvw-bar" id="pvw-bar" style="display:none">{{ bar|default:"Your Company Name" }}</div>
   </div>
 
 </div><!-- /inv-preview -->
