@@ -203,14 +203,13 @@ class _CircleBadge(Flowable):
 
 
 def _thank_you_stamp(ctx):
-    """Small italic line near the signature area — ONLY the typed notes.
+    """Static italic line under the signature — always printed.
 
-    Empty notes print nothing (no default line), matching the web preview's
-    `.pvw-thanks` hide rule. Skipped for 'minimal' template."""
+    Not driven by any input; matches the preview's static `.pvw-thanks` line.
+    Skipped for 'minimal' template."""
     if ctx.get('style_id') == 'minimal':
         return []
-    s = ctx.get('seller') or {}
-    msg = (s.get('thankyou_msg') or ctx['inv'].notes or '').strip()
+    msg = 'Thank you for your business!'
     if not msg:
         return []
     txt_color = ctx.get('ACCENT', MUTED)
@@ -2116,7 +2115,7 @@ def _sec_staffing(ctx):
 
         The reference puts the two lines at different sizes AND colors inside one
         centered block: 12pt #2D74B5 then 8pt #ED0000."""
-        thanks = (s.get('thankyou_msg') or inv.notes or '').strip()
+        thanks = 'Thank you for your business!'
         dept   = (s.get('department') or '').strip()
         if not thanks and not dept:
             return []

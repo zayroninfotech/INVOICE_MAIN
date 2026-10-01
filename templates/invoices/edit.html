@@ -1214,16 +1214,13 @@ function updatePvw() {
 
   // footer
 
-  // footer — Notes input drives the Notes block; the strip under the signature
-  // shows ONLY what was typed (hidden when empty — no default line).
+  // footer — Notes input drives ONLY the Notes block above Terms.
+  // The strip under the signature is a static line, never touched by JS.
 
   const thanksVal = document.getElementById('thankyou-msg')?.value || '';
   _t('pvw-notes', thanksVal);
-  _t('pvw-thanks', thanksVal);
   const notesSecE = document.querySelector('.pvw-sec[data-sec="notes"]');
   if (notesSecE) notesSecE.style.display = thanksVal ? '' : 'none';
-  const thanksElE = document.getElementById('pvw-thanks');
-  if (thanksElE) thanksElE.style.display = thanksVal ? '' : 'none';
 
   _t('pvw-terms', document.getElementById('invoice-terms')?.value || 'Payment due within 30 days.');
 

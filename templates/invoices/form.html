@@ -1535,15 +1535,12 @@ function updatePvw() {
     _t('pvw-words-txt',  amountToWords(pvwSub + gst));
   }
 
-  // footer — Notes input drives the Notes block; the footer strip under the
-  // signature shows ONLY what was typed (hidden when empty — no default line).
+  // footer — Notes input drives ONLY the Notes block above Terms.
+  // The strip under the signature is a static line, never touched by JS.
   const notesVal = _val('thankyou-msg');
   _t('pvw-notes', notesVal);
-  _t('pvw-thanks', notesVal);
   const notesSec = document.querySelector('.pvw-sec[data-sec="notes"]');
   if (notesSec) notesSec.style.display = notesVal ? '' : 'none';
-  const thanksEl = document.getElementById('pvw-thanks');
-  if (thanksEl) thanksEl.style.display = notesVal ? '' : 'none';
 
   const termsVal = _val('invoice-terms');
   _t('pvw-terms', termsVal);

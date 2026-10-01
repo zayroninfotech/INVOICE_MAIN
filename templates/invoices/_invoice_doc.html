@@ -158,15 +158,13 @@ context both collapse to nothing and the preview behaves exactly as before.
       <div class="pvw-sig-lbl" style="margin-top:2px">Authorized Signatory</div>
       <div id="pvw-sig-name" style="font-size:7px;font-weight:700;color:#0F172A">{{ sig_name|default:"" }}</div>
       <div id="pvw-sig-dt" class="pvw-sig-dt">{{ sig_dt|default:"" }}</div>
+      <!-- Static footer line under the signature — always printed, not an input. -->
+      <div class="pvw-thanks" id="pvw-thanks">Thank you for your business!</div>
     </div>
   </div>
 
   <!-- SECTION: footer -->
   <div class="pvw-sec" data-sec="footer">
-    <div style="display:flex;justify-content:center;padding:4px 8px">
-      <div class="pvw-thanks" id="pvw-thanks" style="{% if not thanks %}display:none{% endif %}">{{ thanks|default:"" }}</div>
-    </div>
-    <div style="padding:2px 8px 5px;font-size:6.5px;color:#94A3B8;text-align:center" id="pvw-dept">{{ dept|default:"" }}</div>
     <div class="pvw-foot" id="pvw-foot" style="display:none">
       <div class="pf-thanks" id="pvw-foot-thanks">{{ foot_thanks|default:"" }}</div>
       <div class="pf-dept"   id="pvw-foot-dept">{{ foot_dept|default:"" }}</div>
