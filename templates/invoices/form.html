@@ -1535,15 +1535,14 @@ function updatePvw() {
     _t('pvw-words-txt',  amountToWords(pvwSub + gst));
   }
 
-  // footer
-
-  // footer — each input drives ONLY its own block:
-  //   Thank You Message -> footer strip under signature (pvw-thanks), always shown
-  //   (falls back to the default line so the strip never goes blank);
-  //   it must NOT write to the Notes block (pvw-notes) — that block stays hidden
-  //   unless a real Notes value exists.
+  // footer — Notes input drives BOTH its own block AND the footer strip:
+  //   pvw-notes : the Notes section above Terms (hidden when input empty);
+  //   pvw-thanks: the italic strip under the signature (default line when empty).
   const notesVal = _val('thankyou-msg');
+  _t('pvw-notes', notesVal);
   _t('pvw-thanks', notesVal || 'Thank you for your business!');
+  const notesSec = document.querySelector('.pvw-sec[data-sec="notes"]');
+  if (notesSec) notesSec.style.display = notesVal ? '' : 'none';
 
   const termsVal = _val('invoice-terms');
   _t('pvw-terms', termsVal);

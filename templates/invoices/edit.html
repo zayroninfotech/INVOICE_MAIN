@@ -1214,11 +1214,14 @@ function updatePvw() {
 
   // footer
 
-  // footer — Thank You Message drives ONLY the strip under the signature
-  // (pvw-thanks); it must NOT write to the Notes block (pvw-notes).
+  // footer — Notes input drives BOTH the Notes block AND the strip under
+  // the signature (pvw-thanks); it must NOT stay only on the strip.
 
-  const thanksVal = document.getElementById('thankyou-msg')?.value || 'Thank you for your business!';
-  _t('pvw-thanks', thanksVal);
+  const thanksVal = document.getElementById('thankyou-msg')?.value || '';
+  _t('pvw-notes', thanksVal);
+  _t('pvw-thanks', thanksVal || 'Thank you for your business!');
+  const notesSecE = document.querySelector('.pvw-sec[data-sec="notes"]');
+  if (notesSecE) notesSecE.style.display = thanksVal ? '' : 'none';
 
   _t('pvw-terms', document.getElementById('invoice-terms')?.value || 'Payment due within 30 days.');
 
