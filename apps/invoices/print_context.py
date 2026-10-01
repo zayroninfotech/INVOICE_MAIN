@@ -208,9 +208,9 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
 
         'notes': getattr(invoice, 'notes', '') or '',
         'hide_notes': not (getattr(invoice, 'notes', '') or '').strip(),
-        # Footer strip line under the signature — same input as the editor's
-        # Thank You Message; default keeps the strip printed like the preview.
-        'thanks': (getattr(invoice, 'notes', '') or '').strip() or 'Thank you for your business!',
+        # Footer strip under the signature — ONLY the typed notes, no default
+        # line; empty string hides it (template + preview JS agree).
+        'thanks': (getattr(invoice, 'notes', '') or '').strip(),
         # No invented terms: an invoice without terms prints no Terms block at all.
         'terms': (getattr(invoice, 'terms', '') or '').strip(),
         'hide_terms': not (getattr(invoice, 'terms', '') or '').strip(),

@@ -164,7 +164,7 @@ context both collapse to nothing and the preview behaves exactly as before.
   <!-- SECTION: footer -->
   <div class="pvw-sec" data-sec="footer">
     <div style="display:flex;justify-content:center;padding:4px 8px">
-      <div class="pvw-thanks" id="pvw-thanks">{{ thanks|default:"Thank you for your business!" }}</div>
+      <div class="pvw-thanks" id="pvw-thanks" style="{% if not thanks %}display:none{% endif %}">{{ thanks|default:"" }}</div>
     </div>
     <div style="padding:2px 8px 5px;font-size:6.5px;color:#94A3B8;text-align:center" id="pvw-dept">{{ dept|default:"" }}</div>
     <div class="pvw-foot" id="pvw-foot" style="display:none">
