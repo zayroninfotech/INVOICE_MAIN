@@ -1214,7 +1214,11 @@ function updatePvw() {
 
   // footer
 
-  _t('pvw-notes', document.getElementById('thankyou-msg')?.value || 'Thank you for your business!');
+  // footer — Thank You Message drives ONLY the strip under the signature
+  // (pvw-thanks); it must NOT write to the Notes block (pvw-notes).
+
+  const thanksVal = document.getElementById('thankyou-msg')?.value || 'Thank you for your business!';
+  _t('pvw-thanks', thanksVal);
 
   _t('pvw-terms', document.getElementById('invoice-terms')?.value || 'Payment due within 30 days.');
 
