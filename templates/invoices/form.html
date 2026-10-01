@@ -1539,6 +1539,9 @@ function updatePvw() {
 
   const notesVal = _val('thankyou-msg');
   _t('pvw-notes', notesVal);
+  // Footer strip line under the signature — the input drives it live; empty
+  // input falls back to the default line so the strip never goes blank.
+  _t('pvw-thanks', notesVal || 'Thank you for your business!');
   const notesSec = document.querySelector('.pvw-sec[data-sec="notes"]');
   if (notesSec) notesSec.style.display = notesVal ? '' : 'none';
 
