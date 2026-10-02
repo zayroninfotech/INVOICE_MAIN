@@ -50,7 +50,15 @@ ITEM_FIELDS = {'sno': 'serial number', 'desc': 'description', 'hsn': 'HSN/SAC', 
                'amount': 'line amount (formatted)'}
 
 _ALLOWED_TAGS = {'for', 'endfor', 'empty', 'if', 'elif', 'else', 'endif', 'with', 'endwith'}
-_ALLOWED_FILTERS = {'default', 'upper', 'lower', 'title', 'linebreaksbr', 'length', 'first', 'last'}
+# Harmless text filters the model may use. Anything else is removed from the
+# expression (the design still works, the value just isn't transformed) — except
+# _DANGEROUS ones, which can emit raw HTML/script and reject the design.
+_ALLOWED_FILTERS = {'default', 'default_if_none', 'upper', 'lower', 'title', 'capfirst', 'linebreaksbr',
+                    'linebreaks', 'length', 'first', 'last', 'slice', 'truncatechars', 'truncatewords',
+                    'cut', 'add', 'join', 'yesno', 'floatformat', 'center', 'ljust', 'rjust',
+                    'wordwrap', 'striptags', 'stringformat', 'pluralize'}
+_DANGEROUS_FILTERS = {'safe', 'safeseq', 'json_script', 'escapejs', 'force_escape', 'unordered_list',
+                      'urlize', 'urlizetrunc', 'pprint'}
 
 
 class AIError(RuntimeError):
@@ -235,7 +243,7 @@ Hard rules — the output is checked automatically and rejected otherwise:
   design is clearly serif). Never name any other font. No text-transform or font-variant unless the design
   itself shows that text in capitals.
 - Use only the variables listed. Only these template tags: for, endfor, empty, if, elif, else, endif.
-  Only these filters: default, upper, lower, title, linebreaksbr. Never use the safe filter.
+  Filters: keep to default, upper, lower, title, linebreaksbr (others are removed). Never use the safe filter.
 - Images: only {{{{ logo_url }}}} or {{{{ signature_url }}}} as src.
 - Make it print well: use real <table> elements for tabular parts; avoid position:fixed.
 {('' if not description else chr(10) + description[:30000])}"""
@@ -293,9 +301,15 @@ def sanitize(html):
     for tag in re.findall(r'{%\s*(\w+)', html):
         if tag not in _ALLOWED_TAGS:
             raise AIError(f"The generated design used a template tag that isn't allowed ({tag}). Try again.")
-    for flt in re.findall(r'\|\s*(\w+)', ''.join(re.findall(r'{{.*?}}|{%.*?%}', html, re.S))):
-        if flt not in _ALLOWED_FILTERS:
-            raise AIError(f"The generated design used a filter that isn't allowed ({flt}). Try again.")
+    def _filters(m):
+        expr = m.group(0)
+        for flt in re.findall(r'\|\s*(\w+)', expr):
+            if flt in _DANGEROUS_FILTERS:
+                raise AIError(f"The generated design was rejected ({flt} filter). Try again.")
+        # Drop unknown filters (with their argument) instead of failing the whole design.
+        return re.sub(r'\|\s*(\w+)(\s*:\s*("[^"]*"|\'[^\']*\'|[\w.]+))?',
+                      lambda f: f.group(0) if f.group(1) in _ALLOWED_FILTERS else '', expr)
+    html = re.sub(r'{{.*?}}|{%.*?%}', _filters, html, flags=re.S)
     allowed_vars = set(VARIABLES) | {'items', 'it', 'forloop'}
     for expr in re.findall(r'{{\s*([^}|]+)', html) + re.findall(r'{%\s*(?:if|elif|for\s+\w+\s+in|with)\s+([^%]+)%}', html):
         for name in re.findall(r'[A-Za-z_][A-Za-z_0-9]*', expr):
