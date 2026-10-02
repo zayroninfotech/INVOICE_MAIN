@@ -185,9 +185,8 @@ so the customer approves exactly the document they were sent.
 <header class="ap-bar">
   <div class="ap-bar-in">
     <span class="ap-brand">
-      {% if seller_logo %}<img class="ap-brand-logo" src="{{ seller_logo }}" alt="">
-      {% else %}<span class="ap-brand-mono" aria-hidden="true">{{ seller_name|default:"I"|slice:":1"|upper }}</span>{% endif %}
-      <span class="ap-seller">{{ seller_name|default:"Invoice" }}</span>
+      <img class="ap-brand-logo" src="{% static 'img/logo.webp' %}" alt="">
+      <span class="ap-seller">Zayro Invoice</span>
     </span>
     <span class="ap-bar-meta" title="Only people with this link can see this invoice"><i class="bi bi-shield-lock"></i><span>Private link</span></span>
   </div>
