@@ -82,7 +82,8 @@
                  align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
   .ta-drop b { display:block; font-size:.98rem; }
   .ta-drop span { color:var(--text-secondary); font-size:.85rem; }
-  .ta-drop .go { margin-left:auto; white-space:nowrap; border-radius:10px; font-weight:600; }
+  .ta-drop .go { margin-left:auto; white-space:nowrap; border-radius:10px; font-weight:600;
+               background:#C1121F; border-color:#C1121F; color:#fff !important; pointer-events:none; }
   .ta-reading { display:none; align-items:center; gap:12px; padding:14px 18px; margin-bottom:20px; border-radius:14px;
                 background:var(--surface); border:1px solid var(--border); font-size:.9rem; }
   .ta-reading.show { display:flex; }
@@ -120,13 +121,13 @@
 </div>
 
 <div id="ta-main" style="display:none">
-  <input type="file" id="ta-file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden onchange="taUpload(this.files[0]); this.value='';">
+  <input type="file" id="ta-file" accept=".pdf,.docx,.png,.jpg,.jpeg,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/webp" hidden onchange="taUpload(this.files[0]); this.value='';">
 
   <label class="ta-drop" id="ta-drop" for="ta-file">
     <span class="ic"><i class="bi bi-cloud-arrow-up"></i></span>
     <div>
       <b>Upload an invoice design</b>
-      <span>Drop a PDF or image here. It's read automatically — layout, brand colour and name — and saved as a draft.</span>
+      <span>Drop a Word (.docx), PDF or image here. It's read automatically — layout, brand colour and name — and saved as a draft.</span>
     </div>
     <span class="btn btn-primary go"><i class="bi bi-upload me-1"></i>Upload document</span>
   </label>
