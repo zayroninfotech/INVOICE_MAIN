@@ -373,6 +373,9 @@ def ai_page(template_id):
     except Exception:
         return ''
     if c and getattr(c, 'mode', '') == 'ai' and getattr(c, 'ai_status', '') == 'ready':
+        if getattr(c, 'page_style', 'light') == 'dark' and c.ai_html:
+            from .ai_template import darken
+            return darken(c.ai_html)
         return c.ai_html or ''
     return ''
 

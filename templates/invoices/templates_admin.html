@@ -258,6 +258,13 @@
           </select>
         </div>
       </div>
+      <div id="ta-ps-row">
+        <label class="ta-lbl" for="ta-ps">Page colour <span class="opt">(uploaded designs)</span></label>
+        <select class="ta-in" id="ta-ps">
+          <option value="light">Light — as the document prints</option>
+          <option value="dark">Dark — like Word's Dark Mode</option>
+        </select>
+      </div>
       <div class="ta-swatches" id="ta-swatches"></div>
 
       <div class="ta-btns">
@@ -430,7 +437,7 @@ function taRender() {
           <span class="ta-plan ${esc(t.min_plan)}">${esc(t.min_plan)}</span></div>
         <p class="ta-desc">${esc(t.desc) || '&nbsp;'}</p>
         ${t.source_name ? `<div class="ta-src" title="${esc(t.source_name)}"><i class="bi bi-paperclip"></i> ${esc(t.source_name)}</div>` : ''}
-        <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${esc(t.accent)} · ${esc(t.base_name)} layout</div>
+        <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${t.mode === 'ai' ? (t.page_style === 'dark' ? 'Dark page' : 'Light page') + ' · AI design' : esc(t.accent) + ' · ' + esc(t.base_name) + ' layout'}</div>
         ${aiBox}
         ${t.mode === 'exact' ? `<div class="ta-mapped"><i class="bi bi-bullseye"></i> Exact copy · ${t.mapped} field${t.mapped === 1 ? '' : 's'} mapped</div>
           <button type="button" class="btn ${t.mapped ? 'btn-outline-primary' : 'btn-primary'} btn-sm ta-map-btn" onclick="mpOpen('${esc(t.id)}')"><i class="bi bi-hand-index me-1"></i>${t.mapped ? 'Edit field mapping' : 'Map fields'}</button>` : ''}
@@ -478,6 +485,8 @@ function taOpen(id) {
   document.getElementById('ta-desc').value = t.desc || '';
   document.getElementById('ta-base').value = t.base;
   document.getElementById('ta-plan').value = t.min_plan;
+  document.getElementById('ta-ps').value = t.page_style || 'light';
+  document.getElementById('ta-ps-row').style.display = t.mode === 'ai' ? '' : 'none';
   document.getElementById('ta-accent-txt').value = t.accent;
   document.getElementById('ta-err').classList.remove('show');
   taColor(t.accent);
@@ -494,6 +503,7 @@ async function taSave() {
     accent: document.getElementById('ta-accent').value.toUpperCase(),
     min_plan: document.getElementById('ta-plan').value,
   };
+  if (taEditing && taEditing.mode === 'ai') body.page_style = document.getElementById('ta-ps').value;
   if (!body.name) { err.textContent = 'Give the template a name.'; err.classList.add('show'); return; }
   const btn = document.getElementById('ta-save');
   const old = btn.innerHTML;

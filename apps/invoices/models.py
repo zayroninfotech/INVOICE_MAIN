@@ -165,6 +165,8 @@ class CustomTemplate(me.Document):
     ai_html     = me.StringField(default='')
     ai_status   = me.StringField(choices=['', 'working', 'ready', 'failed'], default='')
     ai_error    = me.StringField(default='')
+    # 'dark' turns the design dark the way Word's Dark Mode shows it (ai_template.darken)
+    page_style  = me.StringField(choices=['light', 'dark'], default='light')
     is_active   = me.BooleanField(default=True)
     created_by  = me.StringField(default='')
     created_at  = me.DateTimeField(default=datetime.utcnow)

@@ -400,3 +400,31 @@ def _job(template_id):
 def start_job(template_id):
     """Generate in a background thread — it takes longer than a web request may."""
     threading.Thread(target=_job, args=(template_id,), daemon=True).start()
+
+
+# ── dark page ───────────────────────────────────────────────────────────────
+
+def _flip(hexstr):
+    """Keep the hue, flip the lightness — what Word's Dark Mode does to a page.
+    Light blue header bands become dark steel blue, white becomes near-black,
+    black text becomes near-white, red labels stay red (a lighter red)."""
+    import colorsys
+    h = hexstr.lstrip('#')
+    if len(h) == 3:
+        h = ''.join(c * 2 for c in h)
+    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    hh, ll, ss = colorsys.rgb_to_hls(r, g, b)
+    ll = min(0.92, 0.15 + (1 - ll) * 0.8)   # white -> ~#262626, mid tones stay readable
+    r, g, b = colorsys.hls_to_rgb(hh, ll, ss)
+    return '#{:02X}{:02X}{:02X}'.format(round(r * 255), round(g * 255), round(b * 255))
+
+
+def darken(html):
+    """Return a dark-page version of a sanitized AI design (colours rewritten,
+    so PDF text stays sharp — no screen filter)."""
+    html = re.sub(r'#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b', lambda m: _flip(m.group(0)), html)
+    html = re.sub(r'(:\s*)white\b', r'\1#242424', html, flags=re.I)
+    html = re.sub(r'(:\s*)black\b', r'\1#EBEBEB', html, flags=re.I)
+    # Anything the design left at the browser default (white page, black text).
+    return html + ('<style>.ai-page{background-color:#242424;color:#E6E6E6}'
+                   '.ai-page table{border-color:#5A5A5A}</style>')

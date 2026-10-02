@@ -503,6 +503,7 @@ def _custom_template_data(c):
         'status': getattr(c, 'status', None) or 'published',
         'mode': getattr(c, 'mode', 'base') or 'base',
         'ai_status': getattr(c, 'ai_status', '') or '',
+        'page_style': getattr(c, 'page_style', 'light') or 'light',
         'ai_error': getattr(c, 'ai_error', '') or '',
         'mapped': sum(1 for sp in (getattr(c, 'layout', None) or {}).get('spans', [])
                       if sp.get('field') and sp.get('field') != 'hide'),
@@ -540,6 +541,11 @@ def _custom_template_fields(data, partial=False):
         if plan not in ('free', 'plus', 'pro', 'unlimited'):
             return None, "Plan must be free, plus, pro or unlimited."
         out['min_plan'] = plan
+    if 'page_style' in data:
+        ps = str(data.get('page_style') or 'light')
+        if ps not in ('light', 'dark'):
+            return None, "Page colour must be light or dark."
+        out['page_style'] = ps
     return out, None
 
 
@@ -801,7 +807,11 @@ class CustomTemplateRenderView(APIView):
             values = dict(SAMPLE)
             if bp and bp.logo_path:
                 values['_logo'] = settings.MEDIA_URL + bp.logo_path
-            return success({'html': ai_render(c.ai_html, ai_context(values)), 'kind': 'exact',
+            html_src = c.ai_html
+            if getattr(c, 'page_style', 'light') == 'dark':
+                from .ai_template import darken
+                html_src = darken(html_src)
+            return success({'html': ai_render(html_src, ai_context(values)), 'kind': 'exact',
                             'w': 595.28, 'h': 841.89})
 
         if getattr(c, 'mode', 'base') == 'exact' and c.layout:
