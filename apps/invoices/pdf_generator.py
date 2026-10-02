@@ -104,7 +104,7 @@ def _fmt(amount, currency='INR'):
 
 
 class _CircleLogoImage(Flowable):
-    """Logo image clipped to a circle — matches the web preview's circular logo display."""
+    """Logo image drawn as-is (no circular clip) — matches the web preview."""
     def __init__(self, logo_path, d=1.05*cm):
         super().__init__()
         self.logo_path = logo_path
@@ -115,11 +115,7 @@ class _CircleLogoImage(Flowable):
         from reportlab.lib.utils import ImageReader
         c = self.canv
         d = self.d
-        r = d / 2
         c.saveState()
-        p = c.beginPath()
-        p.circle(r, r, r)
-        c.clipPath(p, stroke=0, fill=0)
         try:
             ir = ImageReader(self.logo_path)
             c.drawImage(ir, 0, 0, width=d, height=d, preserveAspectRatio=True, anchor='c', mask='auto')

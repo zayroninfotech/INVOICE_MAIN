@@ -374,7 +374,7 @@ async function renderPreview(inv) {
   if (logoCircle) {
     if (profile.logo_url) {
       logoCircle.innerHTML = '<img src="' + profile.logo_url + '" alt="" ' +
-        'style="width:100%;height:100%;object-fit:contain;border-radius:50%">';
+        'style="width:100%;height:100%;object-fit:contain">';
       logoCircle.style.display = '';
     } else {
       logoCircle.innerHTML = '';
