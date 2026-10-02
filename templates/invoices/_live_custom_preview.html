@@ -13,6 +13,8 @@ Included at the end of form.html and edit.html.
   .xt-live-frame { border:0; display:block; transform-origin:top left; background:#fff; }
   .xt-live-note { display:none; font-size:.74rem; color:var(--text-secondary); text-align:center; margin:8px 0 0; }
   .xt-live.on + .xt-live-note { display:block; }
+  #tplPreviewModal.xt-on .inv-preview { display:none !important; }
+  #tplPreviewModal.xt-on .xt-live { margin:0 auto; }
 </style>
 <script>
 (function () {
@@ -48,8 +50,10 @@ Included at the end of form.html and edit.html.
       const i = el.id.slice(5);
       const price = parseFloat(v('price-' + i)) || 0, qty = parseFloat(v('qty-' + i)) || 0;
       const disc = parseFloat(v('disc-' + i)) || 0;
-      const desc = el.value.trim() || (document.getElementById('prod-' + i)?.selectedOptions?.[0]?.text || '');
-      if (!desc && !price) return;
+      const sel = document.getElementById('prod-' + i);
+      const picked = sel && sel.value ? (sel.selectedOptions?.[0]?.text || '') : '';
+      const desc = el.value.trim() || picked;
+      if (!price && (!desc || /^\s*[—-]/.test(desc))) return;   // empty starter row
       const amt = price * qty * (1 - disc / 100);
       sub += amt;
       items.push({'item.sno': String(items.length + 1), 'item.desc': desc, 'item.hsn': v('hsn-' + i),
@@ -140,16 +144,15 @@ Included at the end of form.html and edit.html.
     if (!isCustom(id)) { if (box) box.remove(); return false; }
     if (!box) { box = document.createElement('div'); box.className = 'xt-live'; modalBody.appendChild(box); }
     box.style.maxWidth = '794px';
-    const pvw = document.getElementById('inv-preview');
-    if (pvw) pvw.style.display = 'none';
+    const modal = document.getElementById('tplPreviewModal');
+    modal && modal.classList.add('xt-on');
     const ok = await renderInto(box, id, withSamples(collect()));
-    if (!ok) { box.remove(); if (pvw) pvw.style.display = ''; }
+    if (!ok) { box.remove(); modal && modal.classList.remove('xt-on'); }
     return !!ok;
   };
   window.xtClearModal = function (modalBody) {
     modalBody.querySelector('.xt-live')?.remove();
-    const pvw = document.getElementById('inv-preview');
-    if (pvw) pvw.style.display = '';
+    document.getElementById('tplPreviewModal')?.classList.remove('xt-on');
   };
 
   let timer = null, seq = 0;
@@ -158,9 +161,9 @@ Included at the end of form.html and edit.html.
     const h = host();
     const pvw = document.getElementById('inv-preview');
     if (!h || !pvw) return;
-    if (!isCustom(id)) { h.classList.remove('on'); pvw.style.display = ''; return; }
-    // While the picker modal has borrowed #inv-preview, leave the panel alone.
+    // While the picker modal has borrowed #inv-preview, leave it alone.
     if (pvw.closest('#tplPreviewModal')) return;
+    if (!isCustom(id)) { h.classList.remove('on'); pvw.style.display = ''; return; }
     const mine = ++seq;
     pvw.style.display = 'none';
     h.classList.add('on');
