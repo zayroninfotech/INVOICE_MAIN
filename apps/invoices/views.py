@@ -859,3 +859,38 @@ class CustomTemplateRegenerateView(APIView):
         c.save()
         start_job(c.template_id)
         return success(_custom_template_data(c), "Designing again — this takes about a minute.")
+
+
+class LiveTemplateRenderView(APIView):
+    """Draw an uploaded/AI template with the editor's current, unsaved values,
+    so the New/Edit Invoice preview shows the real design while typing."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def post(self, request):
+        from .exact_template import FIELDS, render as exact_render
+        from .ai_template import render as ai_render, ai_context
+        tid = str(request.data.get('template_style') or '')
+        layout, ai_html = template_registry.exact_layout(tid), template_registry.ai_page(tid)
+        if not layout and not ai_html:
+            return error("Not an uploaded template.", status=404)
+        tpl_err = _check_template_allowed(request, tid)
+        if tpl_err is not None:
+            return tpl_err
+
+        raw = request.data.get('values') or {}
+        if not isinstance(raw, dict):
+            return error("values must be an object.")
+        clip = lambda v, n=500: str(v if v is not None else '')[:n]
+        values = {k: clip(raw.get(k)) for k in FIELDS}
+        values['tot.words'] = clip(raw.get('tot.words'), 300)
+        # Images: only this site's media files or an inline image the user just picked.
+        def img(v):
+            v = clip(v, 2_000_000)
+            return v if (v.startswith(settings.MEDIA_URL) or v.startswith('data:image/')) else ''
+        values['_logo'], values['_sig'] = img(raw.get('_logo')), img(raw.get('_sig'))
+        items = raw.get('_items') if isinstance(raw.get('_items'), list) else []
+        values['_items'] = [{k: clip(it.get(k), 300) for k in FIELDS if k.startswith('item.')}
+                            for it in items[:200] if isinstance(it, dict)]
+        html = ai_render(ai_html, ai_context(values)) if ai_html else exact_render(layout, values)
+        return success({'html': html})
