@@ -499,7 +499,10 @@ def _custom_template_data(c):
     return {
         'id': c.template_id, 'name': c.name, 'desc': c.desc, 'base': c.base,
         'base_name': base.get('name', c.base), 'accent': c.accent,
-        'min_plan': effective_min_plan(c.template_id), 'blocked': is_blocked(c.template_id),
+        'min_plan': c.min_plan, 'blocked': is_blocked(c.template_id),
+        'status': getattr(c, 'status', None) or 'published',
+        'source_name': getattr(c, 'source_name', '') or '',
+        'preview_url': (settings.MEDIA_URL + c.preview_path) if getattr(c, 'preview_path', '') else '',
         'created_at': c.created_at.isoformat() if c.created_at else None,
     }
 
@@ -555,14 +558,14 @@ class CustomTemplateListView(APIView):
             return error(err)
         fields.setdefault('accent', '#C1121F')
         fields.setdefault('min_plan', 'plus')
-        c = CustomTemplate(template_id='c-' + secrets.token_hex(4),
+        c = CustomTemplate(template_id='c-' + secrets.token_hex(4), status='draft',
                            created_by=str(request.user.pk), **fields).save()
         try:
             from apps.authentication.models import AuditLog
             AuditLog.log(request.user, 'template_added', f'{c.name} ({c.template_id}) on {c.base}')
         except Exception:
             pass
-        return success(_custom_template_data(c), f"“{c.name}” added — it now shows in Buy Invoice.", 201)
+        return success(_custom_template_data(c), f"“{c.name}” saved as a draft. Click Apply to put it in Buy Invoice.", 201)
 
 
 class CustomTemplateDetailView(APIView):
@@ -598,3 +601,66 @@ class CustomTemplateDetailView(APIView):
         c.is_active = False
         c.save()
         return success(message=f"“{c.name}” removed from Buy Invoice.")
+
+
+class CustomTemplateFromDocView(APIView):
+    """Upload an invoice design (PDF/image) → a draft template built from it."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request):
+        import secrets
+        from .models import CustomTemplate
+        from .template_analyzer import analyze, AnalyzeError
+        f = request.FILES.get('file')
+        if not f:
+            return error("Choose a PDF or image of the invoice design.")
+        try:
+            sug = analyze(f.read(), getattr(f, 'content_type', ''), f.name)
+        except AnalyzeError as exc:
+            return error(str(exc))
+        except Exception:
+            logger.warning("template analyze failed", exc_info=True)
+            return error("Couldn't read that document. Try a PDF or a clear PNG/JPG of the invoice.")
+
+        tid = 'c-' + secrets.token_hex(4)
+        rel = f'template_sources/{tid}.png'
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'template_sources'), exist_ok=True)
+        with open(os.path.join(settings.MEDIA_ROOT, rel), 'wb') as fh:
+            fh.write(sug['preview_png'])
+
+        from .template_registry import TEMPLATE_MAP
+        base_name = TEMPLATE_MAP.get(sug['base'], {}).get('name', sug['base'])
+        c = CustomTemplate(
+            template_id=tid, name=sug['name'], base=sug['base'], accent=sug['accent'],
+            desc=f"Based on {f.name[:80]} — {base_name} layout",
+            min_plan='plus', status='draft', source_name=f.name[:120], preview_path=rel,
+            created_by=str(request.user.pk),
+        ).save()
+        data = _custom_template_data(c)
+        data['signals'] = sug['signals']
+        return success(data, f"Read “{f.name}” — created a draft template. Check it, then click Apply.", 201)
+
+
+class CustomTemplatePublishView(APIView):
+    """Apply (publish) a draft to Buy Invoice, or take it back to draft."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request, pk):
+        from .models import CustomTemplate
+        c = CustomTemplate.objects(template_id=pk, is_active=True).first()
+        if not c:
+            return error("Template not found.", status=404)
+        live = request.data.get('publish', True) not in (False, 'false', 0, '0')
+        c.status = 'published' if live else 'draft'
+        c.save()
+        try:
+            from apps.authentication.models import AuditLog
+            AuditLog.log(request.user, 'template_published' if live else 'template_unpublished',
+                         f'{c.name} ({c.template_id})')
+        except Exception:
+            pass
+        msg = (f"“{c.name}” is now in Buy Invoice." if live
+               else f"“{c.name}” taken out of Buy Invoice (kept as a draft).")
+        return success(_custom_template_data(c), msg)

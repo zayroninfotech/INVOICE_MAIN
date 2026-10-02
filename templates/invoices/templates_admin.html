@@ -73,12 +73,41 @@
   .ta-pv-sheet { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 8px 24px rgba(15,23,42,.12); }
   .ta-pv-sheet .inv-preview { width:411px; zoom:.84; box-shadow:none; border-radius:0; }
 
+  .ta-bar .btns { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+  .ta-bar .btns .btn { margin-left:0; }
+  .ta-drop { display:flex; align-items:center; gap:16px; padding:18px 20px; margin-bottom:20px; cursor:pointer;
+             border:1.5px dashed #F1A9B0; border-radius:16px; background:#FFF7F8; transition:background .15s, border-color .15s; }
+  .ta-drop:hover, .ta-drop.over { background:#FDECEE; border-color:#C1121F; }
+  .ta-drop .ic { width:48px; height:48px; border-radius:12px; background:#C1121F; color:#fff; display:flex;
+                 align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+  .ta-drop b { display:block; font-size:.98rem; }
+  .ta-drop span { color:var(--text-secondary); font-size:.85rem; }
+  .ta-drop .go { margin-left:auto; white-space:nowrap; border-radius:10px; font-weight:600; }
+  .ta-reading { display:none; align-items:center; gap:12px; padding:14px 18px; margin-bottom:20px; border-radius:14px;
+                background:var(--surface); border:1px solid var(--border); font-size:.9rem; }
+  .ta-reading.show { display:flex; }
+
+  .ta-thumb.img { padding:12px 12px 0; background:#F1F5F9; }
+  .ta-thumb.img img { width:100%; height:100%; object-fit:cover; object-position:top; border-radius:6px 6px 0 0;
+                      box-shadow:0 4px 14px rgba(15,23,42,.08); background:#fff; }
+  .ta-status { font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+  .ta-status.draft { background:#FEF3C7; color:#92400E; }
+  .ta-status.published { background:#DCFCE7; color:#15803D; }
+  .ta-apply { width:100%; border-radius:10px; font-weight:700; margin-top:10px; }
+  .btn-apply { background:#15803D; color:#fff; border:none; }
+  .btn-apply:hover { background:#166534; color:#fff; }
+  .ta-src { font-size:.75rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
   @media (max-width:860px) {
     .ta-dlg-in { grid-template-columns:1fr; }
     .ta-pv { border-left:none; border-top:1px solid var(--border); align-items:center; }
     .ta-pv-sheet .inv-preview { zoom:.78; }
   }
-  @media (max-width:480px) { .ta-row { grid-template-columns:1fr; } .ta-bar .btn { margin-left:0; width:100%; } }
+  @media (max-width:560px) {
+    .ta-row { grid-template-columns:1fr; }
+    .ta-bar .btns { width:100%; } .ta-bar .btns .btn { flex:1; }
+    .ta-drop { flex-wrap:wrap; } .ta-drop .go { margin-left:0; width:100%; }
+  }
 </style>
 {% include "invoices/_invoice_doc_css.html" %}
 {% endblock %}
@@ -91,16 +120,33 @@
 </div>
 
 <div id="ta-main" style="display:none">
+  <input type="file" id="ta-file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden onchange="taUpload(this.files[0]); this.value='';">
+
+  <label class="ta-drop" id="ta-drop" for="ta-file">
+    <span class="ic"><i class="bi bi-cloud-arrow-up"></i></span>
+    <div>
+      <b>Upload an invoice design</b>
+      <span>Drop a PDF or image here. It's read automatically — layout, brand colour and name — and saved as a draft.</span>
+    </div>
+    <span class="btn btn-primary go"><i class="bi bi-upload me-1"></i>Upload document</span>
+  </label>
+  <div class="ta-reading" id="ta-reading" role="status">
+    <span class="spinner-border spinner-border-sm text-danger"></span>
+    <span id="ta-reading-txt">Reading your document…</span>
+  </div>
+
   <div class="ta-bar">
     <h2>Your templates <span class="count" id="ta-count"></span></h2>
-    <button type="button" class="btn btn-primary" onclick="taOpen()"><i class="bi bi-plus-lg me-1"></i>Add template</button>
+    <div class="btns">
+      <button type="button" class="btn btn-outline-secondary" onclick="taOpen()"><i class="bi bi-sliders me-1"></i>Create manually</button>
+    </div>
   </div>
   <div class="ta-grid" id="ta-grid"></div>
   <div class="ta-empty" id="ta-empty" style="display:none">
     <i class="bi bi-file-earmark-plus"></i>
     <h3>No templates added yet</h3>
-    <p>Start from one of the built-in layouts, give it a name and colour, and choose which plan unlocks it. It shows up in Buy Invoice straight away.</p>
-    <button type="button" class="btn btn-primary" onclick="taOpen()"><i class="bi bi-plus-lg me-1"></i>Add your first template</button>
+    <p>Upload an invoice design above, or create one manually from a built-in layout. New templates start as drafts — click <b>Apply</b> to put one in Buy Invoice.</p>
+    <button type="button" class="btn btn-outline-secondary" onclick="taOpen()"><i class="bi bi-sliders me-1"></i>Create manually</button>
   </div>
 </div>
 
@@ -108,7 +154,7 @@
   <div class="ta-dlg-in">
     <form class="ta-form" onsubmit="event.preventDefault(); taSave();">
       <h3 id="ta-dlg-title">Add template</h3>
-      <p>It reuses a built-in layout, so it works in the editor, the PDF and the customer page right away.</p>
+      <p>It reuses a built-in layout, so it works in the editor, the PDF and the customer page. Saved as a draft until you click Apply.</p>
       <p class="ta-err" id="ta-err" role="alert"></p>
 
       <label class="ta-lbl" for="ta-name">Template name</label>
@@ -142,7 +188,7 @@
 
       <div class="ta-btns">
         <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('ta-dlg').close()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="ta-save"><i class="bi bi-check2 me-1"></i>Add template</button>
+        <button type="submit" class="btn btn-primary" id="ta-save"><i class="bi bi-check2 me-1"></i>Save as draft</button>
       </div>
     </form>
 
@@ -198,19 +244,31 @@ function taRender() {
   const grid = document.getElementById('ta-grid');
   document.getElementById('ta-count').textContent = taList.length ? `(${taList.length})` : '';
   document.getElementById('ta-empty').style.display = taList.length ? 'none' : '';
-  grid.innerHTML = taList.map(t => `
+  grid.innerHTML = taList.map(t => {
+    const live = t.status === 'published';
+    const thumb = t.preview_url
+      ? `<div class="ta-thumb img"><img src="${esc(t.preview_url)}" alt="" loading="lazy"></div>`
+      : `<div class="ta-thumb" style="background:${esc(t.accent)}1A">${taThumb(esc(t.accent))}</div>`;
+    return `
     <article class="ta-card">
-      <div class="ta-thumb" style="background:${esc(t.accent)}1A">${taThumb(esc(t.accent))}</div>
+      ${thumb}
       <div class="ta-body">
-        <div class="ta-name"><b title="${esc(t.name)}">${esc(t.name)}</b><span class="ta-plan ${esc(t.min_plan)}">${esc(t.min_plan)}</span></div>
+        <div class="ta-name"><b title="${esc(t.name)}">${esc(t.name)}</b>
+          <span class="ta-status ${live ? 'published' : 'draft'}">${live ? 'Live' : 'Draft'}</span>
+          <span class="ta-plan ${esc(t.min_plan)}">${esc(t.min_plan)}</span></div>
         <p class="ta-desc">${esc(t.desc) || '&nbsp;'}</p>
-        <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${esc(t.accent)} · based on ${esc(t.base_name)}</div>
+        ${t.source_name ? `<div class="ta-src" title="${esc(t.source_name)}"><i class="bi bi-paperclip"></i> ${esc(t.source_name)}</div>` : ''}
+        <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${esc(t.accent)} · ${esc(t.base_name)} layout</div>
+        ${live
+          ? `<button type="button" class="btn btn-outline-secondary btn-sm ta-apply" onclick="taPublish('${esc(t.id)}', false)"><i class="bi bi-eye-slash me-1"></i>Take out of Buy Invoice</button>`
+          : `<button type="button" class="btn btn-apply ta-apply" onclick="taPublish('${esc(t.id)}', true)"><i class="bi bi-check2-circle me-1"></i>Apply to Buy Invoice</button>`}
         <div class="ta-actions">
           <button type="button" class="btn btn-outline-secondary btn-sm" onclick="taOpen('${esc(t.id)}')"><i class="bi bi-pencil me-1"></i>Edit</button>
           <button type="button" class="btn btn-outline-danger btn-sm" onclick="taDelete('${esc(t.id)}')"><i class="bi bi-trash me-1"></i>Remove</button>
         </div>
       </div>
-    </article>`).join('');
+    </article>`;
+  }).join('');
 }
 
 function taColor(v, fromText) {
@@ -239,7 +297,7 @@ function taOpen(id) {
   const t = taEditing || {name: '', desc: '', base: 'classic', accent: '#C1121F', min_plan: 'plus'};
   document.getElementById('ta-dlg-title').textContent = taEditing ? 'Edit template' : 'Add template';
   document.getElementById('ta-save').innerHTML = taEditing
-    ? '<i class="bi bi-check2 me-1"></i>Save changes' : '<i class="bi bi-check2 me-1"></i>Add template';
+    ? '<i class="bi bi-check2 me-1"></i>Save changes' : '<i class="bi bi-check2 me-1"></i>Save as draft';
   document.getElementById('ta-name').value = t.name;
   document.getElementById('ta-desc').value = t.desc || '';
   document.getElementById('ta-base').value = t.base;
@@ -286,6 +344,45 @@ async function taDelete(id) {
   taList = taList.filter(x => x.id !== id);
   taRender();
 }
+
+async function taUpload(file) {
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { toast('Keep the file under 8 MB.', 'error'); return; }
+  const reading = document.getElementById('ta-reading');
+  document.getElementById('ta-reading-txt').textContent = `Reading “${file.name}”…`;
+  reading.classList.add('show');
+  const fd = new FormData();
+  fd.append('file', file);
+  let r;
+  try {
+    r = await fetch('/api/invoices/custom-templates/from-document/', {
+      method: 'POST', body: fd,
+      headers: {'Authorization': 'Bearer ' + (localStorage.getItem('access_token') || '')},
+    }).then(x => x.json());
+  } catch (_) { r = {success: false, message: 'Upload failed — check your connection.'}; }
+  reading.classList.remove('show');
+  if (!r.success) { toast(r.message || 'Could not read that document.', 'error'); return; }
+  taList.push(r.data);
+  taRender();
+  const found = (r.data.signals || []).join(', ');
+  toast(`Draft “${r.data.name}” created${found ? ' — ' + found : ''}. Review it, then click Apply.`, 'success');
+}
+
+async function taPublish(id, publish) {
+  const r = await API.post(`/api/invoices/custom-templates/${encodeURIComponent(id)}/publish/`, {publish});
+  if (!r.success) { toast(r.message || 'Could not update.', 'error'); return; }
+  taList = taList.map(t => t.id === id ? r.data : t);
+  taRender();
+  toast(r.message, 'success');
+}
+
+(function wireDrop() {
+  const z = document.getElementById('ta-drop');
+  if (!z) return;
+  ['dragenter', 'dragover'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.remove('over'); }));
+  z.addEventListener('drop', e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) taUpload(f); });
+})();
 
 document.getElementById('ta-swatches').innerHTML = SWATCHES.map(c =>
   `<button type="button" style="background:${c}" title="${c}" aria-label="Use ${c}" onclick="document.getElementById('ta-accent-txt').value='${c}';taColor('${c}')"></button>`).join('');

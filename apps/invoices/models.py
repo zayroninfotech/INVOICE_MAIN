@@ -151,6 +151,11 @@ class CustomTemplate(me.Document):
     accent      = me.StringField(default='#C1121F')
     tint        = me.StringField(default='')
     min_plan    = me.StringField(choices=['free', 'plus', 'pro', 'unlimited'], default='plus')
+    # 'draft' until the superadmin clicks Apply — only 'published' ones show
+    # in Buy Invoice. Templates saved before this field existed read as published.
+    status      = me.StringField(choices=['draft', 'published'], default='draft')
+    source_name  = me.StringField(default='')    # original uploaded file name
+    preview_path = me.StringField(default='')    # MEDIA_ROOT-relative PNG of page 1
     is_active   = me.BooleanField(default=True)
     created_by  = me.StringField(default='')
     created_at  = me.DateTimeField(default=datetime.utcnow)

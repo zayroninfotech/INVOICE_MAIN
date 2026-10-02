@@ -323,7 +323,8 @@ TEMPLATE_SPECS = {
 def _customs():
     try:
         from .models import CustomTemplate
-        return {c.template_id: c for c in CustomTemplate.objects(is_active=True)}
+        # Drafts stay on the Add Invoice page until the superadmin applies them.
+        return {c.template_id: c for c in CustomTemplate.objects(is_active=True, status__ne='draft')}
     except Exception:          # DB unreachable — built-ins still work
         return {}
 
