@@ -142,9 +142,44 @@ def _docx_as_html(data):
     return html
 
 
+def _docx_to_pdf(data):
+    """Convert Word → PDF with LibreOffice when it's installed. Returns bytes or None."""
+    import shutil
+    import subprocess
+    import tempfile
+    exe = shutil.which('soffice') or shutil.which('libreoffice')
+    if not exe:
+        return None
+    tmp = tempfile.mkdtemp(prefix='docx2pdf_')
+    try:
+        src = os.path.join(tmp, 'design.docx')
+        with open(src, 'wb') as fh:
+            fh.write(data)
+        subprocess.run([exe, '--headless', '--norestore', f'-env:UserInstallation=file://{tmp}/profile',
+                        '--convert-to', 'pdf', '--outdir', tmp, src],
+                       capture_output=True, timeout=120)
+        out = os.path.join(tmp, 'design.pdf')
+        if os.path.exists(out) and os.path.getsize(out) > 0:
+            with open(out, 'rb') as fh:
+                return fh.read()
+    except Exception:
+        logger.warning("LibreOffice conversion failed", exc_info=True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return None
+
+
 def read_upload(data, content_type, filename):
     """Return (png_bytes_or_None, text_description) for the model."""
     name = (filename or '').lower()
+    if name.endswith('.docx'):
+        # Give the model a real picture of the Word page when LibreOffice is
+        # available; without one it only sees structure and guesses the look.
+        pdf = _docx_to_pdf(data)
+        if pdf:
+            png, text = read_upload(pdf, 'application/pdf', 'design.pdf')
+            return png, (text + "\n\nThe same design as Word-HTML (exact colours and shading):\n"
+                         + _docx_as_html(data))
     if name.endswith('.pdf') or content_type == 'application/pdf':
         import fitz
         doc = fitz.open(stream=data, filetype='pdf')
@@ -170,7 +205,12 @@ def _prompt(description):
     item_vars = ', '.join(f'it.{k} ({v})' for k, v in ITEM_FIELDS.items())
     return f"""You are recreating an invoice design as an HTML template for an invoicing app.
 
-Study the attached invoice design carefully and reproduce it as faithfully as you can:
+Study the attached invoice design carefully and reproduce it as faithfully as you can.
+If a picture of the page is attached, THE PICTURE IS THE SOURCE OF TRUTH: match what you see —
+the page background colour (e.g. a dark/black page with light text), where the logo sits
+(left/right), which side the company name and GSTIN/PAN are on, table border colours, label
+colours (e.g. red labels), band colours, alignment and spacing. Do not invent a different layout
+or add sections that are not in the design. Keep:
 the same layout, sections and their order, colours (exact hex values), header/footer bands,
 table structure and borders, alignment, font weights and relative sizes, spacing, and every
 fixed label and heading (e.g. "TAX INVOICE", "Bill To", "Authorised Signatory", bank details,
@@ -188,8 +228,12 @@ Hard rules — the output is checked automatically and rejected otherwise:
 - Output ONLY the HTML. No markdown, no code fences, no explanations.
 - One root element: <div class="ai-page"> … </div>. Put all CSS in a single <style> block inside it,
   every selector prefixed with .ai-page. No <script>, no event handlers, no external fonts/URLs/@import.
-- The page is A4: .ai-page {{ width: 794px; min-height: 1123px; box-sizing: border-box; background: #fff; }}.
-  Use px units; use a common font stack (e.g. Arial, Helvetica, sans-serif or Georgia, serif to match).
+- The page is A4: .ai-page {{ width: 794px; min-height: 1123px; box-sizing: border-box; }} with
+  background set to the design's own page colour (dark if the design is dark), plus
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; so it prints.
+- Use px units. Fonts: ONLY "Arial, Helvetica, sans-serif" (or "Georgia, 'Times New Roman', serif" if the
+  design is clearly serif). Never name any other font. No text-transform or font-variant unless the design
+  itself shows that text in capitals.
 - Use only the variables listed. Only these template tags: for, endfor, empty, if, elif, else, endif.
   Only these filters: default, upper, lower, title, linebreaksbr. Never use the safe filter.
 - Images: only {{{{ logo_url }}}} or {{{{ signature_url }}}} as src.

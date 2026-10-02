@@ -590,9 +590,20 @@ function vwTab(which) {
     : `${esc(vw.t.base_name)} layout in ${esc(vw.t.accent)}, with sample data.`;
   st.innerHTML = `<div><div class="vw-sheet ${vw.kind === 'base' ? 'base' : ''}">${vw.html}</div><p class="vw-note">${note}</p></div>`;
   if (vw.kind === 'exact') {
-    const pg = st.querySelector('.xt-page');
-    const w = (vw.w || 595) * 96 / 72;
-    if (pg) pg.style.zoom = Math.min(1.25, (st.clientWidth - 40) / w).toFixed(3);
+    // Isolated frame: the admin page's own styles must not leak into the design,
+    // so this looks exactly like the PDF.
+    const sheet = st.querySelector('.vw-sheet');
+    const w = Math.round((vw.w || 595.28) * 96 / 72);
+    const z = Math.min(1.25, (st.clientWidth - 40) / w);
+    const fr = document.createElement('iframe');
+    fr.setAttribute('sandbox', 'allow-same-origin');
+    fr.title = 'Template preview';
+    fr.style.cssText = `width:${w}px;height:1123px;border:0;display:block;zoom:${z.toFixed(3)}`;
+    fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}' +
+                '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>' + vw.html + '</body></html>';
+    fr.onload = () => { try { fr.style.height = fr.contentDocument.documentElement.scrollHeight + 'px'; } catch (_) {} };
+    sheet.innerHTML = '';
+    sheet.appendChild(fr);
   } else {
     const sh = st.querySelector('.vw-sheet.base');
     const z = Math.min(1, (st.clientWidth - 40) / 794);
