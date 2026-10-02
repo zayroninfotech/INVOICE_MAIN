@@ -390,7 +390,7 @@
       <span class="mail-ico"><i class="bi bi-envelope"></i></span>
       <div>
         <h2 id="mail-title">Send invoice to customer</h2>
-        <p>Send the invoice PDF and a secure link for the customer to review and respond.</p>
+        <p>Send a secure link where the customer can view, download and respond to the invoice.</p>
       </div>
       <button type="button" class="mail-x" aria-label="Close" onclick="document.getElementById('mail-dlg').close()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -880,7 +880,7 @@ function openMailDialog() {
   document.getElementById('mail-sum-pay-txt').textContent = inv.payment_status || 'Due';
   const msg = document.getElementById('mail-msg');
   if (!msg.value.trim()) {
-    msg.value = `Dear Customer,\nPlease find attached invoice ${inv.invoice_number || ''} for your review.\n` +
+    msg.value = `Dear Customer,\nPlease review invoice ${inv.invoice_number || ''} using the button below.\n` +
                 'Kindly confirm receipt and contact us if you have any questions.';
   }
   document.getElementById('mail-dlg').showModal();

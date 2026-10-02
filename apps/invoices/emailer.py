@@ -181,10 +181,8 @@ def build_invoice_email(invoice, seller_name, reply_to='', to=None, note='',
         text += ["", note]
     text += [
         "",
-        "Review the invoice and approve or decline it here:",
+        "View, download and approve or decline the invoice here:",
         link,
-        "",
-        "The full invoice is attached as a PDF.",
         "",
         f"Thank you,\n{sender}",
     ]
@@ -203,19 +201,15 @@ def build_invoice_email(invoice, seller_name, reply_to='', to=None, note='',
     {due_html}
     <p style="margin:16px 0 20px;color:#334155;font-size:15px;line-height:1.6">
       Dear {escape(invoice.customer_name)},<br>
-      {escape(sender)} has sent you the invoice below.
+      {escape(sender)} has sent you an invoice for your review.
     </p>
     {note_html}
     <a href="{escape(link)}"
        style="display:inline-block;padding:13px 26px;background:#c1121f;color:#fff;text-decoration:none;
               border-radius:8px;font-weight:700;font-size:15px">Review and approve</a>
-    <p style="margin:14px 0 26px;color:#94a3b8;font-size:13px">
-      Or open this link: <a href="{escape(link)}" style="color:#c1121f">{escape(link)}</a>
-    </p>
-    <img src="cid:invoice_preview" alt="Invoice {escape(invoice.invoice_number)}"
-         style="width:100%;border:1px solid #e8e7e5;border-radius:10px;display:block">
     <p style="margin:24px 0 0;color:#94a3b8;font-size:13px;border-top:1px solid #e8e7e5;padding-top:16px">
-      The full invoice is attached as a PDF. Reply to this email to reach {escape(sender)} directly.
+      The button opens the invoice, where you can view it, download the PDF and respond.
+      Reply to this email to reach {escape(sender)} directly.
     </p>
   </div>
 </body></html>"""
@@ -227,18 +221,8 @@ def build_invoice_email(invoice, seller_name, reply_to='', to=None, note='',
     )
     msg.attach_alternative(html, 'text/html')
 
-    png = invoice_png(pdf_abs_path)
-    if png:
-        img = MIMEImage(png, 'png')
-        img.add_header('Content-ID', '<invoice_preview>')
-        img.add_header('Content-Disposition', 'inline',
-                       filename=f'{invoice.invoice_number}.png')
-        msg.attach(img)
-        msg.mixed_subtype = 'related'
-
-    if pdf_abs_path and os.path.exists(pdf_abs_path):
-        msg.attach_file(pdf_abs_path)
-
+    # No inline picture and no PDF attachment: the customer sees the invoice
+    # (and downloads the PDF) on the approval page the button opens.
     return msg
 
 
