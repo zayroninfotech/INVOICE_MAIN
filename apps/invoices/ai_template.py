@@ -26,6 +26,9 @@ from django.template import Context, Engine
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = 'gpt-4.1'
+# A design still 'working' after this long lost its background thread
+# (app restart / worker recycle) — it is shown as failed so it can be retried.
+STALE_MINUTES = 5
 
 # Variables the generated template may use. Item rows loop over `items`.
 VARIABLES = {

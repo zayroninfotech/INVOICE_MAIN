@@ -556,6 +556,14 @@ class CustomTemplateListView(APIView):
     def get(self, request):
         from .models import CustomTemplate
         from .template_registry import INVOICE_TEMPLATES
+        from .ai_template import STALE_MINUTES
+        stale_before = datetime.utcnow().timestamp() - STALE_MINUTES * 60
+        for c in CustomTemplate.objects(is_active=True, mode='ai', ai_status='working'):
+            if (c.updated_at or c.created_at).timestamp() < stale_before:
+                c.ai_status = 'failed'
+                c.ai_error = ("The design stopped before finishing (the server restarted while it ran). "
+                              "Click Try again.")
+                c.save()
         return success({
             'templates': [_custom_template_data(c) for c in CustomTemplate.objects(is_active=True)],
             'bases': [{'id': t['id'], 'name': t['name'], 'desc': t['desc']} for t in INVOICE_TEMPLATES],
