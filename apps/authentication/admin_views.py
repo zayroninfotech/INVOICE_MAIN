@@ -309,7 +309,8 @@ def admin_smtp_api(request):
         except MailNotConfigured as exc:
             return JsonResponse({'error': str(exc)}, status=400)
         except Exception as exc:
-            return JsonResponse({'error': f'{type(exc).__name__}: {exc}'}, status=502)
+            from apps.invoices.emailer import explain_send_error
+            return JsonResponse({'error': explain_send_error(exc)}, status=502)
         AuditLog.log(request.admin_user, 'smtp_test', f'Test email to {to}', _get_ip(request))
         return JsonResponse({'ok': True, 'message': f'Test email sent to {to}.'})
 

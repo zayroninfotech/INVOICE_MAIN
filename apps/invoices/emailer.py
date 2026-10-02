@@ -70,6 +70,35 @@ def get_connection(cfg=None):
     )
 
 
+def explain_send_error(exc):
+    """Turn a raw SMTP/socket failure into a sentence the admin can act on.
+    The original text is kept at the end for support."""
+    import smtplib
+    import socket
+    import ssl
+    raw = str(exc)
+    if isinstance(exc, smtplib.SMTPAuthenticationError) or ' 535' in f' {raw}' or 'authentication failed' in raw.lower():
+        msg = ("The mail server rejected the login. Check the SMTP username (the full mailbox address) "
+               "and password in Admin → Email (SMTP). If you left the password blank, the old stored "
+               "password is still being used — type the current one and save.")
+    elif isinstance(exc, smtplib.SMTPSenderRefused) or ' 553' in f' {raw}' or ' 550 5.7' in f' {raw}':
+        msg = ("The mail server refused the From address. It must be the same mailbox you log in with "
+               "(set From address to that email in Admin → Email (SMTP)).")
+    elif isinstance(exc, smtplib.SMTPRecipientsRefused):
+        msg = "The mail server refused the recipient address. Check the email you are sending to."
+    elif isinstance(exc, (socket.timeout, TimeoutError)) or 'timed out' in raw.lower():
+        msg = ("Could not reach the mail server (timed out). Check host and port: 465 needs “Use SSL”, "
+               "587 needs “Use STARTTLS”. Your server host may also block that port.")
+    elif isinstance(exc, (ssl.SSLError, smtplib.SMTPServerDisconnected)) or 'wrong version number' in raw.lower():
+        msg = ("The secure connection failed. Use port 465 with “Use SSL”, or port 587 with “Use STARTTLS” — "
+               "not both.")
+    elif isinstance(exc, (socket.gaierror, ConnectionRefusedError)):
+        msg = "Could not connect to the mail server. Check the SMTP host name and port."
+    else:
+        return f"Could not send the email: {raw}"
+    return f"{msg} (Server said: {raw[:160]})"
+
+
 class MailNotConfigured(RuntimeError):
     """Raised instead of handing SMTP obviously-unusable credentials."""
 

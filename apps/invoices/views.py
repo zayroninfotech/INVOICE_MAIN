@@ -10,7 +10,7 @@ from .models import Invoice
 from .serializers import InvoiceSerializer, InvoiceListSerializer, InvoiceDetailSerializer
 from .pdf_generator import generate_invoice_pdf
 from . import template_registry, report_export
-from .emailer import send_invoice_email, approval_url, MailNotConfigured
+from .emailer import send_invoice_email, approval_url, MailNotConfigured, explain_send_error
 from utils.response import success, error
 from datetime import datetime
 import logging
@@ -345,7 +345,7 @@ class InvoiceEmailView(APIView):
             return error(str(exc), status=503)
         except Exception as exc:
             logger.warning("invoice email failed for %s", invoice.pk, exc_info=True)
-            return error(f"Could not send the email: {exc}", status=502)
+            return error(explain_send_error(exc), status=502)
 
         # Only 'Sent' on the way out of Draft — never demote a Paid invoice.
         if invoice.status == 'Draft':
