@@ -71,16 +71,11 @@
   .mail-err { color:#B91C1C; font-size:.85rem; margin:0 0 12px; display:none; }
   .mail-err.show { display:block; }
 
-  /* ── the real invoice preview — Img1: light grey stage, side arrows, capped sheet ── */
-  .idet-preview-stage { position:relative; background:#EDEDEF; border-radius:14px; padding:26px 64px; margin-bottom:20px; }
+  /* ── the real invoice preview: light grey stage, centred sheet ── */
+  .idet-preview-stage { background:#EDEDEF; border-radius:14px; padding:28px; margin-bottom:20px; }
   .idet-preview-wrap { display:flex; justify-content:center; }
-  .idet-preview-wrap .inv-preview { width:100%; max-width:760px; }
-  .pvw-arrow { position:absolute; top:50%; transform:translateY(-50%); width:38px; height:38px; border-radius:50%;
-    background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow); color:var(--text-secondary);
-    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; z-index:2; }
-  .pvw-arrow:hover { color:var(--ember); border-color:var(--ember-border); }
-  .pvw-arrow.prev { left:14px; } .pvw-arrow.next { right:14px; }
-  @media (max-width:640px){ .idet-preview-stage{padding:16px 12px;} .pvw-arrow{display:none;} }
+  .idet-preview-wrap .inv-preview { width:100%; max-width:880px; box-shadow:0 6px 24px rgba(15,23,42,.08); }
+  @media (max-width:640px){ .idet-preview-stage{padding:12px 8px;} }
   /* Preview CSS lives in _invoice_doc_css.html, included after this block. */
 
   /* ── secondary chrome: Img1 bottom cards — calendar rows + blue section head ── */
@@ -169,11 +164,9 @@
        same .inv-preview/.pvw-* markup used by form.html (create) and edit.html
        (edit), populated read-only from the saved invoice via renderPreview(). -->
   <div class="idet-preview-stage">
-    <button class="pvw-arrow prev" type="button" aria-label="Previous invoice" onclick="stepInvoice(-1)"><i class="bi bi-chevron-left"></i></button>
     <div class="idet-preview-wrap">
       {% include "invoices/_invoice_doc.html" %}<!-- /inv-preview -->
     </div>
-    <button class="pvw-arrow next" type="button" aria-label="Next invoice" onclick="stepInvoice(1)"><i class="bi bi-chevron-right"></i></button>
   </div><!-- /idet-preview-stage -->
 
   <!-- SECONDARY: Img1 status + payments — calendar rows, current-status bar -->
@@ -725,19 +718,5 @@ async function recordPayment() {
 
 loadInvoice();
 
-/* ── Img1 side arrows: prev/next invoice without leaving the page ── */
-async function stepInvoice(dir) {
-  try {
-    const res = await API.get('/api/invoices/?page_size=100');
-    const list = (res.success && Array.isArray(res.data?.results)) ? res.data.results
-               : (res.success && Array.isArray(res.data)) ? res.data : [];
-    if (!list.length || !window._inv) return;
-    const ids = list.map(x => String(x.id));
-    let i = ids.indexOf(String(window._inv.id));
-    if (i < 0) return;
-    i = (i + dir + ids.length) % ids.length;
-    window.location.href = `/invoices/${ids[i]}/`;
-  } catch (_) {}
-}
 </script>
 {% endblock %}
