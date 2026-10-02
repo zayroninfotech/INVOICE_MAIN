@@ -310,6 +310,15 @@ def sanitize(html):
         raise AIError("The AI didn't return a page. Try again.")
     end = html.rfind('</div>')
     html = html[start:end + len('</div>')] if end > start else html[start:]
+    # Clean, don't reject: models often add an inline <svg> icon, a <button> or
+    # an <input> to a design. Remove those (with their content) and any on…=
+    # handlers so the rest of the design survives; the checks below still
+    # reject anything that is dangerous after cleaning.
+    html = re.sub(r'<\s*(script|iframe|object|embed|svg|form|textarea|button|select|noscript|template)\b.*?<\s*/\s*\1\s*>',
+                  '', html, flags=re.S | re.I)
+    html = re.sub(r'<\s*/?\s*(script|iframe|object|embed|svg|form|textarea|button|select|noscript|template|'
+                  r'input|link|meta|base)\b[^>]*>', '', html, flags=re.I)
+    html = re.sub(r'\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)', '', html, flags=re.I)
     bad = [
         (r'<\s*(script|iframe|object|embed|link|meta|base|form|input|button|textarea|svg)\b', 'disallowed element'),
         (r'\son[a-z]+\s*=', 'event handler'),
