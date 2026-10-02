@@ -12,6 +12,17 @@ def _no_store(response):
     return response
 
 
+def _web_media(ctx):
+    """print_context hands back MEDIA_ROOT-relative paths (what the PDF printer
+    needs); a browser needs them under MEDIA_URL or the logo shows as broken."""
+    from django.conf import settings
+    for key in ('logo_url', 'sig_url'):
+        v = ctx.get(key) or ''
+        if v and not v.startswith(('http', 'data:', '/', 'file:')):
+            ctx[key] = settings.MEDIA_URL + v
+    return ctx
+
+
 def invoice_list(request):
     return render(request, 'invoices/list.html')
 
@@ -56,8 +67,8 @@ def invoice_approve(request, token):
         raise Http404("Invoice link not found")
 
     bp = BusinessProfile.objects(user_id=invoice.created_by).first()
-    ctx = build_print_context(invoice, bp, None,
-                              getattr(invoice, 'template_style', 'classic'))
+    ctx = _web_media(build_print_context(invoice, bp, None,
+                                         getattr(invoice, 'template_style', 'classic')))
     ctx.update({
         'token':           token,
         'approval_status': invoice.approval_status,
@@ -68,6 +79,7 @@ def invoice_approve(request, token):
         'invoice_number':  invoice.invoice_number,
         'customer_name':   invoice.customer_name,
         'seller_name':     (bp.company_name if bp else '') or invoice.signature_company,
+        'seller_logo':     ctx.get('logo_url') or '',
         'pdf_url':         f"/api/invoices/public/{token}/pdf/",
     })
     return _no_store(render(request, 'invoices/approve.html', ctx))
@@ -93,6 +105,6 @@ def invoice_print(request, pk):
     if not invoice:
         return redirect('invoice_list_page')
     bp = BusinessProfile.objects(user_id=invoice.created_by).first()
-    ctx = build_print_context(invoice, bp, None,
-                              getattr(invoice, 'template_style', 'classic'))
+    ctx = _web_media(build_print_context(invoice, bp, None,
+                                         getattr(invoice, 'template_style', 'classic')))
     return _no_store(render(request, 'invoices/print.html', ctx))

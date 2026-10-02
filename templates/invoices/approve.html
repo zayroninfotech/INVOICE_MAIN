@@ -14,41 +14,79 @@ so the customer approves exactly the document they were sent.
 <title>Invoice {{ invoice_number }}{% if seller_name %} — {{ seller_name }}{% endif %}</title>
 <link rel="icon" href="/static/img/logo.webp">
 {% load static %}<link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+<link href="{% static 'fonts/geist/geist.css' %}" rel="stylesheet">
 
 {% include "invoices/_invoice_doc_css.html" %}
 
 <style>
   :root{
-    --ap-bg:#F5F4F2; --ap-surface:#fff; --ap-line:#E5E4E1;
-    /* --ap-muted sits on white at body sizes, so it has to clear 4.5:1 (#5F636D
-       is 5.4:1; the #71757F it replaced measured 4.4:1). */
+    --ap-bg:#F7F6F4; --ap-surface:#fff; --ap-line:#ECE9E6;
     --ap-ink:#131416; --ap-ink-2:#4A4A4A; --ap-muted:#5F636D;
-    --ap-brand:#C1121F; --ap-brand-dark:#8C0F1B;
+    --ap-brand:#C1121F; --ap-brand-dark:#8C0F1B; --ap-brand-tint:#FDECEE; --ap-brand-line:#F7C9CE;
     --ap-ok:#15803D; --ap-ok-bg:#F0FDF4; --ap-ok-line:#BBF7D0;
     --ap-no:#B91C1C; --ap-no-bg:#FEF2F2; --ap-no-line:#FECACA;
+    --ap-due:#B45309; --ap-due-bg:#FEF3C7; --ap-due-ink:#92400E;
+    --ap-shadow:0 1px 2px rgba(15,23,42,.05), 0 8px 24px rgba(15,23,42,.06);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--ap-bg);color:var(--ap-ink);
-       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  body{margin:0;color:var(--ap-ink);
+       background:
+         radial-gradient(900px 420px at 100% 0, rgba(193,18,31,.07), transparent 70%),
+         radial-gradient(700px 380px at 0 100%, rgba(193,18,31,.05), transparent 70%),
+         var(--ap-bg);
+       background-attachment:fixed;
+       font-family:Geist,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
        line-height:1.55;-webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(193,18,31,.16)}
 
-  .ap-bar{background:var(--ap-surface);border-bottom:1px solid var(--ap-line);padding:14px 20px}
-  .ap-bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .ap-seller{font-weight:700;font-size:1rem}
-  .ap-bar-meta{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--ap-muted)}
+  .ap-bar{background:rgba(255,255,255,.86);backdrop-filter:saturate(1.4) blur(8px);
+          border-bottom:1px solid var(--ap-line);padding:12px 20px;position:sticky;top:0;z-index:5}
+  .ap-bar-in{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .ap-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .ap-brand-logo{width:36px;height:36px;border-radius:9px;object-fit:contain;background:#fff;
+                 border:1px solid var(--ap-line);padding:3px;flex-shrink:0}
+  .ap-brand-mono{width:36px;height:36px;border-radius:9px;background:var(--ap-brand);color:#fff;
+                 display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .ap-seller{font-weight:700;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ap-bar-meta{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;
+               color:var(--ap-brand);background:var(--ap-brand-tint);border:1px solid var(--ap-brand-line);
+               padding:5px 12px;border-radius:99px;white-space:nowrap}
 
-  .ap-wrap{max-width:960px;margin:0 auto;padding:28px 20px 64px}
+  .ap-wrap{max-width:1000px;margin:0 auto;padding:30px 20px 48px}
 
-  .ap-head{margin-bottom:22px}
-  .ap-h1{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;line-height:1.2}
-  .ap-lede{margin:0;color:var(--ap-ink-2);font-size:1rem;max-width:62ch}
+  .ap-hero{display:flex;align-items:center;gap:24px;margin-bottom:22px}
+  .ap-head{flex:1;min-width:0}
+  .ap-h1{font-size:2rem;font-weight:800;letter-spacing:-.025em;margin:0 0 6px;line-height:1.15}
+  .ap-h1 span{color:var(--ap-brand)}
+  .ap-lede{margin:0;color:var(--ap-ink-2);font-size:1rem;max-width:58ch}
 
-  .ap-facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-  .ap-fact{background:var(--ap-surface);border:1px solid var(--ap-line);border-radius:10px;
-           padding:10px 14px;min-width:140px}
-  .ap-fact dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-              color:var(--ap-muted);margin:0 0 3px}
-  .ap-fact dd{margin:0;font-size:1rem;font-weight:700}
+  /* Decorative: a sheet with a "review" badge — drawn, not an image. */
+  .ap-art{position:relative;width:150px;height:112px;flex-shrink:0}
+  .ap-art .sh{position:absolute;background:#fff;border:1px solid var(--ap-line);border-radius:12px;
+              box-shadow:var(--ap-shadow)}
+  .ap-art .sh.back{inset:10px 34px 4px 22px;transform:rotate(-7deg);opacity:.7}
+  .ap-art .sh.front{inset:0 20px 12px 30px;padding:14px 14px}
+  .ap-art .ln{height:6px;border-radius:3px;background:#EDEBE8;margin-bottom:7px}
+  .ap-art .ln.r{background:var(--ap-brand-line);width:55%}
+  .ap-art .ln.s{width:70%}
+  .ap-art .eye{position:absolute;right:4px;bottom:0;width:44px;height:44px;border-radius:50%;
+               background:var(--ap-brand);color:#fff;display:flex;align-items:center;justify-content:center;
+               font-size:1.2rem;box-shadow:0 6px 16px rgba(193,18,31,.32);border:3px solid #fff}
+
+  .ap-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 20px;padding:0}
+  .ap-fact{display:flex;align-items:center;gap:12px;background:var(--ap-surface);border:1px solid var(--ap-line);
+           border-radius:14px;padding:14px 16px;box-shadow:var(--ap-shadow);margin:0}
+  .ap-fact .ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+               font-size:1.15rem;flex-shrink:0;background:var(--ap-brand-tint);color:var(--ap-brand)}
+  .ap-fact dt{font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+              color:var(--ap-muted);margin:0 0 2px}
+  .ap-fact dd{margin:0;font-size:1.12rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .ap-chip{display:inline-flex;align-items:center;gap:5px;font-size:.88rem;font-weight:700;
+           padding:3px 10px;border-radius:99px;background:var(--ap-due-bg);color:var(--ap-due-ink)}
+  .ap-chip.paid{background:var(--ap-ok-bg);color:var(--ap-ok)}
+  .ap-chip.cancelled{background:#F1F5F9;color:#475569}
+  .ap-fact.pay .ic{background:var(--ap-due-bg);color:var(--ap-due)}
+  .ap-fact.pay.paid .ic{background:var(--ap-ok-bg);color:var(--ap-ok)}
 
   /* Outcome banner — shown once the customer has responded */
   .ap-done{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:12px;
@@ -64,21 +102,24 @@ so the customer approves exactly the document they were sent.
             color:var(--ap-ink-2);font-size:.92rem;white-space:pre-wrap}
 
   /* Invoice document: authored on a 411px canvas, scaled to the column */
-  .ap-doc{background:var(--ap-surface);border:1px solid var(--ap-line);border-radius:14px;
-          padding:22px;overflow:hidden}
+  .ap-doc{background:var(--ap-surface);border:1px solid var(--ap-line);border-radius:18px;
+          padding:28px;overflow:hidden;box-shadow:var(--ap-shadow)}
   /* A CSS transform doesn't change the layout box, so the 411px canvas is
      wrapped in a frame that JS sizes to the SCALED dimensions. Without it,
      centring works off the unscaled width and the document sits off to one side. */
   .ap-doc-frame{margin:0 auto}
   .ap-doc-scale{width:411px;transform-origin:top left}
-  .ap-doc .inv-preview{width:411px;box-shadow:none;border-radius:6px;border:1px solid var(--ap-line)}
+  .ap-doc .inv-preview{width:411px;box-shadow:0 1px 3px rgba(15,23,42,.08);border-radius:4px;border:1px solid var(--ap-line)}
 
   /* Action bar */
-  .ap-actions{position:sticky;bottom:0;margin-top:22px;background:var(--ap-surface);
-              border:1px solid var(--ap-line);border-radius:14px;padding:16px 18px;
-              display:flex;gap:12px;align-items:center;flex-wrap:wrap;
-              box-shadow:0 -2px 18px rgba(15,23,42,.06)}
-  .ap-actions p{margin:0;color:var(--ap-muted);font-size:.88rem;flex:1;min-width:180px}
+  .ap-actions{position:sticky;bottom:12px;margin-top:20px;background:rgba(255,255,255,.96);
+              backdrop-filter:blur(8px);border:1px solid var(--ap-line);border-radius:16px;padding:12px 12px 12px 16px;
+              display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+              box-shadow:0 2px 6px rgba(15,23,42,.06), 0 14px 34px rgba(15,23,42,.12)}
+  .ap-actions-txt{display:flex;align-items:center;gap:12px;flex:1;min-width:220px}
+  .ap-actions-txt .ic{width:38px;height:38px;border-radius:10px;background:var(--ap-brand-tint);color:var(--ap-brand);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ap-actions p{margin:0;color:var(--ap-ink-2);font-size:.88rem}
 
   .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:9px;
        font-size:.92rem;font-weight:700;cursor:pointer;border:1px solid transparent;
@@ -117,11 +158,21 @@ so the customer approves exactly the document they were sent.
 
   .ap-foot{text-align:center;color:var(--ap-muted);font-size:.8rem;margin-top:28px}
 
+  @media(max-width:760px){
+    .ap-art{display:none}
+    .ap-facts{grid-template-columns:1fr 1fr}
+    .ap-facts .ap-fact:first-child{grid-column:1 / -1}
+  }
   @media(max-width:560px){
-    .ap-h1{font-size:1.4rem}
-    .ap-doc{padding:12px}
-    .ap-actions{flex-direction:column;align-items:stretch}
+    .ap-wrap{padding:22px 14px 32px}
+    .ap-h1{font-size:1.5rem}
+    .ap-doc{padding:12px;border-radius:14px}
+    .ap-fact{padding:12px;gap:10px}
+    .ap-fact .ic{width:34px;height:34px;font-size:1rem}
+    .ap-fact dd{font-size:1rem;white-space:nowrap}
+    .ap-actions{flex-direction:column;align-items:stretch;position:static}
     .ap-actions .btn{justify-content:center}
+    .ap-bar-meta span{display:none}
   }
   @media(prefers-reduced-motion:no-preference){
     .ap-done{animation:apIn .3s ease-out}
@@ -133,28 +184,50 @@ so the customer approves exactly the document they were sent.
 
 <header class="ap-bar">
   <div class="ap-bar-in">
-    <span class="ap-seller">{{ seller_name|default:"Invoice" }}</span>
-    <span class="ap-bar-meta"><i class="bi bi-shield-lock"></i> Private link</span>
+    <span class="ap-brand">
+      {% if seller_logo %}<img class="ap-brand-logo" src="{{ seller_logo }}" alt="">
+      {% else %}<span class="ap-brand-mono" aria-hidden="true">{{ seller_name|default:"I"|slice:":1"|upper }}</span>{% endif %}
+      <span class="ap-seller">{{ seller_name|default:"Invoice" }}</span>
+    </span>
+    <span class="ap-bar-meta" title="Only people with this link can see this invoice"><i class="bi bi-shield-lock"></i><span>Private link</span></span>
   </div>
 </header>
 
 <main class="ap-wrap">
 
-  <div class="ap-head">
-    <h1 class="ap-h1">Invoice {{ invoice_number }}</h1>
-    <p class="ap-lede">
-      {% if approval_status == 'In Process' %}
-        Hello {{ customer_name }} — please review this invoice below, then approve it or send it back with a reason.
-      {% else %}
-        Hello {{ customer_name }} — you have already responded to this invoice. It is kept here for your records.
-      {% endif %}
-    </p>
-    <dl class="ap-facts">
-      <div class="ap-fact"><dt>Amount</dt><dd>{{ grand }}</dd></div>
-      <div class="ap-fact"><dt>Due</dt><dd>{{ bp_to }}</dd></div>
-      <div class="ap-fact"><dt>Payment</dt><dd>{{ payment_status }}</dd></div>
-    </dl>
-  </div>
+  <section class="ap-hero">
+    <div class="ap-head">
+      <h1 class="ap-h1">Invoice <span>{{ invoice_number }}</span></h1>
+      <p class="ap-lede">
+        {% if approval_status == 'In Process' %}
+          Hello {{ customer_name }} — please review this invoice below, then approve it or send it back with a reason.
+        {% else %}
+          Hello {{ customer_name }} — you have already responded to this invoice. It is kept here for your records.
+        {% endif %}
+      </p>
+    </div>
+    <div class="ap-art" aria-hidden="true">
+      <div class="sh back"></div>
+      <div class="sh front"><div class="ln r"></div><div class="ln"></div><div class="ln s"></div><div class="ln"></div></div>
+      <div class="eye"><i class="bi bi-eye"></i></div>
+    </div>
+  </section>
+
+  <dl class="ap-facts">
+    <div class="ap-fact">
+      <span class="ic"><i class="bi bi-currency-rupee"></i></span>
+      <div><dt>Amount</dt><dd>{{ grand }}</dd></div>
+    </div>
+    <div class="ap-fact">
+      <span class="ic"><i class="bi bi-calendar-event"></i></span>
+      <div><dt>Due date</dt><dd>{{ bp_to }}</dd></div>
+    </div>
+    <div class="ap-fact pay{% if payment_status == 'Paid' %} paid{% endif %}">
+      <span class="ic"><i class="bi {% if payment_status == 'Paid' %}bi-check2-circle{% else %}bi-clock-history{% endif %}"></i></span>
+      <div><dt>Payment status</dt>
+        <dd><span class="ap-chip{% if payment_status == 'Paid' %} paid{% elif payment_status == 'Cancelled' %} cancelled{% endif %}">{{ payment_status }}</span></dd></div>
+    </div>
+  </dl>
 
   <div id="ap-outcome">
     {% if approval_status != 'In Process' %}
@@ -183,10 +256,13 @@ so the customer approves exactly the document they were sent.
   </div>
 
   <div class="ap-actions" id="ap-actions">
-    <p id="ap-actions-hint">
-      {% if approval_status == 'In Process' %}Your response is sent straight to {{ seller_name|default:"the sender" }}.
-      {% else %}Changed your mind? Reply to the email and they can reissue the invoice.{% endif %}
-    </p>
+    <div class="ap-actions-txt">
+      <span class="ic"><i class="bi bi-send"></i></span>
+      <p id="ap-actions-hint">
+        {% if approval_status == 'In Process' %}Your response is sent straight to {{ seller_name|default:"the sender" }}.
+        {% else %}Changed your mind? Reply to the email and they can reissue the invoice.{% endif %}
+      </p>
+    </div>
     <a class="btn btn-ghost" href="{{ pdf_url }}"><i class="bi bi-download"></i> Download PDF</a>
     {% if approval_status == 'In Process' %}
     <button class="btn btn-no" id="ap-decline"><i class="bi bi-x-lg"></i> Decline</button>
