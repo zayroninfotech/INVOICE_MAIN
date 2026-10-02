@@ -117,6 +117,7 @@
     textarea.mail-f { min-height:120px; }
   }
   .mail-err.show { display:block; }
+  .mail-err-raw { display:block; margin-top:4px; font-size:.74rem; color:#991B1B; opacity:.75; word-break:break-word; }
 
   /* ── the real invoice preview: an A4 sheet (210×297) on a grey stage, the
      invoice scaled onto it exactly like print.html does for the PDF — same
@@ -868,6 +869,7 @@ async function downloadPDF(btn) {
 function openMailDialog() {
   const err = document.getElementById('mail-err');
   err.classList.remove('show');
+  document.querySelector('#mail-dlg .mail-note').style.display = '';
   const inv = window._inv || {};
   document.getElementById('mail-to').value = inv.customer_email && inv.customer_email !== 'noemail@example.com' ? inv.customer_email : '';
   document.getElementById('mail-sum-no').textContent = inv.invoice_number || '—';
@@ -905,8 +907,19 @@ async function sendEmail(btn) {
   if (!res.success) {
     // SMTP problems are the common failure here and the message says what to
     // fix, so it belongs in the dialog rather than a toast that slides away.
-    err.textContent = res.message || 'Could not send the invoice.';
+    // Lead with the plain explanation; the server's own words go small underneath.
+    const full = res.message || 'Could not send the invoice.';
+    const cut = full.indexOf(' (Server said:');
+    err.innerHTML = '';
+    err.append(cut > 0 ? full.slice(0, cut) : full);
+    if (cut > 0) {
+      const raw = document.createElement('small');
+      raw.className = 'mail-err-raw';
+      raw.textContent = full.slice(cut + 2, -1);
+      err.append(raw);
+    }
     err.classList.add('show');
+    document.querySelector('#mail-dlg .mail-note').style.display = 'none';
     return;
   }
   document.getElementById('mail-dlg').close();

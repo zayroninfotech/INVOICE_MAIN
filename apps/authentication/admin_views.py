@@ -328,7 +328,7 @@ def admin_smtp_api(request):
     cfg.enabled    = bool(body.get('enabled'))
     # Blank means "keep what is stored" — the form never receives the current
     # password, so an empty field must not wipe it.
-    pw = body.get('password')
+    pw = (body.get('password') or '').strip()
     if pw:
         cfg.password = pw
     cfg.updated_by = str(request.admin_user.id)
