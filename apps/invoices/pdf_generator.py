@@ -2568,9 +2568,10 @@ def _render_via_browser(invoice, business_profile, seller, style_id, filepath):
         return False
 
 
-# Templates rendered by printing the live-preview markup instead of ReportLab.
-# Widen this as each remaining template's preview reaches parity.
-_BROWSER_RENDERED = {'staffing', 'payroll'}
+# Every template prints the live-preview markup (print.html) so the PDF is
+# exactly what the user saw on screen. ReportLab below is only the fallback
+# for a machine with no Chrome/Edge/Chromium (set CHROME_BIN if it's elsewhere).
+_BROWSER_RENDERED = None   # None = every template
 
 
 def generate_invoice_pdf(invoice, business_profile=None, seller=None, plan=None) -> str:
@@ -2595,7 +2596,7 @@ def generate_invoice_pdf(invoice, business_profile=None, seller=None, plan=None)
     # Preferred path: print the live-preview markup with headless Chrome so the
     # PDF and the preview cannot diverge. Falls through to ReportLab below if
     # no browser is available.
-    if style_id in _BROWSER_RENDERED:
+    if _BROWSER_RENDERED is None or style_id in _BROWSER_RENDERED:
         if _render_via_browser(invoice, business_profile, seller, style_id, filepath):
             return f"pdfs/{filename}"
 
