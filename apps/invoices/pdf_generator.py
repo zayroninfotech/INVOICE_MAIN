@@ -2562,6 +2562,8 @@ def _render_via_browser(invoice, business_profile, seller, style_id, filepath):
             if rel and not rel.startswith(('http', 'data:', 'file:')):
                 p = os.path.join(settings.MEDIA_ROOT, rel.replace(settings.MEDIA_URL, '', 1).lstrip('/'))
                 ctx[key] = 'file:///' + p.replace('\\', '/') if os.path.exists(p) else ''
+        from .exact_template import page_html
+        ctx['exact_html'] = page_html(ctx, invoice, for_pdf=True)
         return html_to_pdf(render_to_string('invoices/print.html', ctx), filepath)
     except Exception:
         logger.warning("browser PDF path failed; falling back to ReportLab", exc_info=True)

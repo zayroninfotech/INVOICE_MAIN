@@ -99,6 +99,50 @@
   .btn-apply:hover { background:#166534; color:#fff; }
   .ta-src { font-size:.75rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+  /* ── Field mapper (exact-copy templates) ── */
+  dialog.mp-dlg { border:none; padding:0; width:calc(100vw - 32px); max-width:1400px; height:calc(100dvh - 32px);
+                  border-radius:18px; background:var(--surface); color:var(--text-primary); overflow:hidden;
+                  box-shadow:0 28px 64px rgba(15,23,42,.3); }
+  dialog.mp-dlg::backdrop { background:rgba(15,23,42,.5); }
+  .mp-wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
+  .mp-top { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .mp-top h3 { margin:0; font-size:1.05rem; font-weight:800; }
+  .mp-top .hint { color:var(--text-secondary); font-size:.84rem; flex:1; min-width:220px; }
+  .mp-top .btn { border-radius:10px; font-weight:600; }
+  .mp-body { display:grid; grid-template-columns:minmax(0,1fr) 340px; min-height:0; }
+  .mp-stage { overflow:auto; background:#E5E7EB; padding:24px; }
+  .mp-page { position:relative; background:#fff; margin:0 auto; box-shadow:0 8px 28px rgba(15,23,42,.15); transform-origin:top left; }
+  .mp-page .b, .mp-page .im, .mp-page .t { position:absolute; }
+  .mp-page .t { line-height:1.15; white-space:nowrap; cursor:pointer; border-radius:1.5pt; outline:0.6pt dashed rgba(37,99,235,.35); }
+  .mp-page .t:hover { outline:1pt solid #2563EB; background:rgba(37,99,235,.08); }
+  .mp-page .t.on { outline:1.4pt solid #2563EB; background:rgba(37,99,235,.16); }
+  .mp-page .t.mapped { outline:1.2pt solid #16A34A; background:rgba(22,163,74,.14); }
+  .mp-page .t.item { outline-color:#D97706; background:rgba(217,119,6,.14); }
+  .mp-page .t.hidden { opacity:.28; text-decoration:line-through; outline:0.6pt dashed #94A3B8; }
+  .mp-page .im { cursor:pointer; outline:0.8pt dashed rgba(124,58,237,.6); object-fit:contain; }
+  .mp-page .im.on { outline:1.6pt solid #7C3AED; }
+  .mp-side { border-left:1px solid var(--border); padding:16px; overflow:auto; display:flex; flex-direction:column; gap:14px; }
+  .mp-card { border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+  .mp-card h4 { font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-secondary); margin:0 0 8px; }
+  .mp-sel-text { font-weight:700; word-break:break-word; margin-bottom:10px; min-height:1.4em; }
+  .mp-sel-text.empty { color:var(--text-secondary); font-weight:500; }
+  .mp-card select { width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--surface); color:var(--text-primary); }
+  .mp-legend { display:grid; gap:6px; font-size:.82rem; }
+  .mp-legend span { display:flex; align-items:center; gap:8px; }
+  .mp-legend i { width:14px; height:14px; border-radius:3px; display:inline-block; }
+  .mp-list { display:flex; flex-direction:column; gap:4px; font-size:.82rem; max-height:260px; overflow:auto; }
+  .mp-list button { text-align:left; border:none; background:var(--surface-subtle, #F8FAFC); border-radius:8px; padding:6px 9px; cursor:pointer; color:var(--text-primary); }
+  .mp-list button b { color:#16A34A; }
+  .mp-list button.item b { color:#D97706; }
+  .mp-steps { margin:0; padding-left:18px; font-size:.84rem; color:var(--text-secondary); display:grid; gap:4px; }
+  .mp-prev { position:absolute; inset:0; background:rgba(15,23,42,.55); display:none; align-items:flex-start; justify-content:center; overflow:auto; padding:24px; z-index:5; }
+  .mp-prev.show { display:flex; }
+  .mp-prev-in { position:relative; }
+  .mp-prev-x { position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; border:none; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.2); }
+  .ta-map-btn { width:100%; border-radius:10px; font-weight:700; margin-top:10px; }
+  .ta-mapped { font-size:.78rem; color:var(--text-secondary); }
+  @media (max-width:900px) { .mp-body { grid-template-columns:1fr; grid-template-rows:1fr auto; } .mp-side { border-left:none; border-top:1px solid var(--border); max-height:42vh; } }
+
   @media (max-width:860px) {
     .ta-dlg-in { grid-template-columns:1fr; }
     .ta-pv { border-left:none; border-top:1px solid var(--border); align-items:center; }
@@ -199,6 +243,51 @@
     </div>
   </div>
 </dialog>
+<dialog class="mp-dlg" id="mp-dlg" aria-labelledby="mp-title">
+  <div class="mp-wrap">
+    <div class="mp-top">
+      <h3 id="mp-title">Map fields</h3>
+      <span class="hint">Click any text on the page, then choose what it is. Labels like “GSTIN” or “TAX INVOICE” can stay as they are.</span>
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="mpPreview()"><i class="bi bi-eye me-1"></i>Preview with sample data</button>
+      <button type="button" class="btn btn-primary btn-sm" id="mp-save" onclick="mpSave()"><i class="bi bi-check2 me-1"></i>Save mapping</button>
+      <button type="button" class="btn btn-light btn-sm" onclick="mpClose()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="mp-body" style="position:relative">
+      <div class="mp-stage" id="mp-stage"><div class="mp-page" id="mp-page"></div></div>
+      <aside class="mp-side">
+        <div class="mp-card">
+          <h4>Selected</h4>
+          <div class="mp-sel-text empty" id="mp-sel-text">Click a piece of text or an image on the page.</div>
+          <select id="mp-sel-field" disabled onchange="mpSet(this.value)"></select>
+        </div>
+        <div class="mp-card">
+          <h4>How to map</h4>
+          <ol class="mp-steps">
+            <li>Your business, customer, invoice number and dates.</li>
+            <li>The <b>first item row</b>: description, HSN, qty, rate, amount. It repeats for every item.</li>
+            <li>Other sample item rows → <b>Hide</b>.</li>
+            <li>Subtotal, taxes, grand total, amount in words.</li>
+            <li>Your logo image → <b>Your logo</b>.</li>
+          </ol>
+        </div>
+        <div class="mp-card">
+          <h4>Key</h4>
+          <div class="mp-legend">
+            <span><i style="background:rgba(22,163,74,.3);outline:1px solid #16A34A"></i>Mapped to a field</span>
+            <span><i style="background:rgba(217,119,6,.3);outline:1px solid #D97706"></i>Item row (repeats)</span>
+            <span><i style="background:#fff;outline:1px dashed #94A3B8;opacity:.5"></i>Hidden</span>
+            <span><i style="background:#fff;outline:1px dashed rgba(37,99,235,.6)"></i>Fixed text (kept)</span>
+          </div>
+        </div>
+        <div class="mp-card">
+          <h4>Mapped (<span id="mp-count">0</span>)</h4>
+          <div class="mp-list" id="mp-list"></div>
+        </div>
+      </aside>
+      <div class="mp-prev" id="mp-prev"><div class="mp-prev-in"><button type="button" class="mp-prev-x" onclick="document.getElementById('mp-prev').classList.remove('show')" aria-label="Close preview"><i class="bi bi-x-lg"></i></button><div id="mp-prev-page"></div></div></div>
+    </div>
+  </div>
+</dialog>
 {% endblock %}
 
 {% block extra_js %}
@@ -260,6 +349,8 @@ function taRender() {
         <p class="ta-desc">${esc(t.desc) || '&nbsp;'}</p>
         ${t.source_name ? `<div class="ta-src" title="${esc(t.source_name)}"><i class="bi bi-paperclip"></i> ${esc(t.source_name)}</div>` : ''}
         <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${esc(t.accent)} · ${esc(t.base_name)} layout</div>
+        ${t.mode === 'exact' ? `<div class="ta-mapped"><i class="bi bi-bullseye"></i> Exact copy · ${t.mapped} field${t.mapped === 1 ? '' : 's'} mapped</div>
+          <button type="button" class="btn ${t.mapped ? 'btn-outline-primary' : 'btn-primary'} btn-sm ta-map-btn" onclick="mpOpen('${esc(t.id)}')"><i class="bi bi-hand-index me-1"></i>${t.mapped ? 'Edit field mapping' : 'Map fields'}</button>` : ''}
         ${live
           ? `<button type="button" class="btn btn-outline-secondary btn-sm ta-apply" onclick="taPublish('${esc(t.id)}', false)"><i class="bi bi-eye-slash me-1"></i>Take out of Buy Invoice</button>`
           : `<button type="button" class="btn btn-apply ta-apply" onclick="taPublish('${esc(t.id)}', true)"><i class="bi bi-check2-circle me-1"></i>Apply to Buy Invoice</button>`}
@@ -370,11 +461,156 @@ async function taUpload(file) {
 }
 
 async function taPublish(id, publish) {
+  const t = taList.find(x => x.id === id);
+  if (publish && t && t.mode === 'exact' && !t.mapped &&
+      !confirm('No fields are mapped yet, so every invoice would print the sample text from your upload. Apply anyway?')) return;
   const r = await API.post(`/api/invoices/custom-templates/${encodeURIComponent(id)}/publish/`, {publish});
   if (!r.success) { toast(r.message || 'Could not update.', 'error'); return; }
   taList = taList.map(t => t.id === id ? r.data : t);
   taRender();
   toast(r.message, 'success');
+}
+
+/* ── Field mapper ─────────────────────────────────────────────────────── */
+let mp = null;   // {id, layout, fields, roles, sel, dirty}
+
+async function mpOpen(id) {
+  const r = await API.get(`/api/invoices/custom-templates/${encodeURIComponent(id)}/layout/`);
+  if (!r.success) { toast(r.message || 'Could not load the page.', 'error'); return; }
+  mp = {id, layout: r.data.layout, fields: r.data.fields, roles: r.data.image_roles, sel: null, dirty: false};
+  const t = taList.find(x => x.id === id);
+  document.getElementById('mp-title').textContent = 'Map fields — ' + (t ? t.name : '');
+  mpDraw();
+  mpSelect(null);
+  document.getElementById('mp-dlg').showModal();
+}
+
+function mpClose() {
+  if (mp && mp.dirty && !confirm('Close without saving your mapping?')) return;
+  document.getElementById('mp-dlg').close();
+}
+
+function mpFieldLabel(key) {
+  if (key === 'hide') return 'Hidden';
+  const f = mp.fields.find(x => x.key === key);
+  return f ? f.label : '';
+}
+
+function mpDraw() {
+  const L = mp.layout, page = document.getElementById('mp-page');
+  const pt = v => v.toFixed(2) + 'pt';
+  let h = '';
+  (L.boxes || []).forEach(b => {
+    const [x0, y0, x1, y1] = b.r;
+    h += `<div class="b" style="left:${pt(x0)};top:${pt(y0)};width:${pt(Math.max(x1 - x0, .3))};height:${pt(Math.max(y1 - y0, .3))};` +
+         (b.fill ? `background:${b.fill};${b.op < 1 ? 'opacity:' + b.op + ';' : ''}` : '') +
+         (b.stroke ? `border:${b.sw}pt solid ${b.stroke};box-sizing:border-box;` : '') + `"></div>`;
+  });
+  (L.images || []).forEach(im => {
+    const [x0, y0, x1, y1] = im.r;
+    h += `<img class="im" data-img="${esc(im.id)}" src="${esc(im.url)}" alt="" title="${esc(mp.roles[im.role] || '')}" ` +
+         `style="left:${pt(x0)};top:${pt(y0)};width:${pt(x1 - x0)};height:${pt(y1 - y0)};${im.role === 'hide' ? 'opacity:.25;' : ''}">`;
+  });
+  (L.spans || []).forEach(sp => {
+    const [x0, y0] = sp.r, f = sp.field || '';
+    const cls = f === 'hide' ? 'hidden' : f.startsWith('item.') ? 'mapped item' : f ? 'mapped' : '';
+    h += `<div class="t ${cls}" data-id="${esc(sp.id)}" title="${esc(f ? mpFieldLabel(f) : 'Fixed text — click to map')}" ` +
+         `style="left:${pt(x0)};top:${pt(y0)};font-size:${pt(sp.size)};color:${sp.color || '#000'};` +
+         `font-weight:${sp.bold ? 700 : 400};font-style:${sp.italic ? 'italic' : 'normal'};` +
+         `font-family:${sp.serif ? 'Times New Roman,serif' : 'Helvetica,Arial,sans-serif'}">${esc(sp.t)}</div>`;
+  });
+  page.style.width = pt(L.w);
+  page.style.height = pt(L.h);
+  page.innerHTML = h;
+  page.querySelectorAll('.t').forEach(el => el.addEventListener('click', () => mpSelect({kind: 'span', id: el.dataset.id})));
+  page.querySelectorAll('.im').forEach(el => el.addEventListener('click', () => mpSelect({kind: 'img', id: el.dataset.img})));
+  mpFit();
+  mpList();
+}
+
+function mpFit() {
+  const stage = document.getElementById('mp-stage'), page = document.getElementById('mp-page');
+  const w = mp.layout.w * 96 / 72;
+  const z = Math.min(1.6, (stage.clientWidth - 48) / w);
+  page.style.zoom = z > 0 ? z.toFixed(3) : 1;
+}
+window.addEventListener('resize', () => { if (mp && document.getElementById('mp-dlg').open) mpFit(); });
+
+function mpSelect(sel) {
+  mp.sel = sel;
+  document.querySelectorAll('#mp-page .on').forEach(e => e.classList.remove('on'));
+  const txt = document.getElementById('mp-sel-text'), sf = document.getElementById('mp-sel-field');
+  if (!sel) {
+    txt.textContent = 'Click a piece of text or an image on the page.'; txt.classList.add('empty');
+    sf.innerHTML = ''; sf.disabled = true; return;
+  }
+  txt.classList.remove('empty');
+  sf.disabled = false;
+  if (sel.kind === 'span') {
+    const sp = mp.layout.spans.find(x => x.id === sel.id);
+    document.querySelector(`#mp-page .t[data-id="${sel.id}"]`)?.classList.add('on');
+    txt.textContent = '“' + sp.t + '”';
+    const groups = {};
+    mp.fields.forEach(f => (groups[f.group] = groups[f.group] || []).push(f));
+    sf.innerHTML = `<option value="">Fixed text — keep as it is</option><option value="hide">Hide (sample value to remove)</option>` +
+      Object.entries(groups).map(([g, fs]) => `<optgroup label="${esc(g)}">` +
+        fs.map(f => `<option value="${esc(f.key)}">${esc(f.label)}</option>`).join('') + `</optgroup>`).join('');
+    sf.value = sp.field || '';
+  } else {
+    const im = mp.layout.images.find(x => x.id === sel.id);
+    document.querySelector(`#mp-page .im[data-img="${sel.id}"]`)?.classList.add('on');
+    txt.textContent = 'Image';
+    sf.innerHTML = Object.entries(mp.roles).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
+    sf.value = im.role || 'keep';
+  }
+  sf.focus();
+}
+
+function mpSet(value) {
+  if (!mp || !mp.sel) return;
+  if (mp.sel.kind === 'span') mp.layout.spans.find(x => x.id === mp.sel.id).field = value;
+  else mp.layout.images.find(x => x.id === mp.sel.id).role = value;
+  mp.dirty = true;
+  const keep = mp.sel;
+  mpDraw();
+  mpSelect(keep);
+}
+
+function mpList() {
+  const mapped = mp.layout.spans.filter(sp => sp.field && sp.field !== 'hide');
+  document.getElementById('mp-count').textContent = mapped.length;
+  document.getElementById('mp-list').innerHTML = mapped.length ? mapped.map(sp =>
+    `<button type="button" class="${sp.field.startsWith('item.') ? 'item' : ''}" onclick="mpSelect({kind:'span',id:'${esc(sp.id)}'})">` +
+    `<b>${esc(mpFieldLabel(sp.field))}</b> ← ${esc(sp.t.slice(0, 40))}</button>`).join('')
+    : '<span style="color:var(--text-secondary)">Nothing mapped yet.</span>';
+}
+
+async function mpSave(quiet) {
+  const fields = {}, images = {};
+  mp.layout.spans.forEach(sp => { fields[sp.id] = sp.field || ''; });
+  (mp.layout.images || []).forEach(im => { images[im.id] = im.role || 'keep'; });
+  const btn = document.getElementById('mp-save'), old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+  const r = await API.put(`/api/invoices/custom-templates/${encodeURIComponent(mp.id)}/layout/`, {fields, images});
+  btn.disabled = false; btn.innerHTML = old;
+  if (!r.success) { toast(r.message || 'Could not save.', 'error'); return false; }
+  mp.dirty = false;
+  taList = taList.map(t => t.id === r.data.id ? r.data : t);
+  taRender();
+  if (!quiet) toast(`Mapping saved — ${r.data.mapped} field${r.data.mapped === 1 ? '' : 's'}.`, 'success');
+  return true;
+}
+
+async function mpPreview() {
+  if (mp.dirty && !(await mpSave(true))) return;
+  const r = await API.get(`/api/invoices/custom-templates/${encodeURIComponent(mp.id)}/render/`);
+  if (!r.success) { toast(r.message || 'Could not build the preview.', 'error'); return; }
+  const host = document.getElementById('mp-prev-page');
+  host.innerHTML = r.data.html;
+  const pg = host.firstElementChild;
+  const w = (r.data.w || 595) * 96 / 72;
+  if (pg) { pg.style.zoom = Math.min(1, (document.getElementById('mp-stage').clientWidth) / w).toFixed(3); pg.style.boxShadow = '0 12px 40px rgba(0,0,0,.35)'; }
+  document.getElementById('mp-prev').classList.add('show');
 }
 
 (function wireDrop() {

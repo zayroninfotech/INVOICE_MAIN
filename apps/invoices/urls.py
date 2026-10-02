@@ -5,7 +5,8 @@ from .views import (InvoiceListCreateView, InvoiceDetailView,
                     PublicInvoicePDFView, InvoiceSummaryView, InvoiceExportView,
                     TemplatePurchaseView, CustomTemplateListView,
                     CustomTemplateDetailView, CustomTemplateFromDocView,
-                    CustomTemplatePublishView)
+                    CustomTemplatePublishView, CustomTemplateLayoutView,
+                    CustomTemplateRenderView, InvoiceRenderView)
 from .free_views import FreeInvoiceView, FreeInvoicePDFView
 
 urlpatterns = [
@@ -17,6 +18,8 @@ urlpatterns = [
     path('custom-templates/', CustomTemplateListView.as_view(), name='custom_templates'),
     path('custom-templates/from-document/', CustomTemplateFromDocView.as_view(), name='custom_template_from_doc'),
     path('custom-templates/<str:pk>/publish/', CustomTemplatePublishView.as_view(), name='custom_template_publish'),
+    path('custom-templates/<str:pk>/layout/', CustomTemplateLayoutView.as_view(), name='custom_template_layout'),
+    path('custom-templates/<str:pk>/render/', CustomTemplateRenderView.as_view(), name='custom_template_render'),
     path('custom-templates/<str:pk>/', CustomTemplateDetailView.as_view(), name='custom_template_detail'),
     path('templates/', AvailableTemplatesView.as_view(), name='invoice_templates'),
     path('templates/<str:template_id>/purchase/', TemplatePurchaseView.as_view(), name='invoice_template_purchase'),
@@ -25,6 +28,7 @@ urlpatterns = [
     path('', InvoiceListCreateView.as_view(), name='invoice_list'),
     path('<str:pk>/', InvoiceDetailView.as_view(), name='invoice_detail'),
     path('<str:pk>/pdf/', InvoicePDFView.as_view(), name='invoice_pdf'),
+    path('<str:pk>/render/', InvoiceRenderView.as_view(), name='invoice_render'),
     path('<str:pk>/email/', InvoiceEmailView.as_view(), name='invoice_email'),
     path('<str:pk>/status/', InvoiceStatusView.as_view(), name='invoice_status'),
 ]

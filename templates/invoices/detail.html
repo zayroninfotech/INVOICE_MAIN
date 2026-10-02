@@ -129,6 +129,9 @@
     box-sizing:border-box; background:#fff;
     box-shadow:0 1px 2px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.12); }
   .idet-preview-wrap .inv-preview { width:411px; zoom:1.7104; border-radius:0; box-shadow:none; overflow:visible; }
+  /* Exact-copy template: the server page is already a full A4 sheet. */
+  .idet-preview-wrap.is-exact { padding:0; }
+  .idet-preview-wrap.is-exact .xt-page { margin:0 auto; }
   /* Narrower than a full A4 page: let the sheet and invoice fill the width. */
   @media (max-width:1180px){
     .idet-preview-stage{padding:16px 10px;}
@@ -545,7 +548,28 @@ function render(inv) {
 /* ── Populate the SAME .inv-preview/.pvw-* markup used by form.html/edit.html,
    skinned via the SAME applyPreviewSkin()/TEMPLATE_SPECS. This is the one
    template renderer — do not build a second one. ── */
+/* Exact-copy templates (an uploaded PDF with mapped fields) are drawn on the
+   server — show that page instead of the shared preview markup. */
+async function renderExact(inv) {
+  const wrap = document.querySelector('.idet-preview-wrap');
+  const pvw = document.getElementById('inv-preview');
+  let host = document.getElementById('xt-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'xt-host';
+    wrap.appendChild(host);
+  }
+  const r = await API.get(`/api/invoices/${inv.id}/render/`);
+  if (!r.success || !r.data.html) { if (pvw) pvw.style.display = ''; host.remove(); return false; }
+  if (pvw) pvw.style.display = 'none';
+  host.innerHTML = r.data.html;
+  wrap.classList.add('is-exact');
+  return true;
+}
+
 async function renderPreview(inv) {
+  const _xs = TEMPLATE_SPECS[inv.template_style];
+  if (_xs && _xs.exact && await renderExact(inv)) return;
   // FROM block — the logged-in user's business profile, same source form.html uses
   let profile = {};
   try {
@@ -1043,6 +1067,9 @@ function ieLabels(on) {
 async function ieStart() {
   const inv = window._inv;
   if (!inv || ieOn) return;
+  // Exact-copy templates aren't drawn with the editable preview markup.
+  const _xs = TEMPLATE_SPECS[inv.template_style];
+  if (_xs && _xs.exact) { window.location.href = `/invoices/${inv.id}/edit/`; return; }
   if (['Paid', 'Cancelled'].includes(inv.status)) { toast(`A ${inv.status.toLowerCase()} invoice can't be edited.`, 'error'); return; }
   ieOn = true; ieLogoFile = null;
   document.body.classList.add('ie-on');

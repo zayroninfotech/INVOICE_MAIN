@@ -156,6 +156,10 @@ class CustomTemplate(me.Document):
     status      = me.StringField(choices=['draft', 'published'], default='draft')
     source_name  = me.StringField(default='')    # original uploaded file name
     preview_path = me.StringField(default='')    # MEDIA_ROOT-relative PNG of page 1
+    # 'base'  — a built-in layout recoloured (Create manually / Word / image uploads)
+    # 'exact' — a copy of an uploaded PDF with clickable field mapping (exact_template.py)
+    mode        = me.StringField(choices=['base', 'exact'], default='base')
+    layout      = me.DictField(default=dict)
     is_active   = me.BooleanField(default=True)
     created_by  = me.StringField(default='')
     created_at  = me.DateTimeField(default=datetime.utcnow)

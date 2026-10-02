@@ -75,10 +75,16 @@ scale that maps the preview's authored canvas onto A4.
 </style>
 </head>
 <body>
+  {% if exact_html %}
+    {# Exact-copy template (uploaded PDF + mapped fields): already a full A4 page in pt. #}
+    <style>@page { size: A4; margin: 0; }</style>
+    {{ exact_html|safe }}
+  {% else %}
   <div class="print-canvas">
     {# 3. The invoice itself — same markup file the preview includes #}
     {% include "invoices/_invoice_doc.html" %}
   </div>
+  {% endif %}
 
   <script>
     /* Chrome is told to wait for this flag so fonts and images (logo,

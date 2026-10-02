@@ -75,6 +75,7 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
     s = _merge_seller(business_profile, seller, invoice=invoice) or {}
     style_id = style_id or (getattr(invoice, 'template_style', '') or 'classic')
     spec = get_template_spec(style_id)
+    template_id = style_id
     # A custom template is drawn with its built-in base layout + its own colours.
     style_id = spec.get('base') or style_id
     # Task templates (staffing / payroll) share one document engine: the
@@ -231,4 +232,8 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         'foot_email': (s.get('email') or '') if staffing else '',
         'bar': s.get('sig_company') or co_name or 'Your Company Name',
     }
+    # An 'exact' custom template (copied from an uploaded PDF) replaces the
+    # shared markup; callers render it with exact_template.page_html().
+    from .template_registry import exact_layout
+    ctx['exact_layout'] = exact_layout(template_id)
     return ctx

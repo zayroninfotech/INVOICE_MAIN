@@ -248,8 +248,8 @@ so the customer approves exactly the document they were sent.
 
   <div class="ap-doc">
     <div class="ap-doc-frame" id="ap-frame">
-      <div class="ap-doc-scale" id="ap-scale">
-        {% include "invoices/_invoice_doc.html" %}
+      <div class="ap-doc-scale" id="ap-scale"{% if exact_html %} data-w="794" style="width:794px"{% endif %}>
+        {% if exact_html %}{{ exact_html|safe }}{% else %}{% include "invoices/_invoice_doc.html" %}{% endif %}
       </div>
     </div>
   </div>
@@ -304,10 +304,12 @@ function fitDoc() {
   const el = document.getElementById('ap-scale');
   if (!box || !frame || !el) return;
   const avail = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2;
-  // 1.7 keeps the type readable without blowing it up on a wide monitor.
-  const scale = Math.min(1.7, avail / 411);
+  // Built-in templates are authored on a 411px canvas; an exact-copy template
+  // is a real A4 page (794px) — data-w says which.
+  const baseW = +(el.dataset.w || 411);
+  const scale = Math.min(baseW === 411 ? 1.7 : 1, avail / baseW);
   el.style.transform = `scale(${scale})`;
-  frame.style.width = (411 * scale) + 'px';
+  frame.style.width = (baseW * scale) + 'px';
   frame.style.height = (el.scrollHeight * scale) + 'px';
 }
 addEventListener('resize', fitDoc);

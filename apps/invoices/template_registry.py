@@ -356,7 +356,22 @@ def _custom_spec(c):
     spec['accent'] = c.accent or spec['accent']
     spec['tint'] = c.tint or _hex_tint(spec['accent'])
     spec['base'] = c.base if c.base in TEMPLATE_SPECS else 'classic'
+    spec['exact'] = getattr(c, 'mode', 'base') == 'exact' and bool(getattr(c, 'layout', None))
     return spec
+
+
+def exact_layout(template_id):
+    """The copied page layout for an 'exact' custom template, else None."""
+    if not template_id or template_id in TEMPLATE_MAP:
+        return None
+    try:
+        from .models import CustomTemplate
+        c = CustomTemplate.objects(template_id=template_id, is_active=True).first()
+    except Exception:
+        return None
+    if c and getattr(c, 'mode', 'base') == 'exact' and c.layout:
+        return c.layout
+    return None
 
 
 def all_templates():

@@ -501,6 +501,9 @@ def _custom_template_data(c):
         'base_name': base.get('name', c.base), 'accent': c.accent,
         'min_plan': c.min_plan, 'blocked': is_blocked(c.template_id),
         'status': getattr(c, 'status', None) or 'published',
+        'mode': getattr(c, 'mode', 'base') or 'base',
+        'mapped': sum(1 for sp in (getattr(c, 'layout', None) or {}).get('spans', [])
+                      if sp.get('field') and sp.get('field') != 'hide'),
         'source_name': getattr(c, 'source_name', '') or '',
         'preview_url': (settings.MEDIA_URL + c.preview_path) if getattr(c, 'preview_path', '') else '',
         'created_at': c.created_at.isoformat() if c.created_at else None,
@@ -631,15 +634,33 @@ class CustomTemplateFromDocView(APIView):
 
         from .template_registry import TEMPLATE_MAP
         base_name = TEMPLATE_MAP.get(sug['base'], {}).get('name', sug['base'])
+
+        # A PDF is copied exactly (no AI): its boxes, images and text keep their
+        # positions, and the superadmin maps sample values to invoice fields.
+        layout, mode, note = {}, 'base', ''
+        if f.name.lower().endswith('.pdf') or getattr(f, 'content_type', '') == 'application/pdf':
+            from .exact_template import extract, ExtractError
+            try:
+                f.seek(0)
+                layout = extract(f.read(), tid)
+                mode = 'exact'
+            except ExtractError as exc:
+                note = f" {exc} Using the closest built-in layout instead."
+        else:
+            note = " For an exact copy of the design, upload it as a PDF (in Word: File > Save As > PDF)."
+
         c = CustomTemplate(
             template_id=tid, name=sug['name'], base=sug['base'], accent=sug['accent'],
-            desc=f"Based on {f.name[:80]} — {base_name} layout",
+            desc=(f"Exact copy of {f.name[:80]}" if mode == 'exact'
+                  else f"Based on {f.name[:80]} — {base_name} layout"),
             min_plan='plus', status='draft', source_name=f.name[:120], preview_path=rel,
-            created_by=str(request.user.pk),
+            mode=mode, layout=layout, created_by=str(request.user.pk),
         ).save()
         data = _custom_template_data(c)
         data['signals'] = sug['signals']
-        return success(data, f"Read “{f.name}” — created a draft template. Check it, then click Apply.", 201)
+        msg = (f"Copied “{f.name}”. Now click Map fields and mark the customer, items and totals."
+               if mode == 'exact' else f"Read “{f.name}” — created a draft template.{note}")
+        return success(data, msg, 201)
 
 
 class CustomTemplatePublishView(APIView):
@@ -664,3 +685,83 @@ class CustomTemplatePublishView(APIView):
         msg = (f"“{c.name}” is now in Buy Invoice." if live
                else f"“{c.name}” taken out of Buy Invoice (kept as a draft).")
         return success(_custom_template_data(c), msg)
+
+
+class CustomTemplateLayoutView(APIView):
+    """The copied page of an 'exact' template, for the field mapper."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def _get(self, pk):
+        from .models import CustomTemplate
+        c = CustomTemplate.objects(template_id=pk, is_active=True).first()
+        return c if c and getattr(c, 'mode', 'base') == 'exact' else None
+
+    def get(self, request, pk):
+        from .exact_template import FIELDS, IMAGE_ROLES
+        c = self._get(pk)
+        if not c:
+            return error("Template not found.", status=404)
+        layout = dict(c.layout)
+        layout['images'] = [dict(im, url=settings.MEDIA_URL + im['src']) for im in layout.get('images', [])]
+        return success({
+            'layout': layout,
+            'fields': [{'key': k, 'label': v[0], 'group': v[1]} for k, v in FIELDS.items()],
+            'image_roles': IMAGE_ROLES,
+        })
+
+    def put(self, request, pk):
+        from .exact_template import FIELDS, IMAGE_ROLES
+        c = self._get(pk)
+        if not c:
+            return error("Template not found.", status=404)
+        fields = request.data.get('fields') or {}
+        images = request.data.get('images') or {}
+        if not isinstance(fields, dict) or not isinstance(images, dict):
+            return error("Send fields and images as objects.")
+        layout = dict(c.layout)
+        for sp in layout.get('spans', []):
+            if sp['id'] in fields:
+                f = str(fields[sp['id']] or '')
+                sp['field'] = f if (f in FIELDS or f in ('', 'hide')) else ''
+        for im in layout.get('images', []):
+            if im['id'] in images and images[im['id']] in IMAGE_ROLES:
+                im['role'] = images[im['id']]
+        c.layout = layout
+        c.save()
+        return success(_custom_template_data(c), "Field mapping saved.")
+
+
+class CustomTemplateRenderView(APIView):
+    """The template filled with sample data — HTML for the card and mapper preview."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request, pk):
+        from .models import CustomTemplate
+        from .exact_template import render, SAMPLE
+        c = CustomTemplate.objects(template_id=pk, is_active=True).first()
+        if not c or getattr(c, 'mode', 'base') != 'exact':
+            return error("Template not found.", status=404)
+        bp = BusinessProfile.objects(user_id=str(request.user.pk)).first()
+        values = dict(SAMPLE)
+        if bp and bp.logo_path:
+            values['_logo'] = settings.MEDIA_URL + bp.logo_path
+        return success({'html': render(c.layout, values), 'w': c.layout.get('w'), 'h': c.layout.get('h')})
+
+
+class InvoiceRenderView(APIView):
+    """Server-rendered page for invoices on an exact-copy template (detail page)."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsReadOnlyForUser]
+
+    def get(self, request, pk):
+        from .print_context import build_print_context
+        from .exact_template import page_html
+        from .web_views import _web_media
+        invoice = _invoice_qs(request.user).filter(pk=pk).first()
+        if not invoice:
+            return error("Invoice not found.", status=404)
+        bp = BusinessProfile.objects(user_id=invoice.created_by).first()
+        ctx = _web_media(build_print_context(invoice, bp, None, invoice.template_style or 'classic'))
+        return success({'html': page_html(ctx, invoice)})

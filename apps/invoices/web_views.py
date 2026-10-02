@@ -69,6 +69,8 @@ def invoice_approve(request, token):
     bp = BusinessProfile.objects(user_id=invoice.created_by).first()
     ctx = _web_media(build_print_context(invoice, bp, None,
                                          getattr(invoice, 'template_style', 'classic')))
+    from .exact_template import page_html
+    ctx['exact_html'] = page_html(ctx, invoice)
     ctx.update({
         'token':           token,
         'approval_status': invoice.approval_status,
@@ -115,4 +117,6 @@ def invoice_print(request, pk):
     bp = BusinessProfile.objects(user_id=invoice.created_by).first()
     ctx = _web_media(build_print_context(invoice, bp, None,
                                          getattr(invoice, 'template_style', 'classic')))
+    from .exact_template import page_html
+    ctx['exact_html'] = page_html(ctx, invoice)
     return _no_store(render(request, 'invoices/print.html', ctx))
