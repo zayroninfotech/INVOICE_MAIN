@@ -3,7 +3,8 @@ from .views import (InvoiceListCreateView, InvoiceDetailView,
                     InvoicePDFView, InvoiceEmailView, InvoiceStatusView,
                     AvailableTemplatesView, PublicInvoiceView,
                     PublicInvoicePDFView, InvoiceSummaryView, InvoiceExportView,
-                    TemplatePurchaseView)
+                    TemplatePurchaseView, CustomTemplateListView,
+                    CustomTemplateDetailView)
 from .free_views import FreeInvoiceView, FreeInvoicePDFView
 
 urlpatterns = [
@@ -12,6 +13,8 @@ urlpatterns = [
     path('public/<str:token>/', PublicInvoiceView.as_view(), name='invoice_public'),
     path('public/<str:token>/pdf/', PublicInvoicePDFView.as_view(), name='invoice_public_pdf'),
     path('free/<str:pk>/pdf/', FreeInvoicePDFView.as_view(), name='free_invoice_pdf'),
+    path('custom-templates/', CustomTemplateListView.as_view(), name='custom_templates'),
+    path('custom-templates/<str:pk>/', CustomTemplateDetailView.as_view(), name='custom_template_detail'),
     path('templates/', AvailableTemplatesView.as_view(), name='invoice_templates'),
     path('templates/<str:template_id>/purchase/', TemplatePurchaseView.as_view(), name='invoice_template_purchase'),
     path('summary/', InvoiceSummaryView.as_view(), name='invoice_summary'),

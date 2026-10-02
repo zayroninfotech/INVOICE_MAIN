@@ -1017,6 +1017,14 @@
       </a>
     </div>
 
+    <!-- Add Invoice (templates for Buy Invoice) — superadmin only, shown via JS -->
+    <div class="nav-item-wrap" style="display:none" id="sb-addtpl-wrap">
+      <a href="/invoices/templates/" class="nav-link-main {% block nav_addtpl %}{% endblock %}">
+        <span class="nav-icon-box"><i class="bi bi-file-earmark-plus"></i></span>
+        Add Invoice
+      </a>
+    </div>
+
     <div class="nav-item-wrap">
       <a href="/invoices/" class="nav-link-main {% block nav_list %}{% endblock %}">
         <span class="nav-icon-box"><i class="bi bi-clock-history"></i></span>
@@ -1377,6 +1385,9 @@
     document.getElementById('ud-admin').style.display = 'flex';
     document.getElementById('sb-users-label').style.display = '';
     document.getElementById('sb-users-wrap').style.display  = '';
+  }
+  if (role === 'superadmin') {
+    document.getElementById('sb-addtpl-wrap').style.display = '';
   }
 
   const _limitModal = new bootstrap.Modal(document.getElementById('limitModal'));

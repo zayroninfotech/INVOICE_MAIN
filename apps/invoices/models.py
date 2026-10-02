@@ -135,3 +135,29 @@ class Invoice(me.Document):
         self.subtotal = round(subtotal, 2)
         self.tax_amount = round(tax_total, 2)
         self.grand_total = round(subtotal + tax_total, 2)
+
+
+class CustomTemplate(me.Document):
+    """A template the superadmin adds from the dashboard ("Add Invoice").
+
+    It reuses one of the built-in layouts (`base`) and changes its name,
+    description, colours and plan, so it renders everywhere a built-in one
+    does — live preview, PDF, approval page — with no new layout code.
+    """
+    template_id = me.StringField(required=True, unique=True)   # 'c-xxxxxx'
+    name        = me.StringField(required=True, max_length=60)
+    desc        = me.StringField(default='', max_length=200)
+    base        = me.StringField(required=True)                 # a built-in template id
+    accent      = me.StringField(default='#C1121F')
+    tint        = me.StringField(default='')
+    min_plan    = me.StringField(choices=['free', 'plus', 'pro', 'unlimited'], default='plus')
+    is_active   = me.BooleanField(default=True)
+    created_by  = me.StringField(default='')
+    created_at  = me.DateTimeField(default=datetime.utcnow)
+    updated_at  = me.DateTimeField(default=datetime.utcnow)
+
+    meta = {'collection': 'custom_templates', 'ordering': ['created_at']}
+
+    def save(self, *args, **kwargs):
+        self.updated_at = datetime.utcnow()
+        return super().save(*args, **kwargs)

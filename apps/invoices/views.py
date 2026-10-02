@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from apps.authentication.authentication import MongoJWTAuthentication
-from apps.authentication.permissions import IsReadOnlyForUser, IsAdminOrSuperAdmin
+from apps.authentication.permissions import IsReadOnlyForUser, IsAdminOrSuperAdmin, IsSuperAdmin
 from apps.authentication.models import BusinessProfile
 from apps.subscriptions.entitlements import can_create_invoice, increment_usage, get_plan_for_request
 from .models import Invoice
@@ -489,3 +489,112 @@ class TemplatePurchaseView(APIView):
         return success(
             {'template_id': template_id, 'name': tdef['name']},
             f"'{tdef['name']}' is yours — it's now in your Invoice tab.")
+
+
+# ── Custom templates (superadmin "Add Invoice") ─────────────────────────────
+
+def _custom_template_data(c):
+    from .template_registry import TEMPLATE_MAP, effective_min_plan, is_blocked
+    base = TEMPLATE_MAP.get(c.base, {})
+    return {
+        'id': c.template_id, 'name': c.name, 'desc': c.desc, 'base': c.base,
+        'base_name': base.get('name', c.base), 'accent': c.accent,
+        'min_plan': effective_min_plan(c.template_id), 'blocked': is_blocked(c.template_id),
+        'created_at': c.created_at.isoformat() if c.created_at else None,
+    }
+
+
+def _custom_template_fields(data, partial=False):
+    """Validate the editable fields; returns (fields, error_message)."""
+    from .template_registry import TEMPLATE_MAP
+    out = {}
+    if 'name' in data or not partial:
+        name = str(data.get('name') or '').strip()
+        if not name:
+            return None, "Give the template a name."
+        if len(name) > 60:
+            return None, "Name can be at most 60 characters."
+        out['name'] = name
+    if 'desc' in data:
+        out['desc'] = str(data.get('desc') or '').strip()[:200]
+    if 'base' in data or not partial:
+        base = str(data.get('base') or '').strip()
+        if base not in TEMPLATE_MAP:
+            return None, "Choose a base layout."
+        out['base'] = base
+    if 'accent' in data:
+        accent = str(data.get('accent') or '').strip()
+        if not re.fullmatch(r'#[0-9a-fA-F]{6}', accent):
+            return None, "Colour must be a hex value like #C1121F."
+        out['accent'] = accent.upper()
+    if 'min_plan' in data:
+        plan = str(data.get('min_plan') or '').strip()
+        if plan not in ('free', 'plus', 'pro', 'unlimited'):
+            return None, "Plan must be free, plus, pro or unlimited."
+        out['min_plan'] = plan
+    return out, None
+
+
+class CustomTemplateListView(APIView):
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request):
+        from .models import CustomTemplate
+        from .template_registry import INVOICE_TEMPLATES
+        return success({
+            'templates': [_custom_template_data(c) for c in CustomTemplate.objects(is_active=True)],
+            'bases': [{'id': t['id'], 'name': t['name'], 'desc': t['desc']} for t in INVOICE_TEMPLATES],
+        })
+
+    def post(self, request):
+        import secrets
+        from .models import CustomTemplate
+        fields, err = _custom_template_fields(request.data)
+        if err:
+            return error(err)
+        fields.setdefault('accent', '#C1121F')
+        fields.setdefault('min_plan', 'plus')
+        c = CustomTemplate(template_id='c-' + secrets.token_hex(4),
+                           created_by=str(request.user.pk), **fields).save()
+        try:
+            from apps.authentication.models import AuditLog
+            AuditLog.log(request.user, 'template_added', f'{c.name} ({c.template_id}) on {c.base}')
+        except Exception:
+            pass
+        return success(_custom_template_data(c), f"“{c.name}” added — it now shows in Buy Invoice.", 201)
+
+
+class CustomTemplateDetailView(APIView):
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def _get(self, pk):
+        from .models import CustomTemplate
+        return CustomTemplate.objects(template_id=pk, is_active=True).first()
+
+    def put(self, request, pk):
+        c = self._get(pk)
+        if not c:
+            return error("Template not found.", status=404)
+        fields, err = _custom_template_fields(request.data, partial=True)
+        if err:
+            return error(err)
+        for k, v in fields.items():
+            setattr(c, k, v)
+        c.save()
+        if 'min_plan' in fields:
+            # A /z-admin/ plan override would otherwise win over the new value.
+            from apps.authentication.models import TemplateConfig
+            TemplateConfig.objects(template_id=c.template_id).delete()
+        return success(_custom_template_data(c), "Template updated.")
+
+    def delete(self, request, pk):
+        c = self._get(pk)
+        if not c:
+            return error("Template not found.", status=404)
+        # Soft delete: invoices already using it fall back to its base layout
+        # via resolve_template() instead of breaking.
+        c.is_active = False
+        c.save()
+        return success(message=f"“{c.name}” removed from Buy Invoice.")

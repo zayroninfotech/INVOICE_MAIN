@@ -1786,7 +1786,9 @@ function applyPreviewSkin(id) {
   const pvw = document.querySelector('.inv-preview');
   if (!pvw) return;
   pvw.classList.remove(...ALL_SKIN_CLASSES);
-  if (id !== 'classic') pvw.classList.add('tpl-' + id);
+  // Custom templates (superadmin "Add Invoice") draw their built-in base layout.
+  const _layout = (TEMPLATE_SPECS[id] && TEMPLATE_SPECS[id].base) || id;
+  if (_layout !== 'classic') pvw.classList.add('tpl-' + _layout);
 
   const spec = TEMPLATE_SPECS[id] || TEMPLATE_SPECS['classic'];
   if (spec) {

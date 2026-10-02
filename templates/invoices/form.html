@@ -1331,8 +1331,8 @@ function updatePvw() {
 
   // Task templates (staffing/payroll) share one document engine with
   // task-specific labels — see _sec_staffing's builder.
-  const taskTpl = (window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll')
-                  ? window._selectedTemplate : null;
+  const taskTpl = (_tplLayout(window._selectedTemplate) === 'staffing' || _tplLayout(window._selectedTemplate) === 'payroll')
+                  ? _tplLayout(window._selectedTemplate) : null;
   const staffing = !!taskTpl;
   const payroll = taskTpl === 'payroll';
 
@@ -2368,7 +2368,13 @@ const ITEM_SCHEMAS = {
     descPh: 'Employee Name', hsnPh: 'dd-mm-yy', rolePh: 'Designation',
   },
 };
-const itemSchema = id => ITEM_SCHEMAS[id] || ITEM_SCHEMAS._default;
+/* Custom templates (superadmin "Add Invoice") behave exactly like the
+   built-in layout they are based on. Function declaration, so it is hoisted
+   for the earlier callers in this script. */
+function _tplLayout(id) {
+  return (typeof TEMPLATE_SPECS === 'object' && TEMPLATE_SPECS[id] && TEMPLATE_SPECS[id].base) || id;
+}
+const itemSchema = id => ITEM_SCHEMAS[_tplLayout(id)] || ITEM_SCHEMAS._default;
 
 /* An <input type="date"> yields YYYY-MM-DD; the employee template prints
    DD-MM-YY. Anything not ISO (older free-text rows) passes through untouched. */
@@ -2447,7 +2453,9 @@ function applyPreviewSkin(id) {
   const pvw = document.querySelector('.inv-preview');
   if (!pvw) return;
   pvw.classList.remove(...ALL_SKIN_CLASSES);
-  if (id !== 'classic') pvw.classList.add('tpl-' + id);
+  // Custom templates (superadmin "Add Invoice") draw their built-in base layout.
+  const _layout = (TEMPLATE_SPECS[id] && TEMPLATE_SPECS[id].base) || id;
+  if (_layout !== 'classic') pvw.classList.add('tpl-' + _layout);
 
   const spec = TEMPLATE_SPECS[id] || TEMPLATE_SPECS['classic'];
   if (spec) {
@@ -2652,7 +2660,7 @@ function applyLayoutToPreview() {
   // carries CIN (not GSTIN), so its FROM block always keeps the GSTIN.
   const headerGstOn = ss.header?.show_gstin !== false;
   setDisp('pvw-co-gst',   headerGstOn);
-  setDisp('pvw-from-gst', ((window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll') || !headerGstOn) && ss.bill_to?.show_gst !== false);
+  setDisp('pvw-from-gst', ((_tplLayout(window._selectedTemplate) === 'staffing' || _tplLayout(window._selectedTemplate) === 'payroll') || !headerGstOn) && ss.bill_to?.show_gst !== false);
   setDisp('pvw-to-gst',   ss.bill_to?.show_gst !== false);
 
   // Items header columns — HSN and discount columns both toggle, matching pdf_generator.py's _items_rows()
@@ -2660,9 +2668,9 @@ function applyLayoutToPreview() {
   const showDisc = ss.items_table?.show_discount !== false && (window.itemsHaveValue ? itemsHaveValue('disc') : true);
   const showHsn  = ss.items_table?.show_hsn !== false && (window.itemsHaveValue ? itemsHaveValue('hsn') : true);
   const hdr = document.getElementById('pvw-items-hdr');
-  if (hdr && (window._selectedTemplate === 'staffing' || window._selectedTemplate === 'payroll')) {
+  if (hdr && (_tplLayout(window._selectedTemplate) === 'staffing' || _tplLayout(window._selectedTemplate) === 'payroll')) {
     // Task templates use fixed HR columns; the HSN/discount toggles don't apply.
-    const cols = window._selectedTemplate === 'payroll'
+    const cols = _tplLayout(window._selectedTemplate) === 'payroll'
       ? '<span>S.No</span><span>PAY PERIOD</span><span>EMPLOYEE</span>' +
         '<span>DESIGNATION</span><span>DAYS</span><span>AMOUNT</span>'
       : '<span>S.No</span><span>DATE</span><span>EMPLOYEE</span>' +

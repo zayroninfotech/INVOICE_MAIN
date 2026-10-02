@@ -2589,6 +2589,9 @@ def generate_invoice_pdf(invoice, business_profile=None, seller=None, plan=None)
         plan = _resolve_plan(invoice)
     style_id = resolve_template(requested, plan)
     spec = get_template_spec(style_id)
+    # Custom templates (superadmin "Add Invoice") reuse a built-in layout.
+    if spec.get('base'):
+        style_id = spec['base']
 
     # Both flows onto one dict, so ctx['seller'] is never None (see _merge_seller).
     seller = _merge_seller(business_profile, seller, invoice=invoice)

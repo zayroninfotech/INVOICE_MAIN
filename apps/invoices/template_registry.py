@@ -316,18 +316,82 @@ TEMPLATE_SPECS = {
 }
 
 
+# ── Custom templates (added by the superadmin from "Add Invoice") ──────────
+# Each one points at a built-in layout (`base`) and overrides name, colours and
+# plan. Everything that draws a layout asks layout_id() for the base.
+
+def _customs():
+    try:
+        from .models import CustomTemplate
+        return {c.template_id: c for c in CustomTemplate.objects(is_active=True)}
+    except Exception:          # DB unreachable — built-ins still work
+        return {}
+
+
+def _hex_tint(hex_color, amount=0.92):
+    """A very light wash of the accent, for tinted panels."""
+    h = (hex_color or '#C1121F').lstrip('#')
+    if len(h) == 3:
+        h = ''.join(c * 2 for c in h)
+    try:
+        r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return '#F8FAFC'
+    mix = lambda c: round(c + (255 - c) * amount)
+    return '#{:02X}{:02X}{:02X}'.format(mix(r), mix(g), mix(b))
+
+
+def _custom_def(c):
+    base = TEMPLATE_MAP.get(c.base) or TEMPLATE_MAP['classic']
+    return {
+        'id': c.template_id, 'name': c.name, 'desc': c.desc or base['desc'],
+        'min_plan': c.min_plan, 'badge': c.tint or _hex_tint(c.accent),
+        'task': base.get('task', 'billing'), 'base': base['id'], 'custom': True,
+    }
+
+
+def _custom_spec(c):
+    spec = dict(TEMPLATE_SPECS.get(c.base) or TEMPLATE_SPECS['classic'])
+    spec['accent'] = c.accent or spec['accent']
+    spec['tint'] = c.tint or _hex_tint(spec['accent'])
+    spec['base'] = c.base if c.base in TEMPLATE_SPECS else 'classic'
+    return spec
+
+
+def all_templates():
+    """Built-in templates followed by the superadmin's custom ones."""
+    return INVOICE_TEMPLATES + [_custom_def(c) for c in _customs().values()]
+
+
+def layout_id(template_id):
+    """The built-in layout a template is drawn with (itself, for built-ins)."""
+    if template_id in TEMPLATE_MAP:
+        return template_id
+    c = _customs().get(template_id)
+    return c.base if c and c.base in TEMPLATE_MAP else 'classic'
+
+
 def get_template_spec(template_id):
     """Visual spec for a template id, falling back to 'classic'."""
-    return TEMPLATE_SPECS.get(template_id) or TEMPLATE_SPECS['classic']
+    if template_id in TEMPLATE_SPECS:
+        return TEMPLATE_SPECS[template_id]
+    c = _customs().get(template_id)
+    return _custom_spec(c) if c else TEMPLATE_SPECS['classic']
 
 
 def template_specs_payload():
     """JSON-serializable {id: spec} for the web preview (form.html)."""
-    return dict(TEMPLATE_SPECS)
+    out = dict(TEMPLATE_SPECS)
+    for tid, c in _customs().items():
+        out[tid] = _custom_spec(c)
+    return out
 
 
 def get_template_def(template_id):
-    return TEMPLATE_MAP.get(template_id)
+    if template_id in TEMPLATE_MAP:
+        return TEMPLATE_MAP[template_id]
+    c = _customs().get(template_id)
+    return _custom_def(c) if c else None
 
 
 def effective_min_plan(template_id):
@@ -336,7 +400,8 @@ def effective_min_plan(template_id):
     cfg = TemplateConfig.objects(template_id=template_id).first()
     if cfg:
         return cfg.min_plan
-    return TEMPLATE_MAP[template_id]['min_plan'] if template_id in TEMPLATE_MAP else 'free'
+    tdef = get_template_def(template_id)
+    return tdef['min_plan'] if tdef else 'free'
 
 
 def is_blocked(template_id):
@@ -346,7 +411,7 @@ def is_blocked(template_id):
 
 def plan_allows(plan, template_id):
     """plan: subscription slug ('free'|'plus'|'pro'|'unlimited'|'premium') or role bypass handled by caller."""
-    if template_id not in TEMPLATE_MAP:
+    if get_template_def(template_id) is None:
         return False
     if is_blocked(template_id):
         return False
@@ -357,7 +422,7 @@ def plan_allows(plan, template_id):
 
 def resolve_template(template_id, plan):
     """Return a usable template id for the given plan; fall back to first allowed."""
-    if template_id in TEMPLATE_MAP and plan_allows(plan, template_id):
+    if plan_allows(plan, template_id):
         return template_id
     # Prefer the requested tier's free fallback chain
     for tid in TEMPLATE_IDS:
@@ -369,7 +434,7 @@ def resolve_template(template_id, plan):
 def templates_payload():
     """Static metadata for admin UI / docs."""
     out = []
-    for t in INVOICE_TEMPLATES:
+    for t in all_templates():
         d = dict(t)
         d['effective_min_plan'] = effective_min_plan(t['id'])
         d['blocked'] = is_blocked(t['id'])

@@ -85,6 +85,14 @@ def invoice_approve(request, token):
     return _no_store(render(request, 'invoices/approve.html', ctx))
 
 
+def invoice_templates_admin(request):
+    """Superadmin "Add Invoice" page — create templates that appear in Buy
+    Invoice. The page itself is a shell; the API enforces the superadmin role."""
+    return _no_store(render(request, 'invoices/templates_admin.html', {
+        'template_specs_json': json.dumps(template_specs_payload()),
+    }))
+
+
 def invoice_free_generator(request):
     """Redirect to the landing page with the free invoice form auto-opened."""
     return redirect('/?free=1')
