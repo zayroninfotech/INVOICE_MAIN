@@ -60,9 +60,17 @@ class Command(BaseCommand):
                 self.stdout.write(line)
             return
 
-        c = CustomTemplate.objects(template_id=o['run'], is_active=True).first()
-        if not c or c.mode != 'ai':
-            self.bad(f"No AI template {o['run']}")
+        tid = o['run'].strip()
+        c = CustomTemplate.objects(template_id=tid).first()
+        if not c:
+            self.bad(f"No template with id {tid}. Run without --run to list the current ids.")
+            return
+        if not c.is_active:
+            self.bad(f"{tid} ({c.name}) was removed on the Add Invoice page. Upload the design again "
+                     "to make a new one, then run this with the new id.")
+            return
+        if c.mode != 'ai':
+            self.bad(f"{tid} ({c.name}) isn't an AI design (it's '{c.mode}'), so there is nothing to run.")
             return
         self.stdout.write(self.style.MIGRATE_HEADING(f'\nDesigning {c.template_id} — {c.name}'))
         path = os.path.join(settings.MEDIA_ROOT, c.source_path or '')
