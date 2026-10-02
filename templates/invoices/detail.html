@@ -120,6 +120,38 @@
   .status-confirm-detail { background: var(--color-danger-bg); border: 1px solid var(--color-danger); border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: .82rem; }
   .status-confirm-btns { display: flex; gap: 10px; justify-content: flex-end; }
 
+  /* ── Edit directly on the invoice ─────────────────────────────────────── */
+  .ie-bar { display:none; position:sticky; top:12px; z-index:20; margin:0 auto 16px; max-width:794px;
+    align-items:center; gap:12px; flex-wrap:wrap; padding:10px 12px 10px 16px; border-radius:12px;
+    background:var(--dark-surface, #111827); color:#F9FAFB;
+    box-shadow:0 2px 4px rgba(15,23,42,.12), 0 12px 28px rgba(15,23,42,.22); }
+  .ie-on .ie-bar { display:flex; }
+  .ie-bar-txt { flex:1; min-width:200px; font-size:.86rem; line-height:1.4; }
+  .ie-bar-txt b { display:block; font-size:.92rem; }
+  .ie-bar-txt span { color:#CBD5E1; }
+  .ie-bar a.ie-full { color:#CBD5E1; font-size:.8rem; text-decoration:underline; text-underline-offset:3px; }
+  .ie-bar a.ie-full:hover { color:#fff; }
+  .ie-bar .btn { white-space:nowrap; }
+  .ie-dirty-dot { display:none; width:7px; height:7px; border-radius:50%; background:#F59E0B; margin-right:6px; vertical-align:middle; }
+  .ie-dirty .ie-dirty-dot { display:inline-block; }
+
+  .ie-on .idet-preview-stage { outline:2px dashed rgba(193,18,31,.35); outline-offset:-8px; }
+  .ie-on [data-ie] { outline:1px dashed rgba(193,18,31,.45); outline-offset:1px; border-radius:2px;
+    cursor:text; min-width:14px; display:inline-block; transition:background .12s, outline-color .12s; }
+  .ie-on [data-ie]:hover { background:rgba(193,18,31,.06); }
+  .ie-on [data-ie]:focus { outline:1.5px solid #C1121F; background:#FFF7ED; }
+  .ie-on [data-ie]:empty::before { content:attr(data-ph); color:#94A3B8; font-style:italic; pointer-events:none; }
+  .ie-on [data-ie-num] { text-align:right; }
+  .ie-row { position:relative; }
+  .ie-del { position:absolute; right:-16px; top:50%; transform:translateY(-50%); width:12px; height:12px;
+    border:none; border-radius:50%; background:#FEE2E2; color:#B91C1C; font-size:8px; line-height:12px;
+    padding:0; cursor:pointer; display:none; }
+  .ie-on .ie-del { display:block; }
+  .ie-add { display:none; margin:4px 0 0; border:1px dashed #C1121F; background:#fff; color:#C1121F;
+    font-size:7px; font-weight:700; border-radius:3px; padding:2px 8px; cursor:pointer; }
+  .ie-on .ie-add { display:inline-block; }
+  .ie-lbl { color:#64748B; margin-right:2px; }
+
   @media (max-width: 600px) {
     .pay-hist-row { grid-template-columns: 90px 1fr 90px; }
     .pay-hist-ref { display: none; }
@@ -146,9 +178,9 @@
       <div class="idet-metrics" id="inv-metrics"></div>
     </div>
     <div class="idet-actbtns">
-      <a id="edit-btn" href="#" class="btn btn-outline-secondary">
+      <button id="edit-btn" type="button" class="btn btn-outline-secondary" onclick="ieStart()">
         <i class="bi bi-pencil me-1"></i>Edit Invoice
-      </a>
+      </button>
       <button class="btn btn-primary" onclick="downloadPDF(this)">
         <i class="bi bi-download me-1"></i>Download PDF
       </button>
@@ -174,6 +206,18 @@
   <!-- PRIMARY CONTENT: the actual generated invoice, skinned by TEMPLATE_SPECS —
        same .inv-preview/.pvw-* markup used by form.html (create) and edit.html
        (edit), populated read-only from the saved invoice via renderPreview(). -->
+  <div class="ie-bar" id="ie-bar" role="region" aria-label="Editing invoice">
+    <div class="ie-bar-txt">
+      <b><span class="ie-dirty-dot"></span>Editing this invoice</b>
+      <span>Click any outlined text on the invoice to change it.</span>
+    </div>
+    <a class="ie-full" id="ie-full" href="#">More options</a>
+    <button type="button" class="btn btn-sm btn-light" onclick="ieCancel()">Cancel</button>
+    <button type="button" class="btn btn-sm btn-primary" id="ie-save" onclick="ieSave()">
+      <i class="bi bi-check2 me-1"></i>Save changes
+    </button>
+  </div>
+
   <div class="idet-preview-stage">
     <div class="idet-preview-wrap">
       {% include "invoices/_invoice_doc.html" %}<!-- /inv-preview -->
@@ -331,7 +375,8 @@ function renderMetrics(inv) {
       `${who} declined it${when ? ' on ' + when : ''}. Edit the invoice and send it again once it is fixed.`;
     document.getElementById('decline-note').textContent =
       inv.approval_note || 'No reason was given.';
-    document.getElementById('decline-edit').href = `/invoices/${inv.id}/edit/`;
+    const de = document.getElementById('decline-edit');
+    de.href = '#'; de.onclick = (e) => { e.preventDefault(); ieStart(); };
     box.style.display = '';
   } else {
     box.style.display = 'none';
@@ -350,7 +395,10 @@ function render(inv) {
   if (badge) badge.innerHTML = `<span class="badge-ms badge-${inv.status}">${inv.status}</span>`;
   _t('inv-date-txt', fmtDate(inv.invoice_date));
   _t('inv-due-txt',  fmtDate(inv.due_date));
-  document.getElementById('edit-btn').href = `/invoices/${inv.id}/edit/`;
+  const eb = document.getElementById('edit-btn');
+  const locked = ['Paid', 'Cancelled'].includes(inv.status);
+  eb.disabled = locked;
+  eb.title = locked ? `A ${inv.status.toLowerCase()} invoice can't be edited.` : '';
 
   document.getElementById('pay-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('pay-amount').value = parseFloat(inv.grand_total).toFixed(2);
@@ -735,6 +783,235 @@ async function recordPayment() {
 }
 
 loadInvoice();
+
+/* ── Edit directly on the invoice ─────────────────────────────────────────
+   Edit mode turns the rendered invoice itself into the form: customer fields,
+   line items, notes and terms become editable in place. Save sends the WHOLE
+   invoice back (PUT replaces fields, so anything omitted would be wiped),
+   with only the touched values changed. The full editor stays one click away
+   ("More options") for layout, template, signature and seller details. */
+const IE_FIELDS = [
+  // [element id, invoice key, placeholder, label shown before the value]
+  ['pvw-to-name',      'customer_name',      'Customer name', ''],
+  ['pvw-to-recipient', 'customer_recipient', 'Contact person', 'Attn:'],
+  ['pvw-to-addr',      'customer_address',   'Address', ''],
+  ['pvw-to-email',     'customer_email',     'Email', ''],
+  ['pvw-to-phone',     'customer_phone',     'Phone', ''],
+  ['pvw-to-cin',       'customer_cin',       'CIN', 'CIN:'],
+  ['pvw-to-gst',       'customer_gst',       'GSTIN', 'GSTIN:'],
+  ['pvw-to-pan',       'customer_pan',       'PAN', 'PAN:'],
+  ['pvw-notes',        'notes',              'Add a note for the customer', ''],
+  ['pvw-terms',        'terms',              'Add payment terms', ''],
+];
+let ieOn = false, ieItems = [];
+
+function ieEsc(v) { return String(v == null ? '' : v).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function ieMark() { document.body.classList.add('ie-dirty'); }
+
+function ieMakeEditable(el, value, ph, prefix) {
+  if (!el) return;
+  el.style.display = '';
+  // The label sits outside the editable span so the saved value stays raw.
+  el.innerHTML = (prefix ? `<span class="ie-lbl">${ieEsc(prefix)}</span>` : '') +
+    `<span data-ie contenteditable="plaintext-only" spellcheck="false" data-ph="${ieEsc(ph)}">${ieEsc(value)}</span>`;
+}
+
+function ieStart() {
+  const inv = window._inv;
+  if (!inv || ieOn) return;
+  if (['Paid', 'Cancelled'].includes(inv.status)) { toast(`A ${inv.status.toLowerCase()} invoice can't be edited.`, 'error'); return; }
+  ieOn = true;
+  document.body.classList.add('ie-on');
+  document.body.classList.remove('ie-dirty');
+  document.getElementById('ie-full').href = `/invoices/${inv.id}/edit/`;
+
+  IE_FIELDS.forEach(([id, key, ph, prefix]) => ieMakeEditable(document.getElementById(id), inv[key] || '', ph, prefix));
+  // Empty notes/terms are hidden in view mode; show them so they can be filled in.
+  ['notes', 'terms'].forEach(sec => {
+    const el = document.querySelector(`.pvw-sec[data-sec="${sec}"]`);
+    if (el) el.style.display = '';
+  });
+
+  ieItems = (inv.items || []).map(it => ({
+    name: it.description || it.product_name || '',
+    orig_name: it.description || it.product_name || '',
+    product_name: it.product_name, description: it.description,
+    hsn: it.hsn_code || '', qty: it.quantity, price: it.unit_price,
+    tax_rate: it.tax_rate, discount: it.discount || 0,
+  }));
+  ieRenderItems();
+
+  document.getElementById('ie-bar').scrollIntoView({behavior: 'smooth', block: 'start'});
+  const first = document.querySelector('#pvw-to-name [data-ie]');
+  if (first) setTimeout(() => first.focus(), 250);
+}
+
+function ieRenderItems() {
+  const body = document.getElementById('pvw-items-body');
+  const hdr  = document.getElementById('pvw-items-hdr');
+  // Edit mode always offers HSN so it can be filled in; discount stays as saved.
+  const showDisc = ieItems.some(it => parseFloat(it.discount) > 0);
+  const grid = `1fr 32px 32px 55px ${showDisc ? '32px ' : ''}55px`;
+  if (hdr) {
+    hdr.style.gridTemplateColumns = grid;
+    hdr.innerHTML = ['DESCRIPTION', 'HSN', 'QTY', 'RATE'].concat(showDisc ? ['DISC'] : []).concat(['AMOUNT'])
+      .map(h => `<span>${h}</span>`).join('');
+  }
+  body.innerHTML = '';
+  ieItems.forEach((it, i) => {
+    const r = document.createElement('div');
+    r.className = 'pvw-item-row ie-row';
+    r.style.gridTemplateColumns = grid;
+    const amt = (parseFloat(it.price) || 0) * (parseFloat(it.qty) || 0) * (1 - (parseFloat(it.discount) || 0) / 100);
+    r.innerHTML =
+      `<span><span data-ie contenteditable="plaintext-only" data-k="name" data-ph="Item description">${ieEsc(it.name)}</span></span>` +
+      `<span><span data-ie contenteditable="plaintext-only" data-k="hsn" data-ph="HSN">${ieEsc(it.hsn)}</span></span>` +
+      `<span><span data-ie data-ie-num contenteditable="plaintext-only" data-k="qty" data-ph="1">${ieEsc(it.qty)}</span></span>` +
+      `<span><span data-ie data-ie-num contenteditable="plaintext-only" data-k="price" data-ph="0.00">${ieEsc(it.price)}</span></span>` +
+      (showDisc ? `<span>${ieEsc(it.discount)}%</span>` : '') +
+      `<span class="ie-amt">${fmtRs(amt)}</span>` +
+      `<button type="button" class="ie-del" title="Remove this line" aria-label="Remove line">&times;</button>`;
+    r.querySelectorAll('[data-k]').forEach(c => c.addEventListener('input', () => {
+      const k = c.dataset.k, v = c.textContent.trim();
+      it[k] = (k === 'qty' || k === 'price') ? v.replace(/[^0-9.]/g, '') : v;
+      const a = (parseFloat(it.price) || 0) * (parseFloat(it.qty) || 0) * (1 - (parseFloat(it.discount) || 0) / 100);
+      r.querySelector('.ie-amt').textContent = fmtRs(a);
+      ieMark(); ieTotals();
+    }));
+    r.querySelector('.ie-del').addEventListener('click', () => {
+      if (ieItems.length === 1) { toast('An invoice needs at least one line.', 'error'); return; }
+      ieItems.splice(i, 1); ieMark(); ieRenderItems();
+    });
+    body.appendChild(r);
+  });
+  const add = document.createElement('button');
+  add.type = 'button'; add.className = 'ie-add'; add.textContent = '+ Add line';
+  add.addEventListener('click', () => {
+    const base = ieItems[0] || {};
+    ieItems.push({name: '', orig_name: null, hsn: '', qty: 1, price: '', tax_rate: base.tax_rate || 0, discount: 0});
+    ieMark(); ieRenderItems();
+    const rows = body.querySelectorAll('.ie-row');
+    const last = rows[rows.length - 1];
+    if (last) last.querySelector('[data-k="name"]').focus();
+  });
+  body.appendChild(add);
+  ieTotals();
+}
+
+/* Live totals while editing — same maths as Invoice.calculate_totals(). */
+function ieTotals() {
+  const inv = window._inv;
+  let sub = 0, tax = 0;
+  ieItems.forEach(it => {
+    const line = (parseFloat(it.price) || 0) * (parseFloat(it.qty) || 0) * (1 - (parseFloat(it.discount) || 0) / 100);
+    sub += line; tax += line * (parseFloat(it.tax_rate) || 0) / 100;
+  });
+  const cg = parseFloat(inv.cgst_rate) || 0, sg = parseFloat(inv.sgst_rate) || 0, ig = parseFloat(inv.igst_rate) || 0;
+  _t('pvw-sub', fmtRs(sub));
+  if (ig > 0 && (cg > 0 || sg > 0)) {
+    _t('pvw-cgst', fmtRs(sub * cg / 100)); _t('pvw-sgst', fmtRs(sub * sg / 100)); _t('pvw-igst', fmtRs(sub * ig / 100));
+  } else if (ig > 0) {
+    _t('pvw-igst', fmtRs(tax));
+  } else {
+    _t('pvw-cgst', fmtRs(tax / 2)); _t('pvw-sgst', fmtRs(tax / 2));
+  }
+  _t('pvw-gsttot', fmtRs(tax));
+  _t('pvw-grand', fmtRs(sub + tax));
+}
+
+document.addEventListener('input', e => { if (ieOn && e.target.closest && e.target.closest('[data-ie]')) ieMark(); });
+document.addEventListener('keydown', e => {
+  if (!ieOn) return;
+  if (e.key === 'Escape') { ieCancel(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); ieSave(); return; }
+  // Single-line fields: Enter moves to the next field instead of adding a line break.
+  const f = e.target.closest && e.target.closest('[data-ie]');
+  if (f && e.key === 'Enter' && !f.closest('#pvw-notes, #pvw-terms, #pvw-to-addr')) {
+    e.preventDefault();
+    const all = [...document.querySelectorAll('#inv-preview [data-ie]')];
+    const next = all[all.indexOf(f) + 1];
+    if (next) next.focus();
+  }
+});
+window.addEventListener('beforeunload', e => {
+  if (ieOn && document.body.classList.contains('ie-dirty')) { e.preventDefault(); e.returnValue = ''; }
+});
+
+async function ieExit(reload) {
+  ieOn = false;
+  document.body.classList.remove('ie-on', 'ie-dirty');
+  if (reload) { await loadInvoice(); } else { await renderPreview(window._inv); }
+}
+
+function ieCancel() {
+  if (document.body.classList.contains('ie-dirty') && !confirm('Discard your changes to this invoice?')) return;
+  ieExit(false);
+}
+
+async function ieSave() {
+  const inv = window._inv;
+  const val = id => { const el = document.querySelector(`#${id} [data-ie]`); return el ? el.textContent.trim() : ''; };
+  const edited = {};
+  IE_FIELDS.forEach(([id, key]) => { edited[key] = val(id); });
+  const focusField = id => { const el = document.querySelector(`#${id} [data-ie]`); if (el) el.focus(); };
+
+  if (!edited.customer_name) { toast('Customer name is required.', 'error'); focusField('pvw-to-name'); return; }
+  if (edited.customer_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(edited.customer_email)) {
+    toast("That email address doesn't look right.", 'error'); focusField('pvw-to-email'); return;
+  }
+  const lines = ieItems.filter(it => (it.name || '').trim() || parseFloat(it.price));
+  if (!lines.length) { toast('Add at least one line item.', 'error'); return; }
+  if (lines.some(it => !(parseFloat(it.qty) > 0))) { toast('Each line needs a quantity above 0.', 'error'); return; }
+
+  // A linked customer record would overwrite typed name/email/address/GSTIN on
+  // save, so once any of those change the invoice keeps its own copy instead.
+  const custChanged = ['customer_name', 'customer_email', 'customer_address', 'customer_gst']
+    .some(k => (edited[k] || '') !== (inv[k] || ''));
+  const payload = Object.assign({
+    customer_id: custChanged ? 'manual' : (inv.customer_id || 'manual'),
+  }, edited, {
+    cgst_rate: inv.cgst_rate || 0, sgst_rate: inv.sgst_rate || 0, igst_rate: inv.igst_rate || 0,
+    invoice_date: inv.invoice_date, due_date: inv.due_date,
+    currency: inv.currency || 'INR',
+    template_color: inv.template_color, template_style: inv.template_style,
+    layout_config: inv.layout_config || {},
+    signature_image: inv.signature_image || '', signatory_name: inv.signatory_name || '',
+    signature_company: inv.signature_company || '', signature_datetime: inv.signature_datetime || '',
+    department: inv.department || '',
+    items: lines.map(it => {
+      const untouched = it.orig_name !== null && it.name === it.orig_name;
+      return {
+        product_id: 'manual',   // keep the typed price; a catalogue id would reset it
+        description: untouched ? (it.product_name || it.name) : (it.name.trim() || 'Item'),
+        role: untouched && it.description && it.description !== it.product_name ? it.description : '',
+        hsn_code: it.hsn || '',
+        quantity: parseFloat(it.qty) || 1,
+        unit_price: parseFloat(it.price) || 0,
+        tax_rate: parseFloat(it.tax_rate) || 0,
+        discount: parseFloat(it.discount) || 0,
+      };
+    }),
+  });
+
+  const btn = document.getElementById('ie-save');
+  const old = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+  try {
+    const res = await API.put(`/api/invoices/${inv.id}/`, payload);
+    if (!res.success) {
+      const errs = res.errors ? Object.entries(res.errors).map(([k, v]) => `${k}: ${[].concat(v).join(' ')}`).join('; ') : '';
+      toast((res.message || 'Could not save.') + (errs ? ' ' + errs : ''), 'error');
+      return;
+    }
+    toast('Invoice updated.', 'success');
+    await ieExit(true);
+  } catch (e) {
+    toast('Could not save. Check your connection and try again.', 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = old;
+  }
+}
 
 </script>
 {% endblock %}
