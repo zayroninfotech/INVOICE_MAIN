@@ -198,6 +198,14 @@ class _CircleBadge(Flowable):
         c.drawCentredString(r, r - self.font_size * 0.35, self.initials)
 
 
+def _thanks_line(invoice):
+    """Footer line under the signature — the invoice's own wording when it was
+    edited on the detail page (layout_config.custom_labels.thanks)."""
+    from xml.sax.saxutils import escape
+    labels = ((getattr(invoice, 'layout_config', None) or {}).get('custom_labels') or {})
+    return escape((labels.get('thanks') or '').strip()) or 'Thank you for your business!'
+
+
 def _thank_you_stamp(ctx):
     """Static italic line under the signature — always printed.
 
@@ -205,7 +213,7 @@ def _thank_you_stamp(ctx):
     Skipped for 'minimal' template."""
     if ctx.get('style_id') == 'minimal':
         return []
-    msg = 'Thank you for your business!'
+    msg = _thanks_line(ctx.get('inv'))
     if not msg:
         return []
     txt_color = ctx.get('ACCENT', MUTED)
@@ -2111,7 +2119,7 @@ def _sec_staffing(ctx):
 
         The reference puts the two lines at different sizes AND colors inside one
         centered block: 12pt #2D74B5 then 8pt #ED0000."""
-        thanks = 'Thank you for your business!'
+        thanks = _thanks_line(ctx.get('inv'))
         dept   = (s.get('department') or '').strip()
         if not thanks and not dept:
             return []

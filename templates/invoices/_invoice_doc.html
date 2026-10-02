@@ -158,8 +158,9 @@ context both collapse to nothing and the preview behaves exactly as before.
       <div class="pvw-sig-lbl" style="margin-top:2px">Authorized Signatory</div>
       <div id="pvw-sig-name" style="font-size:7px;font-weight:700;color:#0F172A">{{ sig_name|default:"" }}</div>
       <div id="pvw-sig-dt" class="pvw-sig-dt">{{ sig_dt|default:"" }}</div>
-      <!-- Static footer line under the signature — always printed, not an input. -->
-      <div class="pvw-thanks" id="pvw-thanks">Thank you for your business!</div>
+      <!-- Footer line under the signature — editable per invoice
+           (layout_config.custom_labels.thanks), default below. -->
+      <div class="pvw-thanks" id="pvw-thanks">{{ thanks_line|default:"Thank you for your business!" }}</div>
     </div>
   </div>
 

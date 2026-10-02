@@ -214,6 +214,8 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
         # No invented terms: an invoice without terms prints no Terms block at all.
         'terms': (getattr(invoice, 'terms', '') or '').strip(),
         'hide_terms': not (getattr(invoice, 'terms', '') or '').strip(),
+        'thanks_line': (((getattr(invoice, 'layout_config', None) or {}).get('custom_labels') or {})
+                        .get('thanks') or '').strip(),
         'sig_name': s.get('sig_name') or '',
         'sig_url': s.get('sig_path') or '',
         'sig_dt': (f"Signed on {s['sig_datetime']}" if s.get('sig_datetime') else ''),

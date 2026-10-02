@@ -155,6 +155,31 @@
   .ie-on .ie-logo:hover { outline-style:solid; }
   .ie-logo-ph { font-size:6px; color:#94A3B8; font-weight:600; }
   .ie-on [data-lbl] { display:inline-block; }
+  .ie-on .ie-sig { cursor:pointer; outline:1px dashed rgba(193,18,31,.45); outline-offset:2px; }
+  .ie-on .ie-sig:hover { outline-style:solid; }
+  .ie-sig-slot { display:block; margin:0 auto 3px; border:1px dashed #C1121F; background:#fff; color:#C1121F;
+    font-size:7px; font-weight:700; border-radius:3px; padding:4px 10px; cursor:pointer; }
+  .ie-sig-dlg { border:none; border-radius:16px; padding:0; width:min(600px, calc(100% - 32px));
+    box-shadow:0 24px 64px rgba(15,23,42,.28); color:var(--text-primary); background:var(--surface); }
+  .ie-sig-dlg::backdrop { background:rgba(15,23,42,.45); }
+  .ie-sig-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; }
+  .ie-sig-head h3 { font-size:1.05rem; font-weight:700; margin:0; }
+  .ie-sig-x { border:none; background:none; color:var(--text-secondary); font-size:1rem; padding:4px; }
+  .ie-sig-tabs { display:flex; gap:6px; padding:0 20px 12px; }
+  .ie-sig-tabs button { border:1px solid var(--border); background:var(--surface); color:var(--text-secondary);
+    border-radius:99px; padding:5px 14px; font-size:.82rem; font-weight:600; }
+  .ie-sig-tabs button.on { background:var(--text-primary); color:var(--surface); border-color:var(--text-primary); }
+  #ie-sig-draw, #ie-sig-up { padding:0 20px; }
+  #ie-sig-canvas { width:100%; height:auto; aspect-ratio:560/180; display:block; border:1.5px dashed var(--border-strong, #CBD5E1);
+    border-radius:10px; background:#fff; touch-action:none; cursor:crosshair; }
+  .ie-sig-row { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .ie-sig-hint { flex:1; font-size:.78rem; color:var(--text-secondary); text-align:center; }
+  .ie-sig-drop { display:flex; flex-direction:column; align-items:center; gap:4px; padding:34px 16px; cursor:pointer;
+    border:1.5px dashed var(--border-strong, #CBD5E1); border-radius:10px; text-align:center; color:var(--text-secondary); }
+  .ie-sig-drop:hover { border-color:#C1121F; background:rgba(193,18,31,.03); }
+  .ie-sig-drop i { font-size:1.6rem; color:#C1121F; }
+  .ie-sig-drop small { font-size:.74rem; }
+  .ie-sig-foot { display:flex; justify-content:flex-start; padding:10px 14px 14px; }
 
   @media (max-width: 600px) {
     .pay-hist-row { grid-template-columns: 90px 1fr 90px; }
@@ -210,6 +235,36 @@
   <!-- PRIMARY CONTENT: the actual generated invoice, skinned by TEMPLATE_SPECS —
        same .inv-preview/.pvw-* markup used by form.html (create) and edit.html
        (edit), populated read-only from the saved invoice via renderPreview(). -->
+  <dialog class="ie-sig-dlg" id="ie-sig-dlg" aria-labelledby="ie-sig-title">
+    <div class="ie-sig-head">
+      <h3 id="ie-sig-title">Signature</h3>
+      <button type="button" class="ie-sig-x" aria-label="Close" onclick="this.closest('dialog').close()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="ie-sig-tabs" role="tablist">
+      <button type="button" data-sigtab="draw" onclick="ieSigTab('draw')"><i class="bi bi-pen me-1"></i>Draw</button>
+      <button type="button" data-sigtab="upload" onclick="ieSigTab('upload')"><i class="bi bi-upload me-1"></i>Upload</button>
+    </div>
+    <div id="ie-sig-draw">
+      <canvas id="ie-sig-canvas" width="560" height="180" aria-label="Draw your signature here"></canvas>
+      <div class="ie-sig-row">
+        <button type="button" class="btn btn-sm btn-light" onclick="ieSigClear()">Clear</button>
+        <span class="ie-sig-hint">Sign with your mouse, pen or finger</span>
+        <button type="button" class="btn btn-sm btn-primary" onclick="ieSigUse()">Use this signature</button>
+      </div>
+    </div>
+    <div id="ie-sig-up" hidden>
+      <label class="ie-sig-drop">
+        <input type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="ieSigFile(this)">
+        <i class="bi bi-image"></i>
+        <span><b>Choose an image</b> of your signature</span>
+        <small>PNG with a transparent background looks best · max 1 MB</small>
+      </label>
+    </div>
+    <div class="ie-sig-foot">
+      <button type="button" class="btn btn-sm btn-link text-danger" onclick="ieSigRemove()">Remove signature</button>
+    </div>
+  </dialog>
+
   <div class="ie-bar" id="ie-bar" role="region" aria-label="Editing invoice">
     <div class="ie-bar-txt">
       <b><span class="ie-dirty-dot"></span>Editing this invoice</b>
@@ -594,6 +649,7 @@ async function renderPreview(inv) {
   setTxt(q('.pvw-sec[data-sec="notes"] > div > div:first-child'), CL.notes);
   setTxt(q('.pvw-sec[data-sec="terms"] > div > div:first-child'), CL.terms);
   setTxt(q('.pvw-sec[data-sec="signature"] .pvw-sig-lbl'), CL.signature);
+  _t('pvw-thanks', CL.thanks || 'Thank you for your business!');
   setTxt(document.getElementById('pvw-sub')?.previousElementSibling, CL.subtotal);
   setTxt(document.getElementById('pvw-grand')?.previousElementSibling, CL.grand_total);
   q('.pvw-addr')?.classList.toggle('swapped', lc.swap_parties === true);
@@ -817,6 +873,7 @@ const IE_INV = [
   ['pvw-notes',        'notes',              'Add a note for the customer', ''],
   ['pvw-terms',        'terms',              'Add payment terms', ''],
   ['pvw-sig-name',     'signatory_name',     'Signatory name', ''],
+  ['pvw-sig-dt',       'signature_datetime', 'DD-MM-YYYY, HH:MM AM', 'Signed on'],
 ];
 const IE_BP = [
   ['pvw-co-name',      'company_name', 'YOUR COMPANY', ''],
@@ -840,7 +897,9 @@ const IE_LBL = [
   ['signature',     '.pvw-sec[data-sec="signature"] .pvw-sig-lbl', 'Authorized Signatory'],
   ['subtotal',      '#pvw-sub-lbl', 'Subtotal'],
   ['grand_total',   '#pvw-grand-lbl', 'GRAND TOTAL'],
+  ['thanks',        '#pvw-thanks', 'Thank you for your business!'],
 ];
+let ieSig = null;   // null = unchanged, '' = removed, data-URL = new signature
 let ieOn = false, ieItems = [], ieRates = {cgst: 0, sgst: 0, igst: 0}, ieProfile = {}, ieLogoFile = null;
 
 function ieEsc(v) { return String(v == null ? '' : v).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -909,6 +968,10 @@ async function ieStart() {
     const el = document.querySelector(`.pvw-sec[data-sec="${sec}"]`);
     if (el) el.style.display = '';
   });
+
+  // Signature: click to draw, upload or remove.
+  ieSig = null;
+  ieSigShow(inv.signature_image || '');
 
   // Logo: click to replace (uploaded on save).
   const lc = document.getElementById('pvw-logo-circle');
@@ -1047,6 +1110,10 @@ async function ieExit(reload) {
   ieLabels(false);
   const lc = document.getElementById('pvw-logo-circle');
   if (lc) { lc.classList.remove('ie-logo'); lc.onclick = null; lc.title = ''; }
+  const sw = document.getElementById('ie-sig-slot');
+  if (sw) sw.remove();
+  const si = document.getElementById('pvw-sig-img');
+  if (si) { si.classList.remove('ie-sig'); si.onclick = null; si.title = ''; }
   // Fields the view mode never writes would otherwise keep their edit spans.
   ['pvw-from-cin', 'pvw-from-pan'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
   if (reload) { await loadInvoice(); } else { await renderPreview(window._inv); }
@@ -1055,6 +1122,78 @@ async function ieExit(reload) {
 function ieCancel() {
   if (document.body.classList.contains('ie-dirty') && !confirm('Discard your changes to this invoice?')) return;
   ieExit(false);
+}
+
+
+/* ── Signature: draw / upload / remove ─────────────────────────────────── */
+function ieSigShow(src) {
+  const img = document.getElementById('pvw-sig-img');
+  if (!img) return;
+  let slot = document.getElementById('ie-sig-slot');
+  if (src) {
+    img.src = src; img.style.display = 'block';
+    if (slot) slot.remove();
+    img.classList.add('ie-sig'); img.title = 'Click to change the signature';
+    img.onclick = ieSigOpen;
+  } else {
+    img.src = ''; img.style.display = 'none';
+    if (!slot) {
+      slot = document.createElement('button');
+      slot.type = 'button'; slot.id = 'ie-sig-slot'; slot.className = 'ie-sig-slot';
+      slot.textContent = '+ Add signature';
+      slot.onclick = ieSigOpen;
+      img.insertAdjacentElement('afterend', slot);
+    }
+  }
+}
+
+let ieSigCtx = null, ieSigInk = false;
+function ieSigOpen() {
+  const dlg = document.getElementById('ie-sig-dlg');
+  ieSigTab('draw');
+  ieSigClear();
+  dlg.showModal();
+}
+function ieSigTab(t) {
+  document.querySelectorAll('#ie-sig-dlg [data-sigtab]').forEach(b => b.classList.toggle('on', b.dataset.sigtab === t));
+  document.getElementById('ie-sig-draw').hidden = t !== 'draw';
+  document.getElementById('ie-sig-up').hidden = t !== 'upload';
+}
+function ieSigClear() {
+  const c = document.getElementById('ie-sig-canvas');
+  ieSigCtx = c.getContext('2d');
+  ieSigCtx.clearRect(0, 0, c.width, c.height);
+  ieSigCtx.lineWidth = 2.4; ieSigCtx.lineCap = 'round'; ieSigCtx.lineJoin = 'round'; ieSigCtx.strokeStyle = '#0F172A';
+  ieSigInk = false;
+}
+(function wireSigCanvas() {
+  const c = document.getElementById('ie-sig-canvas');
+  if (!c) return;
+  let down = false;
+  const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
+  c.addEventListener('pointerdown', e => { down = true; c.setPointerCapture(e.pointerId); const [x, y] = pt(e); ieSigCtx.beginPath(); ieSigCtx.moveTo(x, y); });
+  c.addEventListener('pointermove', e => { if (!down) return; const [x, y] = pt(e); ieSigCtx.lineTo(x, y); ieSigCtx.stroke(); ieSigInk = true; });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => { down = false; }));
+})();
+function ieSigUse() {
+  if (!ieSigInk) { toast('Draw your signature first.', 'error'); return; }
+  ieSig = document.getElementById('ie-sig-canvas').toDataURL('image/png');
+  ieSigShow(ieSig); ieMark();
+  document.getElementById('ie-sig-dlg').close();
+}
+function ieSigFile(input) {
+  const f = input.files && input.files[0];
+  input.value = '';
+  if (!f) return;
+  if (!/^image\/(png|jpe?g|webp)$/.test(f.type)) { toast('Use a PNG, JPG or WEBP image.', 'error'); return; }
+  if (f.size > 1024 * 1024) { toast('Signature image must be under 1 MB.', 'error'); return; }
+  const r = new FileReader();
+  r.onload = () => { ieSig = r.result; ieSigShow(ieSig); ieMark(); document.getElementById('ie-sig-dlg').close(); };
+  r.readAsDataURL(f);
+}
+function ieSigRemove() {
+  ieSig = ''; ieSigShow(''); ieMark();
+  document.getElementById('ie-sig-dlg').close();
 }
 
 function ieParseDate(s) {
@@ -1111,8 +1250,8 @@ async function ieSave() {
     currency: inv.currency || 'INR',
     template_color: inv.template_color, template_style: inv.template_style,
     layout_config: Object.assign({}, inv.layout_config || {}, {custom_labels: labels}),
-    signature_image: inv.signature_image || '',
-    signature_company: inv.signature_company || '', signature_datetime: inv.signature_datetime || '',
+    signature_image: ieSig === null ? (inv.signature_image || '') : ieSig,
+    signature_company: inv.signature_company || '',
     department: inv.department || '',
     items: lines.map(it => {
       const untouched = it.orig_name !== null && it.name === it.orig_name;
