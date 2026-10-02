@@ -99,6 +99,35 @@
   .btn-apply:hover { background:#166534; color:#fff; }
   .ta-src { font-size:.75rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+  /* ── Copy-prompt flow (your own ChatGPT/Gemini) ── */
+  .ta-own { display:flex; align-items:center; gap:16px; padding:16px 20px; margin:-8px 0 20px; border:1px solid var(--border);
+            border-radius:16px; background:var(--surface); }
+  .ta-own .ic { width:48px; height:48px; border-radius:12px; background:#111827; color:#fff; display:flex;
+                align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+  .ta-own b { display:block; font-size:.98rem; }
+  .ta-own span { color:var(--text-secondary); font-size:.85rem; }
+  .ta-own .btn { margin-left:auto; white-space:nowrap; border-radius:10px; font-weight:600; }
+  dialog.cp-dlg { border:none; padding:0; width:min(860px, calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto;
+                  border-radius:18px; background:var(--surface); color:var(--text-primary); box-shadow:0 28px 64px rgba(15,23,42,.3); }
+  dialog.cp-dlg::backdrop { background:rgba(15,23,42,.5); }
+  .cp-in { padding:22px 24px; }
+  .cp-head { display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; }
+  .cp-head h3 { margin:0 0 4px; font-size:1.2rem; font-weight:800; }
+  .cp-head p { margin:0; color:var(--text-secondary); font-size:.86rem; }
+  .cp-head .x { margin-left:auto; border:none; background:none; color:var(--text-secondary); font-size:1.05rem; padding:6px; }
+  .cp-step { display:grid; grid-template-columns:32px 1fr; gap:12px; padding:14px 0; border-top:1px solid var(--border); }
+  .cp-num { width:28px; height:28px; border-radius:50%; background:#C1121F; color:#fff; font-weight:800; font-size:.85rem;
+            display:flex; align-items:center; justify-content:center; }
+  .cp-step h4 { margin:2px 0 6px; font-size:.95rem; font-weight:700; }
+  .cp-step p { margin:0 0 8px; color:var(--text-secondary); font-size:.84rem; }
+  .cp-box { width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-family:ui-monospace,Consolas,monospace;
+            font-size:.76rem; line-height:1.45; background:var(--surface-subtle, #F8FAFC); color:var(--text-primary); resize:vertical; }
+  .cp-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  .cp-row .btn { border-radius:9px; font-weight:600; }
+  .cp-err { display:none; color:#B91C1C; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:9px 12px; font-size:.85rem; margin-top:10px; }
+  .cp-err.show { display:block; }
+  @media (max-width:560px) { .ta-own { flex-wrap:wrap; } .ta-own .btn { margin-left:0; width:100%; } }
+
   /* ── Template viewer ── */
   dialog.vw-dlg { border:none; padding:0; width:min(980px, calc(100vw - 32px)); height:calc(100dvh - 32px);
                   border-radius:18px; background:var(--surface); color:var(--text-primary); overflow:hidden;
@@ -204,6 +233,15 @@
     </div>
     <span class="btn btn-primary go"><i class="bi bi-upload me-1"></i>Upload document</span>
   </label>
+  <div class="ta-own">
+    <span class="ic"><i class="bi bi-clipboard-check"></i></span>
+    <div>
+      <b>Use your own ChatGPT or Gemini — no API key</b>
+      <span>Copy a ready-made prompt, give it to the AI with your invoice design, then paste back what it returns.</span>
+    </div>
+    <button type="button" class="btn btn-dark" onclick="cpOpen()"><i class="bi bi-magic me-1"></i>Copy prompt &amp; paste design</button>
+  </div>
+
   <div class="ta-reading" id="ta-reading" role="status">
     <span class="spinner-border spinner-border-sm text-danger"></span>
     <span id="ta-reading-txt">Reading your document…</span>
@@ -324,6 +362,55 @@
     </div>
   </div>
 </dialog>
+<dialog class="cp-dlg" id="cp-dlg" aria-labelledby="cp-title">
+  <div class="cp-in">
+    <div class="cp-head">
+      <div>
+        <h3 id="cp-title">Design a template with your own AI</h3>
+        <p>Nothing is sent to any AI from here — you use ChatGPT or Gemini yourself.</p>
+      </div>
+      <button type="button" class="x" aria-label="Close" onclick="document.getElementById('cp-dlg').close()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="cp-step">
+      <span class="cp-num">1</span>
+      <div>
+        <h4>Copy the prompt</h4>
+        <textarea class="cp-box" id="cp-prompt" rows="6" readonly>Loading…</textarea>
+        <div class="cp-row">
+          <button type="button" class="btn btn-primary btn-sm" id="cp-copy" onclick="cpCopy()"><i class="bi bi-clipboard me-1"></i>Copy prompt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-step">
+      <span class="cp-num">2</span>
+      <div>
+        <h4>Give it to ChatGPT or Gemini with your design</h4>
+        <p>Open <b>chatgpt.com</b> or <b>gemini.google.com</b>, <b>attach your invoice design</b> (Word, PDF or a screenshot),
+           paste the prompt and send. Copy the HTML it replies with (or download it as a .html file).</p>
+      </div>
+    </div>
+
+    <div class="cp-step">
+      <span class="cp-num">3</span>
+      <div>
+        <h4>Paste or upload the result</h4>
+        <label class="ta-lbl" for="cp-name">Template name</label>
+        <input class="ta-in" id="cp-name" maxlength="60" placeholder="e.g. Novoraa Tax Invoice">
+        <textarea class="cp-box" id="cp-html" rows="7" placeholder='Paste the HTML here — it starts with &lt;div class="ai-page"&gt;'></textarea>
+        <div class="cp-row">
+          <input type="file" id="cp-file" accept=".html,.htm,.txt,text/html,text/plain" hidden onchange="cpFile(this)">
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('cp-file').click()"><i class="bi bi-upload me-1"></i>Upload .html file</button>
+          <span id="cp-file-name" style="font-size:.82rem;color:var(--text-secondary)"></span>
+          <button type="button" class="btn btn-primary btn-sm" id="cp-go" style="margin-left:auto" onclick="cpCreate()"><i class="bi bi-check2 me-1"></i>Create template</button>
+        </div>
+        <p class="cp-err" id="cp-err" role="alert"></p>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <dialog class="vw-dlg" id="vw-dlg" aria-labelledby="vw-title">
   <div class="vw-wrap">
     <div class="vw-top">
@@ -561,6 +648,56 @@ async function taPublish(id, publish) {
   const r = await API.post(`/api/invoices/custom-templates/${encodeURIComponent(id)}/publish/`, {publish});
   if (!r.success) { toast(r.message || 'Could not update.', 'error'); return; }
   taList = taList.map(t => t.id === id ? r.data : t);
+  taRender();
+  toast(r.message, 'success');
+}
+
+/* ── Copy prompt & paste design (no AI on this server) ─────────────────── */
+let cpFileObj = null;
+async function cpOpen() {
+  cpFileObj = null;
+  ['cp-html', 'cp-name'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cp-file-name').textContent = '';
+  document.getElementById('cp-err').classList.remove('show');
+  document.getElementById('cp-dlg').showModal();
+  const box = document.getElementById('cp-prompt');
+  if (box.dataset.loaded) return;
+  const r = await API.get('/api/invoices/custom-templates/prompt/');
+  box.value = r.success ? r.data.prompt : 'Could not load the prompt — refresh the page and try again.';
+  if (r.success) box.dataset.loaded = '1';
+}
+async function cpCopy() {
+  const box = document.getElementById('cp-prompt'), btn = document.getElementById('cp-copy');
+  try { await navigator.clipboard.writeText(box.value); }
+  catch (_) { box.select(); document.execCommand('copy'); }
+  const old = btn.innerHTML;
+  btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Copied';
+  setTimeout(() => { btn.innerHTML = old; }, 1800);
+}
+function cpFile(inp) {
+  cpFileObj = inp.files && inp.files[0] || null;
+  document.getElementById('cp-file-name').textContent = cpFileObj ? cpFileObj.name : '';
+}
+async function cpCreate() {
+  const err = document.getElementById('cp-err');
+  err.classList.remove('show');
+  const html = document.getElementById('cp-html').value.trim();
+  if (!html && !cpFileObj) { err.textContent = 'Paste the HTML the AI gave you, or upload it as a file.'; err.classList.add('show'); return; }
+  const fd = new FormData();
+  fd.append('name', document.getElementById('cp-name').value.trim());
+  if (cpFileObj) fd.append('file', cpFileObj); else fd.append('html', html);
+  const btn = document.getElementById('cp-go'), old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Checking…';
+  let r;
+  try {
+    r = await fetch('/api/invoices/custom-templates/from-html/', {
+      method: 'POST', body: fd, headers: {'Authorization': 'Bearer ' + (localStorage.getItem('access_token') || '')},
+    }).then(x => x.json());
+  } catch (_) { r = {success: false, message: 'Could not reach the server — check your connection.'}; }
+  btn.disabled = false; btn.innerHTML = old;
+  if (!r.success) { err.textContent = r.message || 'That design could not be used.'; err.classList.add('show'); return; }
+  document.getElementById('cp-dlg').close();
+  taList.push(r.data);
   taRender();
   toast(r.message, 'success');
 }

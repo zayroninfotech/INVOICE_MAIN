@@ -167,6 +167,10 @@ class CustomTemplate(me.Document):
     ai_error    = me.StringField(default='')
     # 'dark' turns the design dark the way Word's Dark Mode shows it (ai_template.darken)
     page_style  = me.StringField(choices=['light', 'dark'], default='light')
+    # Extra editable fields the AI found in the design (bank details, customer
+    # ID, declaration…): [{'key', 'label', 'default', 'multiline'}]. Their values
+    # are saved per invoice in layout_config['extra_fields'].
+    ai_fields   = me.ListField(me.DictField(), default=list)
     is_active   = me.BooleanField(default=True)
     created_by  = me.StringField(default='')
     created_at  = me.DateTimeField(default=datetime.utcnow)

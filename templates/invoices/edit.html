@@ -1595,6 +1595,7 @@ async function loadInvoice() {
 
   // Restore layout config (new nested format with legacy flat-key fallback)
   const lc = inv.layout_config || {};
+  window._xtExtraSaved = lc.extra_fields || {};
   if (Array.isArray(lc.section_order) && lc.section_order.length) {
     const valid = lc.section_order.filter(s => DEFAULT_SECTIONS.includes(s));
     DEFAULT_SECTIONS.forEach(s => { if (!valid.includes(s)) valid.push(s); });
@@ -2121,6 +2122,8 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     template_style:   window._selectedTemplate || 'classic',
 
     layout_config: {
+      // Extra fields of an uploaded/AI design (bank details, customer ID…).
+      extra_fields: (window.xtExtraValues ? window.xtExtraValues() : {}),
       // New nested structure consumed by the PDF generator
       section_order:     layoutState.section_order,
       hidden_sections:   layoutState.hidden_sections,

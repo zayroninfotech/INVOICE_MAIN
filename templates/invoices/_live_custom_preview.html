@@ -83,7 +83,53 @@ Included at the end of form.html and edit.html.
       'sig.datetime': window._sigAtStr || '',
       '_logo': media(logoSrc), '_sig': media(sig && sig.style.display !== 'none' ? sig.getAttribute('src') || '' : ''),
       '_items': items,
+      '_extra': extraValues(),
     };
+  }
+
+  /* ── Template fields: one input per extra field in an uploaded/AI design ── */
+  const xtStore = {};          // key -> typed value, kept while switching templates
+  const fieldsOf = id => (isCustom(id) && Array.isArray(TEMPLATE_SPECS[id].fields)) ? TEMPLATE_SPECS[id].fields : [];
+  function extraValues() {
+    const out = {};
+    fieldsOf(window._selectedTemplate).forEach(f => {
+      out[f.key] = (f.key in xtStore) ? xtStore[f.key]
+                 : ((window._xtExtraSaved || {})[f.key] ?? f.default ?? '');
+    });
+    return out;
+  }
+  window.xtExtraValues = extraValues;
+
+  function renderFields() {
+    const fields = fieldsOf(window._selectedTemplate);
+    let sec = document.getElementById('xt-fields');
+    if (!fields.length) { if (sec) sec.remove(); return; }
+    const anchor = document.getElementById('thankyou-msg')?.closest('.fi-sec');
+    if (!anchor) return;
+    const sig = window._selectedTemplate + ':' + fields.map(f => f.key).join(',');
+    if (sec && sec.dataset.sig === sig) return;          // already built for this template
+    if (!sec) {
+      sec = document.createElement('div');
+      sec.className = 'fi-sec';
+      sec.id = 'xt-fields';
+      anchor.insertAdjacentElement('afterend', sec);
+    }
+    sec.dataset.sig = sig;
+    const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+    const vals = extraValues();
+    sec.innerHTML = `<div class="fi-sec-lbl"><span class="fi-ic"><i class="bi bi-ui-checks-grid"></i></span>
+        <span><span class="fi-t">Template fields</span><span class="fi-s">Extra details in this design — edit them for this invoice</span></span></div>
+      <div class="fi-grid" style="margin-bottom:10px">` +
+      fields.map(f => `<div class="fi-row"${f.multiline ? ' style="grid-column:1/-1"' : ''}>
+          <label class="fi-lbl" for="xtf-${esc(f.key)}">${esc(f.label)}</label>
+          ${f.multiline
+            ? `<textarea class="fi" id="xtf-${esc(f.key)}" data-xt="${esc(f.key)}" rows="2" maxlength="2000">${esc(vals[f.key])}</textarea>`
+            : `<input class="fi" id="xtf-${esc(f.key)}" data-xt="${esc(f.key)}" maxlength="500" value="${esc(vals[f.key])}">`}
+        </div>`).join('') + `</div>`;
+    sec.querySelectorAll('[data-xt]').forEach(el => el.addEventListener('input', () => {
+      xtStore[el.dataset.xt] = el.value;
+      window.xtLivePreview();
+    }));
   }
 
   // Draw `values` with template `id` into container `box` (an .xt-live element).
@@ -161,6 +207,7 @@ Included at the end of form.html and edit.html.
     const h = host();
     const pvw = document.getElementById('inv-preview');
     if (!h || !pvw) return;
+    renderFields();
     // While the picker modal has borrowed #inv-preview, leave it alone.
     if (pvw.closest('#tplPreviewModal')) return;
     if (!isCustom(id)) { h.classList.remove('on'); pvw.style.display = ''; return; }

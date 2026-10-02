@@ -2821,6 +2821,8 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     template_style:   window._selectedTemplate || 'classic',
 
     layout_config: {
+      // Extra fields of an uploaded/AI design (bank details, customer ID…).
+      extra_fields: (window.xtExtraValues ? window.xtExtraValues() : {}),
       // New nested structure consumed by the PDF generator
       section_order:     layoutState.section_order,
       hidden_sections:   layoutState.hidden_sections,

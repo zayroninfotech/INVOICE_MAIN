@@ -232,6 +232,18 @@ Line items: loop over them exactly once —
 Optional values can be guarded: {{% if customer_gst %}} … {{% endif %}}.
 Logo: if the design shows a logo, use <img src="{{{{ logo_url }}}}" …> wrapped in {{% if logo_url %}}…{{% endif %}}.
 
+EXTRA FIELDS — very important: every other value or fill-in blank in the design that the user
+should be able to edit and that is NOT covered by the variables above (for example Customer ID,
+Ship To Address, Place of Supply, PO number, Bank Name, Account Name, Account Number, IFSC Code,
+Branch, UPI ID, Declaration text, Payment instructions, footer address/website/mobile lines,
+"For <company>" line) must become an extra field written as {{{{ x.some_key }}}} (lowercase
+snake_case key). Keep the fixed label next to it as text (e.g. "Bank Name: {{{{ x.bank_name }}}}").
+If the design shows a sample or standard text for it, put that as the default:
+{{{{ x.declaration|default:"We declare that the particulars stated in this invoice are true." }}}}.
+Then, as the FIRST line inside .ai-page, list every extra field in one HTML comment:
+<!-- fields: bank_name=Bank Name; account_number=Account Number; ifsc_code=IFSC Code; declaration=Declaration* -->
+(add * after a label when the value is long / multi-line).
+
 Hard rules — the output is checked automatically and rejected otherwise:
 - Output ONLY the HTML. No markdown, no code fences, no explanations.
 - One root element: <div class="ai-page"> … </div>. Put all CSS in a single <style> block inside it,
@@ -284,11 +296,17 @@ def generate_html(png, description):
 
 def sanitize(html):
     """Strip fences and enforce the allowed template subset. Raises AIError."""
+    html = html.strip()
+    # Chat replies wrap the code in ``` fences with text around it — keep only the code.
+    fenced = re.search(r'```[a-zA-Z]*\s*\n(.*?)```', html, re.S)
+    if fenced and 'ai-page' in fenced.group(1):
+        html = fenced.group(1)
     html = re.sub(r'^```[a-zA-Z]*\s*|\s*```$', '', html.strip())
     start = html.find('<div')
     if start < 0 or 'ai-page' not in html:
         raise AIError("The AI didn't return a page. Try again.")
-    html = html[start:]
+    end = html.rfind('</div>')
+    html = html[start:end + len('</div>')] if end > start else html[start:]
     bad = [
         (r'<\s*(script|iframe|object|embed|link|meta|base|form|input|button|textarea|svg)\b', 'disallowed element'),
         (r'\son[a-z]+\s*=', 'event handler'),
@@ -313,7 +331,7 @@ def sanitize(html):
         return re.sub(r'\|\s*(\w+)(\s*:\s*("[^"]*"|\'[^\']*\'|[\w.]+))?',
                       lambda f: f.group(0) if f.group(1) in _ALLOWED_FILTERS else '', expr)
     html = re.sub(r'{{.*?}}|{%.*?%}', _filters, html, flags=re.S)
-    allowed_vars = set(VARIABLES) | {'items', 'it', 'forloop'}
+    allowed_vars = set(VARIABLES) | {'items', 'it', 'forloop', 'x'}
     for expr in re.findall(r'{{\s*([^}|]+)', html) + re.findall(r'{%\s*(?:if|elif|for\s+\w+\s+in|with)\s+([^%]+)%}', html):
         for name in re.findall(r'[A-Za-z_][A-Za-z_0-9]*', expr):
             root = name
@@ -321,6 +339,8 @@ def sanitize(html):
                 continue
             if root in ITEM_FIELDS or root in ('counter', 'counter0', 'first', 'last'):
                 continue
+            if re.search(r'\bx\.' + re.escape(root) + r'\b', expr):
+                continue        # x.<extra field key>
             raise AIError(f"The generated design used an unknown value ({root}). Try again.")
     for src in re.findall(r'src\s*=\s*["\']([^"\']*)', html, re.I):
         if not re.fullmatch(r'\s*({{\s*(logo_url|signature_url)\s*}}|data:image/[a-z+]+;base64,[A-Za-z0-9+/=]+)\s*', src):
@@ -365,6 +385,10 @@ def ai_context(values):
     out = {k: ('' if values.get(v) is None else str(values.get(v))) for k, v in m.items()}
     out['logo_url'] = values.get('_logo') or ''
     out['signature_url'] = values.get('_sig') or ''
+    # Extra fields from the design (bank details, customer ID…) — plain strings.
+    extra = values.get('_extra') or {}
+    out['x'] = {str(k): ('' if v is None else str(v))[:2000] for k, v in extra.items()
+                if re.fullmatch(r'[a-z][a-z0-9_]{0,40}', str(k))}
     out['items'] = [{
         'sno': it.get('item.sno', ''), 'desc': it.get('item.desc', ''), 'hsn': it.get('item.hsn', ''),
         'qty': it.get('item.qty', ''), 'unit': it.get('item.unit', ''), 'rate': it.get('item.rate', ''),
@@ -389,6 +413,7 @@ def _job(template_id):
         html = sanitize(generate_html(png, desc))
         render(html, ai_context(SAMPLE))        # must render cleanly with sample data
         c.ai_html, c.ai_status, c.ai_error = html, 'ready', ''
+        c.ai_fields = extract_fields(html)
     except AIError as exc:
         c.ai_status, c.ai_error = 'failed', str(exc)[:500]
     except Exception as exc:
@@ -428,3 +453,47 @@ def darken(html):
     # Anything the design left at the browser default (white page, black text).
     return html + ('<style>.ai-page{background-color:#242424;color:#E6E6E6}'
                    '.ai-page table{border-color:#5A5A5A}</style>')
+
+
+# ── extra fields ────────────────────────────────────────────────────────────
+
+def extract_fields(html):
+    """List the design's extra fields: from the <!-- fields: … --> comment, plus
+    any {{ x.key }} the model used without listing. Defaults come from
+    |default:"…" in the template."""
+    labels, multi = {}, set()
+    m = re.search(r'<!--\s*fields\s*:(.*?)-->', html, re.S | re.I)
+    if m:
+        for part in re.split(r'[;\n]', m.group(1)):
+            if '=' not in part:
+                continue
+            k, lbl = (p.strip() for p in part.split('=', 1))
+            if not re.fullmatch(r'[a-z][a-z0-9_]{0,40}', k):
+                continue
+            if lbl.endswith('*'):
+                multi.add(k)
+                lbl = lbl[:-1].strip()
+            labels[k] = lbl[:60] or k.replace('_', ' ').title()
+    defaults = {}
+    for k, d in re.findall(r'{{\s*x\.([a-z][a-z0-9_]*)\s*\|\s*default\s*:\s*"([^"]*)"', html):
+        defaults.setdefault(k, d)
+    used = []
+    for k in re.findall(r'x\.([a-z][a-z0-9_]*)', html):
+        if k not in used:
+            used.append(k)
+    keys = [k for k in labels if k in used] + [k for k in used if k not in labels]
+    return [{'key': k, 'label': labels.get(k) or k.replace('_', ' ').title(),
+             'default': defaults.get(k, '')[:2000],
+             'multiline': k in multi or len(defaults.get(k, '')) > 80}
+            for k in keys[:40]]
+
+
+# ── "Copy prompt" flow (no AI on this server) ───────────────────────────────
+
+def manual_prompt():
+    """The prompt the superadmin copies into ChatGPT/Gemini themselves, with
+    their invoice design attached. The HTML that comes back is pasted into the
+    app and goes through the same sanitize() + extract_fields() as server AI."""
+    return (_prompt('') +
+            "\n\nReply with ONLY the finished HTML (starting with <div class=\"ai-page\">), "
+            "in a single code block, with no explanation before or after it.")

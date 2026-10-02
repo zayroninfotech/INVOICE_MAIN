@@ -902,5 +902,69 @@ class LiveTemplateRenderView(APIView):
         items = raw.get('_items') if isinstance(raw.get('_items'), list) else []
         values['_items'] = [{k: clip(it.get(k), 300) for k in FIELDS if k.startswith('item.')}
                             for it in items[:200] if isinstance(it, dict)]
+        extra = raw.get('_extra') if isinstance(raw.get('_extra'), dict) else {}
+        values['_extra'] = {str(k)[:41]: clip(val, 2000) for k, val in list(extra.items())[:40]}
         html = ai_render(ai_html, ai_context(values)) if ai_html else exact_render(layout, values)
         return success({'html': html})
+
+
+class CustomTemplatePromptView(APIView):
+    """The ready-made prompt for the 'Copy prompt' flow."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request):
+        from .ai_template import manual_prompt
+        return success({'prompt': manual_prompt()})
+
+
+class CustomTemplateFromHtmlView(APIView):
+    """Create a draft template from HTML the superadmin got from ChatGPT/Gemini
+    (pasted, or uploaded as .html/.txt). No AI runs here — the HTML is checked
+    exactly like server-generated designs before it is stored."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request):
+        import secrets
+        from .models import CustomTemplate
+        from .ai_template import sanitize, render as ai_render, ai_context, extract_fields, AIError
+        from .exact_template import SAMPLE
+        html = request.data.get('html') or ''
+        up = request.FILES.get('file')
+        if up:
+            if up.size > 1024 * 1024:
+                return error("That file is too large (max 1 MB of HTML).")
+            if not up.name.lower().endswith(('.html', '.htm', '.txt')):
+                return error("Upload the .html (or .txt) file the AI gave you.")
+            html = up.read().decode('utf-8', errors='replace')
+        html = str(html)
+        if len(html) > 1024 * 1024:
+            return error("That HTML is too large (max 1 MB).")
+        if not html.strip():
+            return error("Paste the HTML the AI gave you, or upload it as a file.")
+        try:
+            clean = sanitize(html)
+            ai_render(clean, ai_context(SAMPLE))      # must render with sample data
+        except AIError as exc:
+            return error(str(exc).replace('Try again.', 'Ask the AI to fix that and paste it again.'))
+        except Exception as exc:
+            return error(f"That HTML couldn't be used as a template ({type(exc).__name__}). "
+                         "Ask the AI to follow the prompt exactly and paste it again.")
+        name = (str(request.data.get('name') or '').strip() or 'My Design')[:60]
+        m = re.search(r'#[0-9a-fA-F]{6}', clean)
+        c = CustomTemplate(
+            template_id='c-' + secrets.token_hex(4), name=name, base='classic',
+            accent=(m.group(0).upper() if m else '#C1121F'), desc='Designed with your own AI (copy prompt)',
+            min_plan='plus', status='draft', mode='ai', ai_status='ready', ai_html=clean,
+            ai_fields=extract_fields(clean), created_by=str(request.user.pk),
+        ).save()
+        try:
+            from apps.authentication.models import AuditLog
+            AuditLog.log(request.user, 'template_added', f'{c.name} ({c.template_id}) from pasted HTML')
+        except Exception:
+            pass
+        n = len(c.ai_fields)
+        return success(_custom_template_data(c),
+                       f"“{c.name}” created as a draft{f' with {n} editable field' + ('s' if n != 1 else '') if n else ''}. "
+                       "Click View to check it, then Apply.", 201)

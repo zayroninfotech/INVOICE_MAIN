@@ -209,6 +209,7 @@ def values_from_context(ctx, invoice):
             'item.amount': rs(price * qty * (1 - disc / 100)),
         })
     v['_items'] = items
+    v['_extra'] = dict(((getattr(invoice, 'layout_config', None) or {}).get('extra_fields') or {}))
     for k in ('tot.subtotal', 'tot.cgst', 'tot.sgst', 'tot.igst', 'tot.tax', 'tot.grand'):
         if isinstance(v.get(k), (int, float)):
             v[k] = rs(v[k])

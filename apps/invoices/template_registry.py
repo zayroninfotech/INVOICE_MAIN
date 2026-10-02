@@ -360,6 +360,8 @@ def _custom_spec(c):
     # Drawn on the server (not by the shared preview markup): an exact copy, or a ready AI design.
     spec['exact'] = ((mode == 'exact' and bool(getattr(c, 'layout', None))) or
                      (mode == 'ai' and bool(getattr(c, 'ai_html', ''))))
+    if mode == 'ai':
+        spec['fields'] = list(getattr(c, 'ai_fields', None) or [])
     return spec
 
 
