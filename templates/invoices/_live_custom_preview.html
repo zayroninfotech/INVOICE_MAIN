@@ -181,6 +181,17 @@ Included at the end of form.html and edit.html.
     const base = updatePvw;
     window.updatePvw = updatePvw = function () { const out = base.apply(this, arguments); window.xtLivePreview(); return out; };
   }
+  // The logo / signature pickers change these images without calling
+  // updatePvw(), so watch them directly — a new logo must show in the design.
+  const watch = id => {
+    const el = document.getElementById(id);
+    if (el) new MutationObserver(() => window.xtLivePreview())
+      .observe(el, {attributes: true, attributeFilter: ['src', 'style']});
+  };
+  const startWatching = () => { watch('logo-preview'); watch('sig-preview-img'); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startWatching);
+  else startWatching();
+
   window.addEventListener('resize', () => {
     document.querySelectorAll('.xt-live.on').forEach(b => b._fit && b._fit());
   });
