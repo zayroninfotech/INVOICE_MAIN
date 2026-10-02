@@ -74,13 +74,19 @@
   /* ── the real invoice preview: an A4 sheet (210×297) on a grey stage, the
      invoice scaled onto it exactly like print.html does for the PDF — same
      411px authored canvas, same 12mm page margins. ── */
-  .idet-preview-stage { background:#E5E7EB; border-radius:14px; padding:32px 24px; margin-bottom:20px; }
-  .idet-preview-wrap { --pg-pad:5.714%; /* 12mm of 210mm */
-    width:100%; max-width:794px; /* A4 @ 96dpi */ aspect-ratio:210/297; margin:0 auto;
-    background:#fff; box-shadow:0 1px 2px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.12);
-    padding:var(--pg-pad); box-sizing:border-box; overflow:hidden; }
-  .idet-preview-wrap .inv-preview { width:411px; border-radius:0; box-shadow:none; overflow:visible; }
-  @media (max-width:640px){ .idet-preview-stage{padding:12px 8px;} }
+  .idet-preview-stage { background:#E5E7EB; border-radius:14px; padding:32px 24px; margin-bottom:20px; overflow-x:auto; }
+  /* A4 = 794×1123px at 96dpi; 12mm margins = 45px. The invoice is authored on a
+     411px canvas, so zoom 703/411 = 1.7104 fills the printable width exactly. */
+  .idet-preview-wrap { width:794px; min-height:1123px; margin:0 auto; padding:45px;
+    box-sizing:border-box; background:#fff;
+    box-shadow:0 1px 2px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.12); }
+  .idet-preview-wrap .inv-preview { width:411px; zoom:1.7104; border-radius:0; box-shadow:none; overflow:visible; }
+  /* Narrower than a full A4 page: let the sheet and invoice fill the width. */
+  @media (max-width:1180px){
+    .idet-preview-stage{padding:16px 10px;}
+    .idet-preview-wrap{width:100%; min-height:0; padding:16px;}
+    .idet-preview-wrap .inv-preview{width:100%; zoom:1;}
+  }
   /* Preview CSS lives in _invoice_doc_css.html, included after this block. */
 
   /* ── secondary chrome: Img1 bottom cards — calendar rows + blue section head ── */
@@ -707,26 +713,6 @@ async function sendEmail(btn) {
   toast(res.message);
   loadInvoice();
 
-/* Fit the 411px invoice canvas to the A4 sheet's printable width (zoom, not
-   transform, so the sheet's height accounts for it — same as print.html). If a
-   long invoice runs past one page, let the sheet grow instead of clipping. */
-(function fitA4(){
-  const sheet = document.querySelector('.idet-preview-wrap');
-  const doc = sheet && sheet.querySelector('.inv-preview');
-  if (!sheet || !doc) return;
-  const fit = () => {
-    const cs = getComputedStyle(sheet);
-    const inner = sheet.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    doc.style.zoom = (inner / 411).toFixed(4);
-    sheet.style.aspectRatio = '';
-    const pageH = sheet.clientWidth * 297 / 210;
-    sheet.style.minHeight = pageH + 'px';
-    sheet.style.height = 'auto';
-  };
-  new ResizeObserver(fit).observe(sheet);
-  new MutationObserver(fit).observe(doc, {childList:true, subtree:true});
-  fit();
-})();
 }
 
 async function recordPayment() {
