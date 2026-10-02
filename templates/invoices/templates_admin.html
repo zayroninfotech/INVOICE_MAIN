@@ -158,6 +158,16 @@
   .mp-prev.show { display:flex; }
   .mp-prev-in { position:relative; }
   .mp-prev-x { position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; border:none; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.2); }
+  .ta-ai { display:flex; align-items:flex-start; gap:8px; font-size:.8rem; border-radius:10px; padding:8px 10px; margin-top:6px; }
+  .ta-ai.working { background:#EEF2FF; color:#3730A3; }
+  .ta-ai.ready { background:#F0FDF4; color:#166534; }
+  .ta-ai.failed { background:#FEF2F2; color:#991B1B; }
+  .ta-ai .spinner-border { width:.9rem; height:.9rem; border-width:2px; flex-shrink:0; margin-top:2px; }
+  .ta-card.busy .ta-thumb { position:relative; }
+  .ta-card.busy .ta-thumb::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+                                   animation:taShine 1.6s linear infinite; }
+  @keyframes taShine { from { transform:translateX(-100%); } to { transform:translateX(100%); } }
+  @media (prefers-reduced-motion:reduce) { .ta-card.busy .ta-thumb::after { animation:none; } }
   .ta-map-btn { width:100%; border-radius:10px; font-weight:700; margin-top:10px; }
   .ta-mapped { font-size:.78rem; color:var(--text-secondary); }
   @media (max-width:900px) { .mp-body { grid-template-columns:1fr; grid-template-rows:1fr auto; } .mp-side { border-left:none; border-top:1px solid var(--border); max-height:42vh; } }
@@ -362,7 +372,34 @@ function taThumb(accent) {
   </div>`;
 }
 
+let taPollTimer = null;
+function taPoll() {
+  clearTimeout(taPollTimer);
+  if (!taList.some(t => t.mode === 'ai' && t.ai_status === 'working')) return;
+  taPollTimer = setTimeout(async () => {
+    const r = await API.get('/api/invoices/custom-templates/');
+    if (r.success) {
+      const before = Object.fromEntries(taList.map(t => [t.id, t.ai_status]));
+      taList = r.data.templates || [];
+      taList.forEach(t => {
+        if (before[t.id] === 'working' && t.ai_status === 'ready') toast(`“${t.name}” is designed — click View to check it.`, 'success');
+        if (before[t.id] === 'working' && t.ai_status === 'failed') toast(`“${t.name}”: ${t.ai_error || 'design failed.'}`, 'error');
+      });
+      taRender();
+    } else { taPoll(); }
+  }, 4000);
+}
+
+async function taRegenerate(id) {
+  const r = await API.post(`/api/invoices/custom-templates/${encodeURIComponent(id)}/regenerate/`, {});
+  if (!r.success) { toast(r.message || 'Could not start.', 'error'); return; }
+  taList = taList.map(t => t.id === id ? r.data : t);
+  taRender();
+  toast(r.message, 'success');
+}
+
 function taRender() {
+  setTimeout(taPoll, 0);
   const grid = document.getElementById('ta-grid');
   document.getElementById('ta-count').textContent = taList.length ? `(${taList.length})` : '';
   document.getElementById('ta-empty').style.display = taList.length ? 'none' : '';
@@ -371,8 +408,19 @@ function taRender() {
     const thumb = t.preview_url
       ? `<div class="ta-thumb img"><img src="${esc(t.preview_url)}" alt="" loading="lazy"></div>`
       : `<div class="ta-thumb" style="background:${esc(t.accent)}1A">${taThumb(esc(t.accent))}</div>`;
+    const ai = t.mode === 'ai' ? (t.ai_status || 'working') : '';
+    const aiBox = ai === 'working'
+      ? `<div class="ta-ai working" role="status"><span class="spinner-border"></span><span>Designing from your upload with AI… about a minute. This page updates by itself.</span></div>`
+      : ai === 'failed'
+      ? `<div class="ta-ai failed"><i class="bi bi-exclamation-triangle"></i><span>${esc(t.ai_error || 'The design could not be created.')}</span></div>
+         <button type="button" class="btn btn-outline-danger btn-sm ta-map-btn" onclick="taRegenerate('${esc(t.id)}')"><i class="bi bi-arrow-repeat me-1"></i>Try again</button>`
+      : ai === 'ready'
+      ? `<div class="ta-ai ready"><i class="bi bi-stars"></i><span>Designed by AI from your upload. Click View to check it.</span></div>
+         <button type="button" class="btn btn-link btn-sm p-0 mt-1" onclick="taRegenerate('${esc(t.id)}')"><i class="bi bi-arrow-repeat me-1"></i>Design again</button>`
+      : '';
+    const blocked = ai === 'working' || ai === 'failed';
     return `
-    <article class="ta-card">
+    <article class="ta-card${ai === 'working' ? ' busy' : ''}">
       ${thumb}
       <div class="ta-body">
         <div class="ta-name"><b title="${esc(t.name)}">${esc(t.name)}</b>
@@ -381,13 +429,14 @@ function taRender() {
         <p class="ta-desc">${esc(t.desc) || '&nbsp;'}</p>
         ${t.source_name ? `<div class="ta-src" title="${esc(t.source_name)}"><i class="bi bi-paperclip"></i> ${esc(t.source_name)}</div>` : ''}
         <div class="ta-meta"><span class="ta-dot" style="background:${esc(t.accent)}"></span>${esc(t.accent)} · ${esc(t.base_name)} layout</div>
+        ${aiBox}
         ${t.mode === 'exact' ? `<div class="ta-mapped"><i class="bi bi-bullseye"></i> Exact copy · ${t.mapped} field${t.mapped === 1 ? '' : 's'} mapped</div>
           <button type="button" class="btn ${t.mapped ? 'btn-outline-primary' : 'btn-primary'} btn-sm ta-map-btn" onclick="mpOpen('${esc(t.id)}')"><i class="bi bi-hand-index me-1"></i>${t.mapped ? 'Edit field mapping' : 'Map fields'}</button>` : ''}
         ${live
           ? `<button type="button" class="btn btn-outline-secondary btn-sm ta-apply" onclick="taPublish('${esc(t.id)}', false)"><i class="bi bi-eye-slash me-1"></i>Take out of Buy Invoice</button>`
-          : `<button type="button" class="btn btn-apply ta-apply" onclick="taPublish('${esc(t.id)}', true)"><i class="bi bi-check2-circle me-1"></i>Apply to Buy Invoice</button>`}
+          : `<button type="button" class="btn btn-apply ta-apply" ${blocked ? 'disabled' : ''} onclick="taPublish('${esc(t.id)}', true)"><i class="bi bi-check2-circle me-1"></i>Apply to Buy Invoice</button>`}
         <div class="ta-actions">
-          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="vwOpen('${esc(t.id)}')"><i class="bi bi-eye me-1"></i>View</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" ${blocked ? 'disabled' : ''} onclick="vwOpen('${esc(t.id)}')"><i class="bi bi-eye me-1"></i>View</button>
           <button type="button" class="btn btn-outline-secondary btn-sm" onclick="taOpen('${esc(t.id)}')"><i class="bi bi-pencil me-1"></i>Edit</button>
           <button type="button" class="btn btn-outline-danger btn-sm" onclick="taDelete('${esc(t.id)}')"><i class="bi bi-trash me-1"></i>Remove</button>
         </div>
@@ -490,7 +539,7 @@ async function taUpload(file) {
   taList.push(r.data);
   taRender();
   const found = (r.data.signals || []).join(', ');
-  toast(`Draft “${r.data.name}” created${found ? ' — ' + found : ''}. Review it, then click Apply.`, 'success');
+  toast(r.message || `Draft “${r.data.name}” created${found ? ' — ' + found : ''}. Review it, then click Apply.`, 'success');
 }
 
 async function taPublish(id, publish) {

@@ -502,6 +502,8 @@ def _custom_template_data(c):
         'min_plan': c.min_plan, 'blocked': is_blocked(c.template_id),
         'status': getattr(c, 'status', None) or 'published',
         'mode': getattr(c, 'mode', 'base') or 'base',
+        'ai_status': getattr(c, 'ai_status', '') or '',
+        'ai_error': getattr(c, 'ai_error', '') or '',
         'mapped': sum(1 for sp in (getattr(c, 'layout', None) or {}).get('spans', [])
                       if sp.get('field') and sp.get('field') != 'hide'),
         'source_name': getattr(c, 'source_name', '') or '',
@@ -635,7 +637,27 @@ class CustomTemplateFromDocView(APIView):
         from .template_registry import TEMPLATE_MAP
         base_name = TEMPLATE_MAP.get(sug['base'], {}).get('name', sug['base'])
 
-        # A PDF is copied exactly (no AI): its boxes, images and text keep their
+        # With an OpenAI key, the whole upload goes to the AI designer, which
+        # recreates the design as a real template (ai_template.py) in the background.
+        from .ai_template import is_configured as ai_ready, start_job
+        if ai_ready():
+            ext = os.path.splitext(f.name)[1].lower() or '.bin'
+            src_rel = f'template_sources/{tid}{ext}'
+            f.seek(0)
+            with open(os.path.join(settings.MEDIA_ROOT, src_rel), 'wb') as fh:
+                for chunk in f.chunks():
+                    fh.write(chunk)
+            c = CustomTemplate(
+                template_id=tid, name=sug['name'], base=sug['base'], accent=sug['accent'],
+                desc=f"Designed from {f.name[:80]}", min_plan='plus', status='draft',
+                source_name=f.name[:120], source_path=src_rel, preview_path=rel,
+                mode='ai', ai_status='working', created_by=str(request.user.pk),
+            ).save()
+            start_job(tid)
+            return success(_custom_template_data(c),
+                           f"Reading “{f.name}” and designing the template — this takes about a minute.", 201)
+
+        # No AI key: a PDF is copied exactly; its boxes, images and text keep their
         # positions, and the superadmin maps sample values to invoice fields.
         layout, mode, note = {}, 'base', ''
         if f.name.lower().endswith('.pdf') or getattr(f, 'content_type', '') == 'application/pdf':
@@ -771,6 +793,17 @@ class CustomTemplateRenderView(APIView):
             return error("Template not found.", status=404)
         bp = BusinessProfile.objects(user_id=str(request.user.pk)).first()
 
+        if getattr(c, 'mode', 'base') == 'ai':
+            if getattr(c, 'ai_status', '') != 'ready':
+                return error("This design is still being created." if c.ai_status == 'working'
+                             else (c.ai_error or "This design isn't ready."), status=409)
+            from .ai_template import render as ai_render, ai_context
+            values = dict(SAMPLE)
+            if bp and bp.logo_path:
+                values['_logo'] = settings.MEDIA_URL + bp.logo_path
+            return success({'html': ai_render(c.ai_html, ai_context(values)), 'kind': 'exact',
+                            'w': 595.28, 'h': 841.89})
+
         if getattr(c, 'mode', 'base') == 'exact' and c.layout:
             values = dict(SAMPLE)
             if bp and bp.logo_path:
@@ -805,3 +838,24 @@ class InvoiceRenderView(APIView):
         bp = BusinessProfile.objects(user_id=invoice.created_by).first()
         ctx = _web_media(build_print_context(invoice, bp, None, invoice.template_style or 'classic'))
         return success({'html': page_html(ctx, invoice)})
+
+
+class CustomTemplateRegenerateView(APIView):
+    """Run the AI designer again for an uploaded template (e.g. after a failure)."""
+    authentication_classes = [MongoJWTAuthentication]
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request, pk):
+        from .models import CustomTemplate
+        from .ai_template import is_configured, start_job
+        c = CustomTemplate.objects(template_id=pk, is_active=True).first()
+        if not c or getattr(c, 'mode', '') != 'ai' or not getattr(c, 'source_path', ''):
+            return error("Template not found.", status=404)
+        if not is_configured():
+            return error("OPENAI_API_KEY is not set in .env on the server.")
+        if c.ai_status == 'working':
+            return error("It's already being designed.")
+        c.ai_status, c.ai_error = 'working', ''
+        c.save()
+        start_job(c.template_id)
+        return success(_custom_template_data(c), "Designing again — this takes about a minute.")

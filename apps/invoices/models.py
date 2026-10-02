@@ -158,8 +158,13 @@ class CustomTemplate(me.Document):
     preview_path = me.StringField(default='')    # MEDIA_ROOT-relative PNG of page 1
     # 'base'  — a built-in layout recoloured (Create manually / Word / image uploads)
     # 'exact' — a copy of an uploaded PDF with clickable field mapping (exact_template.py)
-    mode        = me.StringField(choices=['base', 'exact'], default='base')
+    # 'ai'    — an HTML page an OpenAI model wrote from the upload (ai_template.py)
+    mode        = me.StringField(choices=['base', 'exact', 'ai'], default='base')
     layout      = me.DictField(default=dict)
+    source_path = me.StringField(default='')     # MEDIA_ROOT-relative copy of the upload
+    ai_html     = me.StringField(default='')
+    ai_status   = me.StringField(choices=['', 'working', 'ready', 'failed'], default='')
+    ai_error    = me.StringField(default='')
     is_active   = me.BooleanField(default=True)
     created_by  = me.StringField(default='')
     created_at  = me.DateTimeField(default=datetime.utcnow)

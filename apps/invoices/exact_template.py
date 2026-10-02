@@ -390,6 +390,11 @@ def render(layout, values, media=_media):
 def page_html(ctx, invoice, for_pdf=False):
     """Render ctx['exact_layout'] for one invoice. Returns '' for normal templates."""
     layout = ctx.get('exact_layout')
+    if ctx.get('ai_page'):
+        # AI-designed template (ai_template.py): render its HTML with this invoice's values.
+        # (For the PDF, the caller already turned logo/signature into file:/// paths.)
+        from .ai_template import render as ai_render, ai_context
+        return ai_render(ctx['ai_page'], ai_context(values_from_context(ctx, invoice)))
     if not layout:
         return ''
     if for_pdf:

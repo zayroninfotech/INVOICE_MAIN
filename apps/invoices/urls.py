@@ -6,7 +6,8 @@ from .views import (InvoiceListCreateView, InvoiceDetailView,
                     TemplatePurchaseView, CustomTemplateListView,
                     CustomTemplateDetailView, CustomTemplateFromDocView,
                     CustomTemplatePublishView, CustomTemplateLayoutView,
-                    CustomTemplateRenderView, InvoiceRenderView)
+                    CustomTemplateRenderView, InvoiceRenderView,
+                    CustomTemplateRegenerateView)
 from .free_views import FreeInvoiceView, FreeInvoicePDFView
 
 urlpatterns = [
@@ -20,6 +21,7 @@ urlpatterns = [
     path('custom-templates/<str:pk>/publish/', CustomTemplatePublishView.as_view(), name='custom_template_publish'),
     path('custom-templates/<str:pk>/layout/', CustomTemplateLayoutView.as_view(), name='custom_template_layout'),
     path('custom-templates/<str:pk>/render/', CustomTemplateRenderView.as_view(), name='custom_template_render'),
+    path('custom-templates/<str:pk>/regenerate/', CustomTemplateRegenerateView.as_view(), name='custom_template_regenerate'),
     path('custom-templates/<str:pk>/', CustomTemplateDetailView.as_view(), name='custom_template_detail'),
     path('templates/', AvailableTemplatesView.as_view(), name='invoice_templates'),
     path('templates/<str:template_id>/purchase/', TemplatePurchaseView.as_view(), name='invoice_template_purchase'),

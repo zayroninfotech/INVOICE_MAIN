@@ -356,8 +356,25 @@ def _custom_spec(c):
     spec['accent'] = c.accent or spec['accent']
     spec['tint'] = c.tint or _hex_tint(spec['accent'])
     spec['base'] = c.base if c.base in TEMPLATE_SPECS else 'classic'
-    spec['exact'] = getattr(c, 'mode', 'base') == 'exact' and bool(getattr(c, 'layout', None))
+    mode = getattr(c, 'mode', 'base')
+    # Drawn on the server (not by the shared preview markup): an exact copy, or a ready AI design.
+    spec['exact'] = ((mode == 'exact' and bool(getattr(c, 'layout', None))) or
+                     (mode == 'ai' and bool(getattr(c, 'ai_html', ''))))
     return spec
+
+
+def ai_page(template_id):
+    """The sanitized AI-written HTML for an 'ai' custom template, else ''."""
+    if not template_id or template_id in TEMPLATE_MAP:
+        return ''
+    try:
+        from .models import CustomTemplate
+        c = CustomTemplate.objects(template_id=template_id, is_active=True).first()
+    except Exception:
+        return ''
+    if c and getattr(c, 'mode', '') == 'ai' and getattr(c, 'ai_status', '') == 'ready':
+        return c.ai_html or ''
+    return ''
 
 
 def exact_layout(template_id):

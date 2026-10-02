@@ -234,6 +234,7 @@ def build_print_context(invoice, business_profile=None, seller=None, style_id=No
     }
     # An 'exact' custom template (copied from an uploaded PDF) replaces the
     # shared markup; callers render it with exact_template.page_html().
-    from .template_registry import exact_layout
+    from .template_registry import exact_layout, ai_page
     ctx['exact_layout'] = exact_layout(template_id)
+    ctx['ai_page'] = ai_page(template_id)
     return ctx
