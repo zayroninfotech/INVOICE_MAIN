@@ -235,6 +235,14 @@ Line items: loop over them exactly once —
 Optional values can be guarded: {{% if customer_gst %}} … {{% endif %}}.
 Logo: if the design shows a logo, use <img src="{{{{ logo_url }}}}" …> wrapped in {{% if logo_url %}}…{{% endif %}}.
 
+NO SAMPLE DATA — very important: the design is only a style example. Never copy its sample
+names, emails, phone numbers, websites, addresses, dates, invoice numbers, amounts or item rows as
+fixed text. Every one of them becomes a variable: the business's own contact details (header,
+"From" block AND the footer icons row) use {{{{ seller_name }}}}, {{{{ seller_phone }}}}, {{{{ seller_email }}}},
+{{{{ seller_website }}}}, {{{{ seller_address }}}}; the customer ("Billed to") uses the customer_* variables;
+item rows come only from the {{% for it in items %}} loop. Keep fixed only real labels and headings
+("INVOICE", "Billed to:", "SERVICE", "QTY", "TOTAL", "Note:").
+
 EXTRA FIELDS — very important: every other value or fill-in blank in the design that the user
 should be able to edit and that is NOT covered by the variables above (for example Customer ID,
 Ship To Address, Place of Supply, PO number, Bank Name, Account Name, Account Number, IFSC Code,

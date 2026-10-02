@@ -82,7 +82,10 @@ Included at the end of form.html and edit.html.
       'note.notes': v('thankyou-msg'), 'note.terms': v('invoice-terms'), 'sig.name': v('sig-name'),
       'sig.datetime': window._sigAtStr || '',
       '_logo': media(logoSrc), '_sig': media(sig && sig.style.display !== 'none' ? sig.getAttribute('src') || '' : ''),
-      '_items': items,
+      // Empty form: one faint placeholder row so the table design is visible
+      // (live preview only — nothing is saved, the PDF uses the real items).
+      '_items': items.length ? items : [{'item.sno': '1', 'item.desc': 'Your first item', 'item.hsn': '',
+                                         'item.qty': '1', 'item.unit': 'Nos', 'item.rate': money(0), 'item.amount': money(0)}],
       '_extra': extraValues(),
     };
   }
