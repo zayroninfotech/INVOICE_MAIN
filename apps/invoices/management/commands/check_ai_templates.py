@@ -20,6 +20,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--run', default='', help='Template id (c-xxxxxxxx) to design now, in this terminal.')
+        parser.add_argument('--restore', default='', help='Bring back a template removed on the Add Invoice page.')
+        parser.add_argument('--all', action='store_true', help='List removed templates too.')
 
     def ok(self, m):
         self.stdout.write(self.style.SUCCESS('  OK    ' + m))
@@ -44,15 +46,30 @@ class Command(BaseCommand):
         lo = shutil.which('soffice') or shutil.which('libreoffice')
         self.stdout.write(f"  {'OK  ' if lo else 'INFO'}  LibreOffice: {lo or 'not installed — Word files are sent without a page picture'}")
 
+        if o['restore']:
+            c = CustomTemplate.objects(template_id=o['restore'].strip()).first()
+            if not c:
+                self.bad(f"No template with id {o['restore']}. Use --all to list removed ones.")
+            elif c.is_active:
+                self.ok(f"{c.template_id} ({c.name}) is not removed — nothing to restore.")
+            else:
+                c.is_active = True
+                c.save()
+                self.ok(f"Restored {c.template_id} ({c.name}) as a {c.status}. Refresh Add Invoice.")
+            return
+
         if not o['run']:
             self.stdout.write(self.style.MIGRATE_HEADING('\nAI templates'))
-            rows = CustomTemplate.objects(mode='ai', is_active=True).order_by('-created_at')
+            q = dict(mode='ai') if o['all'] else dict(mode='ai', is_active=True)
+            rows = CustomTemplate.objects(**q).order_by('-created_at')
             if not rows:
                 self.stdout.write('  (none)')
             now = datetime.utcnow()
             for c in rows:
                 age = int((now - (c.updated_at or c.created_at)).total_seconds() // 60)
                 line = f"  {c.template_id}  {c.ai_status or '-':8}  {c.status:9}  {age:>4} min  {c.name}  [{c.source_name}]"
+                if not c.is_active:
+                    line += f"  (REMOVED — bring it back with --restore {c.template_id})"
                 if c.ai_status == 'failed':
                     line += f"\n        error: {c.ai_error}"
                 if c.ai_status == 'working' and age >= ai.STALE_MINUTES:
