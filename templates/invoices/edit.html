@@ -291,6 +291,21 @@ canvas#sig-canvas{touch-action:none;}
   .items-hdr  { display:none; }
   .item-row   { grid-template-columns:1fr 70px 55px 55px 28px; }
 }
+/* The editor column is squeezed between the sections nav and the preview, so
+   size its field grid to the column itself, not the viewport — at common
+   laptop widths three columns left GSTIN/PAN/CIN at ~60px, clipping values. */
+@media (min-width:1101px){
+  .gen-layout{ grid-template-columns:180px minmax(0,1fr) minmax(360px,34%); }
+}
+.gen-main{ container-type:inline-size; min-width:0; }
+@container (max-width:720px){
+  .from-bar{ flex-wrap:wrap; }
+  .from-fields{ grid-template-columns:repeat(2,minmax(0,1fr)); flex-basis:100%; }
+}
+@container (max-width:420px){
+  .from-fields{ grid-template-columns:minmax(0,1fr); }
+  .fi-grid{ grid-template-columns:1fr; }
+}
 </style>
 {% include "invoices/_invoice_doc_css.html" %}
 
@@ -493,6 +508,14 @@ canvas#sig-canvas{touch-action:none;}
 
           </div>
 
+          <div class="fi-row">
+
+            <label class="fi-lbl">CIN</label>
+
+            <input class="fi" id="cust-cin" autocomplete="nope" placeholder="U12345AB2020PTC123456" oninput="updatePvw()">
+
+          </div>
+
           <div class="fi-row" style="grid-column:1/-1">
 
             <label class="fi-lbl">Address <span style="color:var(--color-danger)">*</span></label>
@@ -621,7 +644,7 @@ canvas#sig-canvas{touch-action:none;}
 
             <label class="fi-lbl">Notes</label>
 
-            <input class="fi" id="thankyou-msg" value="Thank you for your business!" oninput="updatePvw()">
+            <input class="fi" id="thankyou-msg" value="" placeholder="Thank you for your business!" oninput="updatePvw()">
 
           </div>
 
@@ -1111,7 +1134,7 @@ function updatePvw() {
   if (_setReqField('pvw-to-email', custEmail, '⚠ Email required')) missingFields.push('Email');
 
   const _ev = id => document.getElementById(id)?.value || '';
-  _t('pvw-to-recipient', _ev('cust-contact'));
+  _t('pvw-to-recipient', _ev('cust-contact') ? 'Attn: ' + _ev('cust-contact') : '');
   _t('pvw-to-phone', _ev('cust-phone'));
   _t('pvw-to-cin',   _ev('cust-cin') ? 'CIN: '+_ev('cust-cin') : '');
   _t('pvw-to-gst',   _ev('cust-gst') ? 'GSTIN: '+_ev('cust-gst') : '');
@@ -1471,6 +1494,18 @@ async function loadProfile() {
 
     document.getElementById('from-website').value = u.website || '';
 
+    document.getElementById('from-cin').value     = u.cin || '';
+
+    document.getElementById('from-pan').value     = u.pan || '';
+
+    if (u.logo_url) {
+      const li = document.getElementById('logo-preview');
+      if (li) { li.src = u.logo_url; li.style.display = 'block'; }
+      const lp = document.getElementById('logo-ph');
+      if (lp) lp.style.display = 'none';
+      if (typeof setPreviewLogo === 'function') setPreviewLogo(u.logo_url);
+    }
+
     document.getElementById('sig-company').value  = u.company_name || '';
 
     if (!document.getElementById('sig-name').value) document.getElementById('sig-name').value = uname || '';
@@ -1524,8 +1559,13 @@ async function loadInvoice() {
   if (inv.customer_address) document.getElementById('cust-addr').value  = inv.customer_address;
 
   if (inv.customer_gst)     document.getElementById('cust-gst').value   = inv.customer_gst;
+  if (inv.customer_phone)     document.getElementById('cust-phone').value   = inv.customer_phone;
+  if (inv.customer_pan)       document.getElementById('cust-pan').value     = inv.customer_pan;
+  if (inv.customer_cin)       document.getElementById('cust-cin').value     = inv.customer_cin;
+  if (inv.customer_recipient) document.getElementById('cust-contact').value = inv.customer_recipient;
+  if (inv.department)         document.getElementById('department').value   = inv.department;
 
-  document.getElementById('thankyou-msg').value  = inv.notes || 'Thank you for your business!';
+  document.getElementById('thankyou-msg').value  = inv.notes || '';
 
   document.getElementById('invoice-terms').value = (inv.terms && inv.terms !== 'Payment due within 30 days.') ? inv.terms : (inv.terms || '');
 
@@ -2051,6 +2091,12 @@ document.getElementById('invoice-form').addEventListener('submit', async (e) => 
     customer_address: document.getElementById('cust-addr').value,
 
     customer_gst:     document.getElementById('cust-gst').value,
+
+    customer_phone:     document.getElementById('cust-phone')?.value || '',
+    customer_pan:       document.getElementById('cust-pan')?.value || '',
+    customer_cin:       document.getElementById('cust-cin')?.value || '',
+    customer_recipient: document.getElementById('cust-contact')?.value || '',
+    department:         document.getElementById('department')?.value || '',
 
     cgst_rate:        parseFloat(document.getElementById('cgst-rate')?.value||0)||0,
 
