@@ -99,6 +99,25 @@
   .btn-apply:hover { background:#166534; color:#fff; }
   .ta-src { font-size:.75rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+  /* ── Template viewer ── */
+  dialog.vw-dlg { border:none; padding:0; width:min(980px, calc(100vw - 32px)); height:calc(100dvh - 32px);
+                  border-radius:18px; background:var(--surface); color:var(--text-primary); overflow:hidden;
+                  box-shadow:0 28px 64px rgba(15,23,42,.3); }
+  dialog.vw-dlg::backdrop { background:rgba(15,23,42,.5); }
+  .vw-wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
+  .vw-top { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .vw-top h3 { margin:0; font-size:1.05rem; font-weight:800; flex:1; min-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .vw-tabs { display:flex; gap:4px; background:var(--surface-subtle, #F1F5F9); border-radius:10px; padding:3px; }
+  .vw-tabs button { border:none; background:none; border-radius:8px; padding:6px 12px; font-size:.84rem; font-weight:600; color:var(--text-secondary); }
+  .vw-tabs button.on { background:var(--surface); color:var(--text-primary); box-shadow:0 1px 3px rgba(15,23,42,.12); }
+  .vw-stage { overflow:auto; background:#E5E7EB; padding:28px 20px; display:flex; justify-content:center; align-items:flex-start; }
+  .vw-sheet { background:#fff; box-shadow:0 10px 30px rgba(15,23,42,.18); }
+  .vw-sheet.base { padding:18px; width:794px; }
+  .vw-sheet.base .inv-preview { width:411px; zoom:1.84; box-shadow:none; border-radius:0; }
+  .vw-sheet img.vw-orig { display:block; max-width:100%; }
+  .vw-note { font-size:.8rem; color:var(--text-secondary); text-align:center; margin-top:10px; }
+  .vw-loading { padding:60px; color:var(--text-secondary); }
+
   /* ── Field mapper (exact-copy templates) ── */
   dialog.mp-dlg { border:none; padding:0; width:calc(100vw - 32px); max-width:1400px; height:calc(100dvh - 32px);
                   border-radius:18px; background:var(--surface); color:var(--text-primary); overflow:hidden;
@@ -288,6 +307,19 @@
     </div>
   </div>
 </dialog>
+<dialog class="vw-dlg" id="vw-dlg" aria-labelledby="vw-title">
+  <div class="vw-wrap">
+    <div class="vw-top">
+      <h3 id="vw-title">Template</h3>
+      <div class="vw-tabs" role="tablist" id="vw-tabs">
+        <button type="button" data-vw="tpl" class="on" onclick="vwTab('tpl')">Template preview</button>
+        <button type="button" data-vw="orig" onclick="vwTab('orig')">Uploaded design</button>
+      </div>
+      <button type="button" class="btn btn-light btn-sm" onclick="document.getElementById('vw-dlg').close()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="vw-stage" id="vw-stage"></div>
+  </div>
+</dialog>
 {% endblock %}
 
 {% block extra_js %}
@@ -355,6 +387,7 @@ function taRender() {
           ? `<button type="button" class="btn btn-outline-secondary btn-sm ta-apply" onclick="taPublish('${esc(t.id)}', false)"><i class="bi bi-eye-slash me-1"></i>Take out of Buy Invoice</button>`
           : `<button type="button" class="btn btn-apply ta-apply" onclick="taPublish('${esc(t.id)}', true)"><i class="bi bi-check2-circle me-1"></i>Apply to Buy Invoice</button>`}
         <div class="ta-actions">
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="vwOpen('${esc(t.id)}')"><i class="bi bi-eye me-1"></i>View</button>
           <button type="button" class="btn btn-outline-secondary btn-sm" onclick="taOpen('${esc(t.id)}')"><i class="bi bi-pencil me-1"></i>Edit</button>
           <button type="button" class="btn btn-outline-danger btn-sm" onclick="taDelete('${esc(t.id)}')"><i class="bi bi-trash me-1"></i>Remove</button>
         </div>
@@ -469,6 +502,53 @@ async function taPublish(id, publish) {
   taList = taList.map(t => t.id === id ? r.data : t);
   taRender();
   toast(r.message, 'success');
+}
+
+/* ── Template viewer ─────────────────────────────────────────────────── */
+let vw = null;   // {t, html, kind}
+
+async function vwOpen(id) {
+  const t = taList.find(x => x.id === id);
+  if (!t) return;
+  vw = {t, html: '', kind: ''};
+  document.getElementById('vw-title').textContent = t.name;
+  document.querySelector('#vw-tabs [data-vw="orig"]').style.display = t.preview_url ? '' : 'none';
+  document.getElementById('vw-stage').innerHTML = '<div class="vw-loading"><span class="spinner-border spinner-border-sm me-2"></span>Building preview…</div>';
+  document.getElementById('vw-dlg').showModal();
+  const r = await API.get(`/api/invoices/custom-templates/${encodeURIComponent(id)}/render/`);
+  if (!r.success) {
+    document.getElementById('vw-stage').innerHTML = `<div class="vw-loading">${esc(r.message || 'Could not build the preview.')}</div>`;
+    return;
+  }
+  // The add dialog owns #inv-preview; drop the id from this copy.
+  vw.html = r.data.html.replace('id="inv-preview"', '');
+  vw.kind = r.data.kind;
+  vw.w = r.data.w;
+  vwTab('tpl');
+}
+
+function vwTab(which) {
+  document.querySelectorAll('#vw-tabs button').forEach(b => b.classList.toggle('on', b.dataset.vw === which));
+  const st = document.getElementById('vw-stage');
+  if (which === 'orig') {
+    st.innerHTML = `<div><div class="vw-sheet"><img class="vw-orig" src="${esc(vw.t.preview_url)}" alt="Uploaded design"></div>
+      <p class="vw-note">The page you uploaded${vw.t.source_name ? ' — ' + esc(vw.t.source_name) : ''}</p></div>`;
+    return;
+  }
+  if (!vw.html) return;
+  const note = vw.kind === 'exact'
+    ? `Your uploaded design with sample data in the mapped fields (${vw.t.mapped} mapped).`
+    : `${esc(vw.t.base_name)} layout in ${esc(vw.t.accent)}, with sample data.`;
+  st.innerHTML = `<div><div class="vw-sheet ${vw.kind === 'base' ? 'base' : ''}">${vw.html}</div><p class="vw-note">${note}</p></div>`;
+  if (vw.kind === 'exact') {
+    const pg = st.querySelector('.xt-page');
+    const w = (vw.w || 595) * 96 / 72;
+    if (pg) pg.style.zoom = Math.min(1.25, (st.clientWidth - 40) / w).toFixed(3);
+  } else {
+    const sh = st.querySelector('.vw-sheet.base');
+    const z = Math.min(1, (st.clientWidth - 40) / 794);
+    if (sh && z < 1) sh.style.zoom = z.toFixed(3);
+  }
 }
 
 /* ── Field mapper ─────────────────────────────────────────────────────── */

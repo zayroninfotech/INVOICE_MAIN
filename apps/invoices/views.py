@@ -732,22 +732,62 @@ class CustomTemplateLayoutView(APIView):
         return success(_custom_template_data(c), "Field mapping saved.")
 
 
+def _sample_invoice():
+    """An unsaved invoice with realistic data, for template previews."""
+    from .models import InvoiceItem
+    now = datetime.utcnow()
+    from datetime import timedelta
+    items = [
+        InvoiceItem(product_id='manual', product_name='Website design', description='Website design',
+                    hsn_code='998314', unit='Nos', unit_price=25000, quantity=1, tax_rate=18, discount=0),
+        InvoiceItem(product_id='manual', product_name='Hosting (1 year)', description='Hosting (1 year)',
+                    hsn_code='998315', unit='Nos', unit_price=12500, quantity=1, tax_rate=18, discount=0),
+    ]
+    inv = Invoice(invoice_number='INV-2026-0001', customer_id='manual', customer_name='Acme Traders',
+                  customer_email='accounts@acme.in', customer_address='45 Park Street, Kolkata 700016',
+                  customer_gst='19AAACA1111A1Z1', customer_phone='+91 90000 11111',
+                  customer_recipient='R. Kumar', cgst_rate=9, sgst_rate=9, igst_rate=0,
+                  invoice_date=now, due_date=now + timedelta(days=30), items=items,
+                  notes='Thank you for your business.', terms='Payment due within 30 days.',
+                  signatory_name='Authorised Signatory', created_by='preview')
+    inv.calculate_totals()
+    return inv
+
+
 class CustomTemplateRenderView(APIView):
-    """The template filled with sample data — HTML for the card and mapper preview."""
+    """The template filled with sample data — HTML for the View dialog,
+    the mapper preview and the card. Works for drafts too."""
     authentication_classes = [MongoJWTAuthentication]
     permission_classes = [IsSuperAdmin]
 
     def get(self, request, pk):
+        from django.template.loader import render_to_string
         from .models import CustomTemplate
         from .exact_template import render, SAMPLE
+        from .print_context import build_print_context
+        from .web_views import _web_media
         c = CustomTemplate.objects(template_id=pk, is_active=True).first()
-        if not c or getattr(c, 'mode', 'base') != 'exact':
+        if not c:
             return error("Template not found.", status=404)
         bp = BusinessProfile.objects(user_id=str(request.user.pk)).first()
-        values = dict(SAMPLE)
-        if bp and bp.logo_path:
-            values['_logo'] = settings.MEDIA_URL + bp.logo_path
-        return success({'html': render(c.layout, values), 'w': c.layout.get('w'), 'h': c.layout.get('h')})
+
+        if getattr(c, 'mode', 'base') == 'exact' and c.layout:
+            values = dict(SAMPLE)
+            if bp and bp.logo_path:
+                values['_logo'] = settings.MEDIA_URL + bp.logo_path
+            return success({'html': render(c.layout, values), 'kind': 'exact',
+                            'w': c.layout.get('w'), 'h': c.layout.get('h')})
+
+        # Built-in layout + this template's colours (drafts aren't in the
+        # registry yet, so apply the custom spec here directly).
+        inv = _sample_invoice()
+        ctx = _web_media(build_print_context(inv, bp, None, c.base))
+        spec = template_registry._custom_spec(c)
+        for k in ('accent', 'secondary', 'text', 'muted', 'border', 'tint'):
+            if spec.get(k):
+                ctx[k] = spec[k]
+        ctx['style_id'] = spec.get('base') or c.base
+        return success({'html': render_to_string('invoices/_invoice_doc.html', ctx), 'kind': 'base'})
 
 
 class InvoiceRenderView(APIView):
