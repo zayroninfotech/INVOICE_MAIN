@@ -8,7 +8,7 @@ page in the preview pane instead — the same output the PDF uses.
 Included at the end of form.html and edit.html.
 {% endcomment %}
 <style>
-  .xt-live { display:none; background:#fff; box-shadow:0 2px 16px rgba(0,0,0,.12); border-radius:4px; overflow:hidden; }
+  .xt-live { display:none; width:100%; background:#fff; box-shadow:0 2px 16px rgba(0,0,0,.12); border-radius:4px; overflow:hidden; }
   .xt-live.on { display:block; }
   .xt-live-frame { border:0; display:block; transform-origin:top left; background:#fff; }
   .xt-live-note { display:none; font-size:.74rem; color:var(--text-secondary); text-align:center; margin:8px 0 0; }
@@ -30,7 +30,10 @@ Included at the end of form.html and edit.html.
     h.id = 'xt-live';
     h.className = 'xt-live';
     h.innerHTML = '<iframe class="xt-live-frame" title="Invoice preview" sandbox="allow-same-origin"></iframe>';
-    pvw.insertAdjacentElement('afterend', h);
+    // Always live in the side panel — even if the picker modal has borrowed #inv-preview.
+    const panel = document.querySelector('.gen-preview .preview-wrap');
+    if (pvw.closest('#tplPreviewModal') && panel) panel.appendChild(h);
+    else pvw.insertAdjacentElement('afterend', h);
     const note = document.createElement('p');
     note.className = 'xt-live-note';
     note.textContent = 'Your uploaded design — exactly as the PDF will look.';
@@ -79,6 +82,76 @@ Included at the end of form.html and edit.html.
     };
   }
 
+  // Draw `values` with template `id` into container `box` (an .xt-live element).
+  async function renderInto(box, id, values, isCurrent) {
+    const r = await API.post('/api/invoices/live-render/', {template_style: id, values});
+    if (isCurrent && !isCurrent()) return null;          // a newer keystroke already asked again
+    if (!r || !r.success) return false;
+    box.classList.add('on');
+    let fr = box.querySelector('iframe');
+    if (!fr) {
+      fr = document.createElement('iframe');
+      fr.className = 'xt-live-frame';
+      fr.title = 'Invoice preview';
+      fr.setAttribute('sandbox', 'allow-same-origin');
+      box.appendChild(fr);
+    }
+    const fit = () => {
+      const W = 794;
+      let H = 1123;
+      try { H = Math.max(H, fr.contentDocument.documentElement.scrollHeight); } catch (_) {}
+      const z = Math.min(1, (box.clientWidth || W) / W);   // the box's own width — never wider than the pane
+      fr.style.width = W + 'px';
+      fr.style.height = H + 'px';
+      fr.style.transform = `scale(${z})`;
+      box.style.height = Math.ceil(H * z) + 'px';
+    };
+    fr.onload = fit;
+    fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}' +
+                '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>' + r.data.html + '</body></html>';
+    box._fit = fit;
+    return true;
+  }
+
+  // Sample content for the picker's Preview when the form is still empty.
+  function withSamples(vals) {
+    const out = Object.assign({}, vals);
+    const demo = {'cust.name': 'Kavya Textiles Pvt Ltd', 'cust.address': '42 MG Road, Bengaluru, Karnataka - 560001',
+                  'cust.email': 'accounts@kavyatextiles.in', 'cust.gst': '29AAECK5678P1Z9', 'cust.phone': '+91 90000 11111',
+                  'inv.number': out['inv.number'] || 'INV-2026-0042'};
+    Object.entries(demo).forEach(([k, val]) => { if (!out[k]) out[k] = val; });
+    if (!out._items || !out._items.length) {
+      out._items = [
+        {'item.sno': '1', 'item.desc': 'Cotton Blend Fabric Roll (60 m)', 'item.hsn': '5208', 'item.qty': '12', 'item.unit': 'Nos', 'item.rate': '₹2,450.00', 'item.amount': '₹29,400.00'},
+        {'item.sno': '2', 'item.desc': 'Polyester Lining Fabric (40 m)', 'item.hsn': '5407', 'item.qty': '8', 'item.unit': 'Nos', 'item.rate': '₹1,875.00', 'item.amount': '₹15,000.00'},
+        {'item.sno': '3', 'item.desc': 'Custom Dyeing & Finishing Service', 'item.hsn': '9988', 'item.qty': '1', 'item.unit': 'Nos', 'item.rate': '₹5,600.00', 'item.amount': '₹5,600.00'},
+      ];
+      Object.assign(out, {'tot.subtotal': '₹50,000.00', 'tot.cgst': '₹4,500.00', 'tot.sgst': '₹4,500.00', 'tot.igst': '₹0.00',
+                          'tot.cgst_lbl': 'CGST @9%', 'tot.sgst_lbl': 'SGST @9%', 'tot.igst_lbl': 'IGST @0%',
+                          'tot.tax': '₹9,000.00', 'tot.grand': '₹59,000.00',
+                          'tot.words': 'Fifty-Nine Thousand Rupees Only.'});
+    }
+    return out;
+  }
+
+  // Template picker "Preview": show the real design for uploaded/AI templates.
+  window.xtPreviewInModal = async function (id, modalBody) {
+    let box = modalBody.querySelector('.xt-live');
+    if (!isCustom(id)) { if (box) box.remove(); return false; }
+    if (!box) { box = document.createElement('div'); box.className = 'xt-live'; modalBody.appendChild(box); }
+    box.style.maxWidth = '794px';
+    const pvw = document.getElementById('inv-preview');
+    if (pvw) pvw.style.display = 'none';
+    const ok = await renderInto(box, id, withSamples(collect()));
+    if (!ok) { box.remove(); if (pvw) pvw.style.display = ''; }
+    return !!ok;
+  };
+  window.xtClearModal = function (modalBody) {
+    modalBody.querySelector('.xt-live')?.remove();
+    const pvw = document.getElementById('inv-preview');
+    if (pvw) pvw.style.display = '';
+  };
+
   let timer = null, seq = 0;
   async function draw() {
     const id = window._selectedTemplate;
@@ -86,25 +159,13 @@ Included at the end of form.html and edit.html.
     const pvw = document.getElementById('inv-preview');
     if (!h || !pvw) return;
     if (!isCustom(id)) { h.classList.remove('on'); pvw.style.display = ''; return; }
+    // While the picker modal has borrowed #inv-preview, leave the panel alone.
+    if (pvw.closest('#tplPreviewModal')) return;
     const mine = ++seq;
-    const r = await API.post('/api/invoices/live-render/', {template_style: id, values: collect()});
-    if (mine !== seq) return;                 // a newer keystroke already asked again
-    if (!r || !r.success) { h.classList.remove('on'); pvw.style.display = ''; return; }
     pvw.style.display = 'none';
     h.classList.add('on');
-    const fr = h.querySelector('iframe');
-    fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}' +
-                '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>' + r.data.html + '</body></html>';
-    fr.onload = () => {
-      const W = 794;
-      let H = 1123;
-      try { H = Math.max(H, fr.contentDocument.documentElement.scrollHeight); } catch (_) {}
-      const z = Math.min(1, (h.parentElement.clientWidth || W) / W);
-      fr.style.width = W + 'px';
-      fr.style.height = H + 'px';
-      fr.style.transform = `scale(${z})`;
-      h.style.height = Math.ceil(H * z) + 'px';
-    };
+    const ok = await renderInto(h, id, collect(), () => mine === seq);
+    if (ok === false) { h.classList.remove('on'); pvw.style.display = ''; }
   }
 
   window.xtLivePreview = function () {
@@ -117,6 +178,8 @@ Included at the end of form.html and edit.html.
     const base = updatePvw;
     window.updatePvw = updatePvw = function () { const out = base.apply(this, arguments); window.xtLivePreview(); return out; };
   }
-  window.addEventListener('resize', () => window.xtLivePreview());
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.xt-live.on').forEach(b => b._fit && b._fit());
+  });
 })();
 </script>

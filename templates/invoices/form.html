@@ -2506,6 +2506,8 @@ function openTemplatePreview(id) {
   updatePvw();
   applyPreviewSkin(id);
   bootstrap.Modal.getOrCreateInstance(document.getElementById('tplPreviewModal')).show();
+  // Uploaded / AI templates: show the real design, not the closest built-in layout.
+  if (window.xtPreviewInModal) window.xtPreviewInModal(id, document.getElementById('tplPreviewModalBody'));
 }
 
 function toggleTemplateZoom() {
@@ -2521,7 +2523,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalEl = document.getElementById('tplPreviewModal');
   if (!modalEl) return;
   modalEl.addEventListener('hidden.bs.modal', () => {
-    document.querySelector('.gen-preview .preview-wrap').appendChild(document.getElementById('inv-preview'));
+    if (window.xtClearModal) window.xtClearModal(document.getElementById('tplPreviewModalBody'));
+    const _pv = document.getElementById('inv-preview');
+    const _live = document.getElementById('xt-live');
+    // Put the preview back where it was — before the live design box, if there is one.
+    if (_live) _live.insertAdjacentElement('beforebegin', _pv);
+    else document.querySelector('.gen-preview .preview-wrap').appendChild(_pv);
     window._pvwSampleMode = false;  // covers Close, Select, backdrop and Esc
     updatePvw();                    // re-render from the user's real form state
     if (window._previewModalSelect) {
