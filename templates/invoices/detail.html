@@ -53,23 +53,67 @@
                background:var(--surface-subtle); color:var(--text-secondary); }
 
   /* ── email composer ── */
-  dialog.mail-dlg { border:none; border-radius:16px; padding:0; max-width:520px; width:calc(100% - 32px);
-                    box-shadow:0 24px 60px rgba(15,23,42,.24); background:var(--surface); color:var(--text-primary); }
-  dialog.mail-dlg::backdrop { background:rgba(15,23,42,.45); }
-  .mail-in { padding:26px; }
-  .mail-in h2 { margin:0 0 6px; font-size:1.15rem; font-weight:800; }
-  .mail-in > p { margin:0 0 18px; color:var(--text-secondary); font-size:.88rem; }
-  .mail-lbl { display:block; font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
-              color:var(--text-muted); margin:0 0 6px; }
-  .mail-f { width:100%; border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:.9rem;
-            font-family:inherit; color:var(--text-primary); background:var(--surface); outline:none;
-            margin-bottom:16px; resize:vertical; }
-  .mail-f:focus { border-color:var(--ember); box-shadow:0 0 0 3px var(--focus-ring); }
-  .mail-note { display:flex; gap:8px; font-size:.8rem; color:var(--text-secondary); background:var(--surface-subtle);
-               border-radius:9px; padding:10px 12px; margin-bottom:18px; }
-  .mail-btns { display:flex; gap:10px; justify-content:flex-end; }
-  .mail-err { color:#B91C1C; font-size:.85rem; margin:0 0 12px; display:none; }
+  dialog.mail-dlg { border:none; border-radius:20px; padding:0; max-width:620px; width:calc(100% - 32px);
+                    box-shadow:0 2px 6px rgba(15,23,42,.08), 0 28px 64px rgba(15,23,42,.24);
+                    background:var(--surface); color:var(--text-primary); }
+  dialog.mail-dlg::backdrop { background:rgba(15,23,42,.45); backdrop-filter:blur(2px); }
+  .mail-in { padding:26px 28px 24px; }
+  .mail-head { display:flex; align-items:flex-start; gap:18px; margin-bottom:22px; }
+  .mail-ico { flex-shrink:0; width:60px; height:60px; border-radius:14px; display:flex; align-items:center;
+              justify-content:center; background:#FDECEE; color:#C1121F; font-size:1.6rem; }
+  .mail-head h2 { margin:6px 0 4px; font-size:1.3rem; font-weight:800; letter-spacing:-.01em; }
+  .mail-head p { margin:0; color:var(--text-secondary); font-size:.88rem; line-height:1.45; }
+  .mail-x { margin-left:auto; flex-shrink:0; border:none; background:none; color:var(--text-secondary);
+            font-size:1.1rem; padding:6px; border-radius:8px; line-height:1; }
+  .mail-x:hover { background:var(--surface-subtle); color:var(--text-primary); }
+  .mail-lbl { display:block; font-size:.88rem; font-weight:700; color:var(--text-primary); margin:0 0 8px; }
+  .mail-lbl .req { color:#C1121F; }
+  .mail-lbl .opt { font-weight:500; color:var(--text-secondary); }
+  .mail-fw { display:flex; align-items:stretch; border:1px solid var(--border); border-radius:10px;
+             background:var(--surface); margin-bottom:18px; overflow:hidden; transition:border-color .15s, box-shadow .15s; }
+  .mail-fw:focus-within { border-color:#C1121F; box-shadow:0 0 0 3px rgba(193,18,31,.12); }
+  .mail-fw > i { flex-shrink:0; width:44px; display:flex; align-items:flex-start; justify-content:center;
+                 padding-top:12px; color:var(--text-secondary); background:var(--surface-subtle);
+                 border-right:1px solid var(--border); font-size:1rem; }
+  .mail-f { flex:1; min-width:0; border:none; padding:11px 14px; font-size:.92rem; font-family:inherit;
+            color:var(--text-primary); background:transparent; outline:none; resize:vertical; line-height:1.5; }
+  textarea.mail-f { min-height:96px; }
+  .mail-sum { display:flex; align-items:center; gap:0; border:1px solid #F7C9CE; background:#FDF1F2;
+              border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .mail-sum > div { display:flex; align-items:center; gap:12px; flex:1; min-width:0; padding:0 14px; }
+  .mail-sum > div + div { border-left:1px solid #F1C4C9; }
+  .mail-sum > div:first-child { padding-left:0; }
+  .mail-sum .num-ico { width:40px; height:40px; border-radius:10px; background:#C1121F; color:#fff;
+                       display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+  .mail-sum .num { font-weight:800; color:#C1121F; font-size:1rem; white-space:nowrap; }
+  .mail-sum i.s-ico { color:#C1121F; font-size:1.2rem; flex-shrink:0; }
+  .mail-sum small { display:block; font-size:.76rem; color:var(--text-secondary); }
+  .mail-sum b { display:block; font-size:.92rem; white-space:nowrap; }
+  .mail-sum .pay { background:#FEF3C7; border-radius:10px; padding:8px 12px; margin-left:14px; border:none !important; }
+  .mail-sum .pay i.s-ico, .mail-sum .pay small { color:#B45309; }
+  .mail-sum .pay b { color:#92400E; }
+  .mail-sum .pay.paid { background:#DCFCE7; }
+  .mail-sum .pay.paid i.s-ico, .mail-sum .pay.paid small { color:#15803D; }
+  .mail-sum .pay.paid b { color:#166534; }
+  .mail-note { display:flex; align-items:center; gap:14px; background:var(--surface-subtle); border-radius:12px;
+               padding:14px 16px; margin-bottom:22px; }
+  .mail-note .n-ico { width:40px; height:40px; border-radius:10px; background:#FDECEE; color:#C1121F;
+                      display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.05rem; }
+  .mail-note b { display:block; font-size:.88rem; }
+  .mail-note span { font-size:.82rem; color:var(--text-secondary); }
+  .mail-btns { display:flex; gap:12px; justify-content:flex-end; }
+  .mail-btns .btn { min-width:128px; padding:10px 18px; border-radius:10px; font-weight:600; }
+  .mail-err { color:#B91C1C; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px;
+              font-size:.85rem; padding:10px 12px; margin:0 0 16px; display:none; }
   .mail-err.show { display:block; }
+  @media (max-width:560px){
+    .mail-in { padding:20px 18px; }
+    .mail-ico { width:48px; height:48px; font-size:1.3rem; }
+    .mail-sum { flex-direction:column; align-items:stretch; gap:10px; }
+    .mail-sum > div { padding:0; border:none !important; }
+    .mail-sum .pay { margin-left:0; }
+    .mail-btns .btn { flex:1; min-width:0; }
+  }
 
   /* ── the real invoice preview: an A4 sheet (210×297) on a grey stage, the
      invoice scaled onto it exactly like print.html does for the PDF — same
@@ -336,22 +380,52 @@
 
 <!-- Send-to-customer composer. Sending mints the public approval link, so this
      is also where the vendor first sees that link. -->
-<dialog class="mail-dlg" id="mail-dlg">
+<dialog class="mail-dlg" id="mail-dlg" aria-labelledby="mail-title">
   <div class="mail-in">
-    <h2>Send invoice to customer</h2>
-    <p>They get the invoice as a PDF, a picture of it in the message, and a private link to approve or decline it.</p>
-    <p class="mail-err" id="mail-err"></p>
+    <div class="mail-head">
+      <span class="mail-ico"><i class="bi bi-envelope"></i></span>
+      <div>
+        <h2 id="mail-title">Send invoice to customer</h2>
+        <p>Send the invoice PDF and a secure link for the customer to review and respond.</p>
+      </div>
+      <button type="button" class="mail-x" aria-label="Close" onclick="document.getElementById('mail-dlg').close()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <p class="mail-err" id="mail-err" role="alert"></p>
 
-    <label class="mail-lbl" for="mail-to">Send to</label>
-    <input class="mail-f" id="mail-to" type="email" placeholder="client@company.com">
+    <label class="mail-lbl" for="mail-to">Recipient email <span class="req">*</span></label>
+    <div class="mail-fw">
+      <i class="bi bi-envelope"></i>
+      <input class="mail-f" id="mail-to" type="email" placeholder="client@company.com" autocomplete="email">
+    </div>
 
-    <label class="mail-lbl" for="mail-msg">Message <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
-    <textarea class="mail-f" id="mail-msg" rows="3" maxlength="2000"
-              placeholder="Anything you want to say alongside the invoice."></textarea>
+    <label class="mail-lbl" for="mail-msg">Message to customer <span class="opt">(optional)</span></label>
+    <div class="mail-fw">
+      <i class="bi bi-file-text"></i>
+      <textarea class="mail-f" id="mail-msg" rows="3" maxlength="2000"
+                placeholder="Anything you want to say alongside the invoice."></textarea>
+    </div>
+
+    <div class="mail-sum">
+      <div>
+        <span class="num-ico"><i class="bi bi-file-earmark-text-fill"></i></span>
+        <span class="num" id="mail-sum-no">—</span>
+      </div>
+      <div>
+        <i class="bi bi-calendar-event s-ico"></i>
+        <span><small>Invoice date</small><b id="mail-sum-date">—</b></span>
+      </div>
+      <div class="pay" id="mail-sum-pay">
+        <i class="bi bi-clock s-ico"></i>
+        <span><small>Payment status</small><b id="mail-sum-pay-txt">Due</b></span>
+      </div>
+    </div>
 
     <div class="mail-note">
-      <i class="bi bi-info-circle" style="flex-shrink:0;margin-top:2px"></i>
-      <span>Replies go to your business email. Their answer shows up on this page.</span>
+      <span class="n-ico"><i class="bi bi-envelope"></i></span>
+      <div>
+        <b>Replies will be sent to your business email.</b>
+        <span>Customer responses will appear in this invoice.</span>
+      </div>
     </div>
 
     <div class="mail-btns">
@@ -791,7 +865,19 @@ async function downloadPDF(btn) {
 function openMailDialog() {
   const err = document.getElementById('mail-err');
   err.classList.remove('show');
-  document.getElementById('mail-to').value = (window._inv && window._inv.customer_email) || '';
+  const inv = window._inv || {};
+  document.getElementById('mail-to').value = inv.customer_email && inv.customer_email !== 'noemail@example.com' ? inv.customer_email : '';
+  document.getElementById('mail-sum-no').textContent = inv.invoice_number || '—';
+  document.getElementById('mail-sum-date').textContent = inv.invoice_date
+    ? new Date(inv.invoice_date).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'}) : '—';
+  const paid = inv.payment_status === 'Paid';
+  document.getElementById('mail-sum-pay').classList.toggle('paid', paid);
+  document.getElementById('mail-sum-pay-txt').textContent = inv.payment_status || 'Due';
+  const msg = document.getElementById('mail-msg');
+  if (!msg.value.trim()) {
+    msg.value = `Dear Customer,\nPlease find attached invoice ${inv.invoice_number || ''} for your review.\n` +
+                'Kindly confirm receipt and contact us if you have any questions.';
+  }
   document.getElementById('mail-dlg').showModal();
   document.getElementById('mail-to').focus();
 }
@@ -799,8 +885,8 @@ function openMailDialog() {
 async function sendEmail(btn) {
   const to  = document.getElementById('mail-to').value.trim();
   const err = document.getElementById('mail-err');
-  if (!to) {
-    err.textContent = 'Enter the email address to send to.';
+  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    err.textContent = to ? "That email address doesn't look right." : 'Enter the email address to send to.';
     err.classList.add('show');
     return;
   }
