@@ -13,7 +13,7 @@ form.html (create) and edit.html so the two can't drift apart:
 Include AFTER the page's main script: it wraps updatePvw()/secSettingsHtml() and reads layoutState.
 {% endcomment %}
 <style>
-.fi-lbl.fi-lbl-wired{display:inline-flex;align-items:center;gap:5px;}
+.fi-lbl.fi-lbl-wired{display:inline-flex;align-items:center;gap:3px;}
 .fi-lbl-text{outline:none;border-radius:3px;padding:0 2px;margin:0 -2px;cursor:text;}
 .fi-lbl-text:hover,.fi-lbl-text:focus{background:rgba(193,18,31,.08);color:#C1121F;}
 .fi-lbl-edit{opacity:0;flex-shrink:0;background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.68rem;padding:2px;line-height:1;transition:opacity .12s,color .12s;}
@@ -104,7 +104,9 @@ Include AFTER the page's main script: it wraps updatePvw()/secSettingsHtml() and
       btn.innerHTML = '<i class="bi bi-pencil-fill"></i>';
       btn.addEventListener('mousedown', e => e.preventDefault());
       btn.addEventListener('click', () => { span.focus(); window.getSelection().selectAllChildren(span); });
-      span.insertAdjacentElement('afterend', btn);
+      // Pencil goes last so the hidden-until-hover button doesn't sit between
+      // the label text and its required "*".
+      lbl.appendChild(btn);
     });
     document.addEventListener('keydown', e => {
       const el = e.target.closest && e.target.closest('.fi-lbl-text');
