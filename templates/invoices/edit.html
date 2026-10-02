@@ -1222,7 +1222,10 @@ function updatePvw() {
   const notesSecE = document.querySelector('.pvw-sec[data-sec="notes"]');
   if (notesSecE) notesSecE.style.display = thanksVal ? '' : 'none';
 
-  _t('pvw-terms', document.getElementById('invoice-terms')?.value || 'Payment due within 30 days.');
+  const termsValE = document.getElementById('invoice-terms')?.value || '';
+  _t('pvw-terms', termsValE);
+  const termsSecE = document.querySelector('.pvw-sec[data-sec="terms"]');
+  if (termsSecE) termsSecE.style.display = termsValE.trim() ? '' : 'none';
 
   _t('pvw-dept',  document.getElementById('department')?.value || '');
 
@@ -1928,8 +1931,13 @@ function applyLayoutToPreview() {
     if (el) pvw.appendChild(el);
   });
   // Hide/show
+  // Notes/Terms with nothing written stay hidden, heading included.
+  const emptySecs = new Set();
+  if (!(document.getElementById('thankyou-msg')?.value || '').trim()) emptySecs.add('notes');
+  if (!(document.getElementById('invoice-terms')?.value || '').trim()) emptySecs.add('terms');
   pvw.querySelectorAll('.pvw-sec').forEach(el => {
-    el.style.display = layoutState.hidden_sections.includes(el.dataset.sec) ? 'none' : '';
+    const sec = el.dataset.sec;
+    el.style.display = (layoutState.hidden_sections.includes(sec) || emptySecs.has(sec)) ? 'none' : '';
   });
   // Section-level field settings
   const ss = layoutState.section_settings;

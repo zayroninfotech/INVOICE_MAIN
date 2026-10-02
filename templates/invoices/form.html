@@ -2636,8 +2636,13 @@ function applyLayoutToPreview() {
     if (el) pvw.appendChild(el);
   });
   // Hide/show
+  // Notes/Terms with nothing written stay hidden, heading included.
+  const emptySecs = new Set();
+  if (!(document.getElementById('thankyou-msg')?.value || '').trim()) emptySecs.add('notes');
+  if (!(document.getElementById('invoice-terms')?.value || '').trim()) emptySecs.add('terms');
   pvw.querySelectorAll('.pvw-sec').forEach(el => {
-    el.style.display = layoutState.hidden_sections.includes(el.dataset.sec) ? 'none' : '';
+    const sec = el.dataset.sec;
+    el.style.display = (layoutState.hidden_sections.includes(sec) || emptySecs.has(sec)) ? 'none' : '';
   });
   // Section-level field settings
   const ss = layoutState.section_settings;

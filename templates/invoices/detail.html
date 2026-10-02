@@ -71,10 +71,15 @@
   .mail-err { color:#B91C1C; font-size:.85rem; margin:0 0 12px; display:none; }
   .mail-err.show { display:block; }
 
-  /* ── the real invoice preview: light grey stage, centred sheet ── */
-  .idet-preview-stage { background:#EDEDEF; border-radius:14px; padding:28px; margin-bottom:20px; }
-  .idet-preview-wrap { display:flex; justify-content:center; }
-  .idet-preview-wrap .inv-preview { width:100%; max-width:880px; box-shadow:0 6px 24px rgba(15,23,42,.08); }
+  /* ── the real invoice preview: an A4 sheet (210×297) on a grey stage, the
+     invoice scaled onto it exactly like print.html does for the PDF — same
+     411px authored canvas, same 12mm page margins. ── */
+  .idet-preview-stage { background:#E5E7EB; border-radius:14px; padding:32px 24px; margin-bottom:20px; }
+  .idet-preview-wrap { --pg-pad:5.714%; /* 12mm of 210mm */
+    width:100%; max-width:794px; /* A4 @ 96dpi */ aspect-ratio:210/297; margin:0 auto;
+    background:#fff; box-shadow:0 1px 2px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.12);
+    padding:var(--pg-pad); box-sizing:border-box; overflow:hidden; }
+  .idet-preview-wrap .inv-preview { width:411px; border-radius:0; box-shadow:none; overflow:visible; }
   @media (max-width:640px){ .idet-preview-stage{padding:12px 8px;} }
   /* Preview CSS lives in _invoice_doc_css.html, included after this block. */
 
@@ -487,8 +492,14 @@ async function renderPreview(inv) {
     });
   }
   const hidden = Array.isArray(lc.hidden_sections) ? lc.hidden_sections : [];
+  // Notes/Terms with nothing written stay hidden — heading included — even when
+  // the layout lists them as visible.
+  const emptySecs = new Set();
+  if (!(inv.notes || '').trim()) emptySecs.add('notes');
+  if (!(inv.terms || '').trim()) emptySecs.add('terms');
   pvw.querySelectorAll('.pvw-sec').forEach(el => {
-    el.style.display = hidden.includes(el.dataset.sec) ? 'none' : '';
+    const sec = el.dataset.sec;
+    el.style.display = (hidden.includes(sec) || emptySecs.has(sec)) ? 'none' : '';
   });
   const ss = lc.section_settings || {};
   const setDisp = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
@@ -695,6 +706,27 @@ async function sendEmail(btn) {
   document.getElementById('mail-msg').value = '';
   toast(res.message);
   loadInvoice();
+
+/* Fit the 411px invoice canvas to the A4 sheet's printable width (zoom, not
+   transform, so the sheet's height accounts for it — same as print.html). If a
+   long invoice runs past one page, let the sheet grow instead of clipping. */
+(function fitA4(){
+  const sheet = document.querySelector('.idet-preview-wrap');
+  const doc = sheet && sheet.querySelector('.inv-preview');
+  if (!sheet || !doc) return;
+  const fit = () => {
+    const cs = getComputedStyle(sheet);
+    const inner = sheet.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    doc.style.zoom = (inner / 411).toFixed(4);
+    sheet.style.aspectRatio = '';
+    const pageH = sheet.clientWidth * 297 / 210;
+    sheet.style.minHeight = pageH + 'px';
+    sheet.style.height = 'auto';
+  };
+  new ResizeObserver(fit).observe(sheet);
+  new MutationObserver(fit).observe(doc, {childList:true, subtree:true});
+  fit();
+})();
 }
 
 async function recordPayment() {
