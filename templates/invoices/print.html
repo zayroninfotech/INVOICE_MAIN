@@ -101,7 +101,26 @@ scale that maps the preview's authored canvas onto A4.
       canvas.style.zoom = 1;                           // measure unscaled
       const natural = canvas.getBoundingClientRect().height;
       if (!natural) { canvas.style.zoom = BASE; return; }
-      canvas.style.zoom = Math.min(BASE, Math.max(MIN, printablePx / natural));
+      const zoom = Math.min(BASE, Math.max(MIN, printablePx / natural));
+      canvas.style.zoom = zoom;
+
+      // A short invoice used to stop two-thirds down the page and leave the
+      // rest blank. Stretch the document to the full printable height and push
+      // the signature block (and anything after it) to the bottom, the way a
+      // printed invoice is laid out. Only when it fits on one page — a long
+      // invoice paginates as before. 8px of headroom keeps Chrome from
+      // rounding it onto a second sheet.
+      const avail = printablePx / zoom - 8;
+      const doc = canvas.querySelector('.inv-preview');
+      if (doc && natural < avail) {
+        doc.style.display = 'flex';
+        doc.style.flexDirection = 'column';
+        doc.style.minHeight = avail + 'px';
+        const secs = [...doc.querySelectorAll(':scope > .pvw-sec')]
+          .filter(s => getComputedStyle(s).display !== 'none');
+        const anchor = secs.find(s => s.dataset.sec === 'signature') || secs.find(s => s.dataset.sec === 'footer');
+        if (anchor) anchor.style.marginTop = 'auto';
+      }
     }
 
     (async () => {
