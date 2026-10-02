@@ -236,6 +236,9 @@ Hard rules — the output is checked automatically and rejected otherwise:
 - Output ONLY the HTML. No markdown, no code fences, no explanations.
 - One root element: <div class="ai-page"> … </div>. Put all CSS in a single <style> block inside it,
   every selector prefixed with .ai-page. No <script>, no event handlers, no external fonts/URLs/@import.
+- Page margins like a printed invoice: keep all content inside, with space above the header and
+  below the footer, and never let tables or bands touch the left/right page edge (the app also adds
+  padding of about 38px top, 42px sides, 34px bottom to .ai-page — design for that inner area).
 - The page is A4: .ai-page {{ width: 794px; min-height: 1123px; box-sizing: border-box; }} with
   background set to the design's own page colour (dark if the design is dark), plus
   -webkit-print-color-adjust: exact; print-color-adjust: exact; so it prints.
@@ -329,9 +332,18 @@ def sanitize(html):
 _ENGINE = Engine(debug=False, libraries={})
 
 
+# Page margins applied to every AI design, whatever the model wrote: content
+# keeps ~10mm top/bottom and ~11mm left/right from the sheet edge, while the
+# page background (e.g. a dark design) still fills the whole A4 sheet.
+_PAGE_FRAME = ('<style>.ai-page{width:794px !important;min-height:1123px;box-sizing:border-box !important;'
+               'padding:38px 42px 34px !important;margin:0 auto;'
+               '-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+               '.ai-page>*:first-child{margin-top:0}.ai-page>*:last-child{margin-bottom:0}</style>')
+
+
 def render(html, ctx):
     """Render a sanitized AI template with an ai_context() dict."""
-    return _ENGINE.from_string(html).render(Context(ctx, autoescape=True))
+    return _ENGINE.from_string(html).render(Context(ctx, autoescape=True)) + _PAGE_FRAME
 
 
 # ── context ─────────────────────────────────────────────────────────────────
