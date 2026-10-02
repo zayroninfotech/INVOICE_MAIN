@@ -342,8 +342,10 @@ let taBases = [], taList = [], taEditing = null;
 const esc = v => String(v == null ? '' : v).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
 async function taLoad() {
+  // Add Invoice is superadmin-only (the API enforces it too). Anyone else who
+  // opens the URL directly goes back to the normal Invoice page.
   if ((localStorage.getItem('user_role') || '') !== 'superadmin') {
-    document.getElementById('ta-denied').style.display = '';
+    window.location.replace('/invoices/create/');
     return;
   }
   const r = await API.get('/api/invoices/custom-templates/');

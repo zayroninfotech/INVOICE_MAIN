@@ -2152,7 +2152,13 @@ async function loadTemplates() {
     const all = r.data.templates || [];
     if (r.data.sections) Object.assign(SECTION_LABELS_FALLBACK, r.data.sections);
     all.forEach(t => window._planUnlocked[t.id] = !!t.unlocked);
-    window._tplList = all.filter(t => _BUY_MODE ? t.min_plan !== 'free' : (t.min_plan === 'free' || t.owned));
+    // Superadmin: every template (built-in, premium and the ones added in Add
+    // Invoice) is ready to use on the Invoice page — nothing to buy. Everyone
+    // else: free + bought here, premium ones live in Buy Invoice.
+    const isSuperadmin = (localStorage.getItem('user_role') || '') === 'superadmin';
+    window._tplList = all.filter(t => _BUY_MODE ? t.min_plan !== 'free'
+      : isSuperadmin ? !t.blocked
+      : (t.min_plan === 'free' || t.owned));
   } catch(_) {}
   finally { ZayroLoader.hide('#tpl-grid'); }
   buildTplGrid();
