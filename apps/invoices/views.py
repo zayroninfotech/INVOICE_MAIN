@@ -261,6 +261,18 @@ class InvoiceDetailView(APIView):
         serializer = InvoiceSerializer(invoice, data=request.data, context={'request': request})
         if not serializer.is_valid():
             return error("Validation failed.", serializer.errors)
+        # invoice_number is read-only on the serializer (it is minted on create),
+        # but the detail page lets the owner renumber in place. It becomes the
+        # PDF filename, so only filename-safe characters are accepted.
+        new_no = str(request.data.get('invoice_number') or '').strip()
+        if new_no and new_no != invoice.invoice_number:
+            if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,39}', new_no):
+                return error("Invoice number can use letters, numbers, '-', '_' and '.' only (max 40).",
+                             {"invoice_number": ["Invalid characters."]})
+            if Invoice.objects(created_by=invoice.created_by, invoice_number=new_no, pk__ne=invoice.pk).first():
+                return error(f"Invoice number {new_no} is already used by another invoice.",
+                             {"invoice_number": ["Already in use."]})
+            invoice.invoice_number = new_no
         invoice = serializer.update(invoice, serializer.validated_data)
         return success(InvoiceDetailSerializer(invoice).data, "Invoice updated.")
 
