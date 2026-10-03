@@ -2939,9 +2939,14 @@ function toggleMobilePreview() {
 
 goToStage(1);
 loadTemplates().then(() => {
+  // Re-open the editor with the last template only on a refresh or Back —
+  // opening Invoice from the sidebar (or any link) always starts at
+  // "Choose how your invoice looks".
   try {
+    const nav = (performance.getEntriesByType('navigation')[0] || {}).type || '';
     const saved = sessionStorage.getItem('inv_stage');
-    if (saved) { selectTemplate(saved); }
+    if (saved && (nav === 'reload' || nav === 'back_forward')) { selectTemplate(saved); }
+    else sessionStorage.removeItem('inv_stage');
   } catch(e) {}
 });
 renderSectionEditor();
