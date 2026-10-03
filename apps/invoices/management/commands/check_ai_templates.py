@@ -104,14 +104,9 @@ class Command(BaseCommand):
             self.ok(f"read the upload ({'with a page picture' if png else 'text only, no picture'}, "
                     f"{len(desc)} chars of text) in {time.time() - t:.1f}s")
             t = time.time()
-            self.stdout.write('        asking OpenAI… (usually 20–90 s)')
-            raw = ai.generate_html(png, desc)
-            self.ok(f'OpenAI replied in {time.time() - t:.0f}s ({len(raw)} chars)')
-            html = ai.sanitize(raw)
-            self.ok('safety check passed')
-            from apps.invoices.exact_template import SAMPLE
-            ai.render(html, ai.ai_context(SAMPLE))
-            self.ok('test render with sample data passed')
+            self.stdout.write('        asking OpenAI… (two passes when there is a page picture, usually 40–150 s)')
+            html = ai.design(png, desc, log=lambda m: self.stdout.write('        ' + m))
+            self.ok(f'design finished in {time.time() - t:.0f}s — safety check and test render passed')
             c.ai_html, c.ai_status, c.ai_error = html, 'ready', ''
             c.ai_fields = ai.extract_fields(html)
             c.save()

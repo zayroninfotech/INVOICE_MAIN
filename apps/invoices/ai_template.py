@@ -272,6 +272,13 @@ Hard rules — the output is checked automatically and rejected otherwise:
   Filters: keep to default, upper, lower, title, linebreaksbr (others are removed). Never use the safe filter.
 - Images: only {{{{ logo_url }}}} or {{{{ signature_url }}}} as src.
 - Make it print well: use real <table> elements for tabular parts; avoid position:fixed.
+- Spacing like the design: a full-width coloured band may run to the page edge, but the TEXT inside
+  it keeps the same left/right inset as the rest of the page (e.g. padding: 0 32px). Table cells always
+  have horizontal padding; text never touches a band or page edge.
+- Item rows: reproduce the separators exactly — if the design has a thin line under each item row,
+  give every row that border-bottom (same colour/thickness). Match column alignment (numbers right).
+- Totals: copy the exact arrangement (e.g. label + amount right-aligned, an accent bar on the left).
+- Do not add anything the design does not show (no extra company-name line, no extra headings).
 {('' if not description else chr(10) + description[:30000])}"""
 
 
@@ -430,8 +437,7 @@ def _job(template_id):
         with open(path, 'rb') as fh:
             data = fh.read()
         png, desc = read_upload(data, '', c.source_name or path)
-        html = sanitize(generate_html(png, desc))
-        render(html, ai_context(SAMPLE))        # must render cleanly with sample data
+        html = design(png, desc)                # first design + compare-and-fix pass
         c.ai_html, c.ai_status, c.ai_error = html, 'ready', ''
         c.ai_fields = extract_fields(html)
     except AIError as exc:
@@ -517,3 +523,81 @@ def manual_prompt():
     return (_prompt('') +
             "\n\nReply with ONLY the finished HTML (starting with <div class=\"ai-page\">), "
             "in a single code block, with no explanation before or after it.")
+
+
+# ── second pass: compare with the original and fix ──────────────────────────
+
+def render_png(html):
+    """Draw a sanitized design with sample data and return a PNG of page 1."""
+    import tempfile
+    from .exact_template import SAMPLE
+    from .html_pdf import html_to_pdf
+    page = render(html, ai_context(SAMPLE))
+    doc = ('<!doctype html><html><head><meta charset="utf-8"><style>@page{size:A4;margin:0}'
+           'html,body{margin:0;background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+           '</style></head><body>' + page + '</body></html>')
+    fd, out = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+    try:
+        if not html_to_pdf(doc, out):
+            return None
+        import fitz
+        return fitz.open(out)[0].get_pixmap(dpi=110).tobytes('png')
+    finally:
+        try:
+            os.remove(out)
+        except OSError:
+            pass
+
+
+def refine_html(original_png, html, current_png):
+    """Ask the model to fix the visible differences between the original
+    design (image 1) and its current rendering (image 2)."""
+    from openai import OpenAI
+    client = OpenAI(timeout=180)
+    b64 = lambda b: 'data:image/png;base64,' + base64.b64encode(b).decode()
+    text = (_prompt('') + "\n\nSECOND PASS. Image 1 is the ORIGINAL design. Image 2 is how YOUR template "
+            "below currently renders (with sample data, so names/amounts differ — ignore that). Compare them "
+            "carefully and fix every visual difference in layout, spacing and padding (especially left/right "
+            "insets of text inside bands and tables), row separator lines, borders, colours, font sizes and "
+            "weights, alignment of totals, and header/footer arrangement. Remove anything that is not in the "
+            "original. Keep all variables, the items loop and the <!-- fields: ... --> comment. "
+            "Return the complete corrected HTML only.\n\nCURRENT TEMPLATE:\n" + html)
+    resp = client.chat.completions.create(
+        model=os.environ.get('OPENAI_MODEL', '').strip() or DEFAULT_MODEL,
+        messages=[{'role': 'user', 'content': [
+            {'type': 'text', 'text': text},
+            {'type': 'image_url', 'image_url': {'url': b64(original_png), 'detail': 'high'}},
+            {'type': 'image_url', 'image_url': {'url': b64(current_png), 'detail': 'high'}},
+        ]}],
+        temperature=0.2, max_completion_tokens=14000,
+    )
+    if resp.choices[0].finish_reason == 'length':
+        raise AIError("The corrected design was too long.")
+    return (resp.choices[0].message.content or '').strip()
+
+
+def design(png, desc, log=None):
+    """Full pipeline: first design, then one compare-and-fix pass when a page
+    picture is available. Returns sanitized HTML. The fix pass is best-effort:
+    if it fails or breaks something, the first design is kept."""
+    say = log or (lambda m: None)
+    from .exact_template import SAMPLE
+    html = sanitize(generate_html(png, desc))
+    render(html, ai_context(SAMPLE))
+    say('first design ready')
+    if not png:
+        return html
+    try:
+        current = render_png(html)
+        if not current:
+            say('skipped the check pass (could not draw the first design)')
+            return html
+        say('checking it against your original…')
+        fixed = sanitize(refine_html(png, html, current))
+        render(fixed, ai_context(SAMPLE))
+        say('check pass applied')
+        return fixed
+    except Exception as exc:
+        say(f'check pass skipped ({type(exc).__name__}: {str(exc)[:120]}) — keeping the first design')
+        return html
